@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge, Spinner, Alert, Form, Button } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Catalog = () => {
   const [products, setProducts] = useState([]);
@@ -12,15 +12,17 @@ const Catalog = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [addingToCart, setAddingToCart] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
         const [categoriesRes, brandsRes, productsRes] = await Promise.all([
-          fetch(`${apiUrl}/catalog/categories/`),
-          fetch(`${apiUrl}/catalog/brands/`),
-          fetch(`${apiUrl}/catalog/products/`)
+          fetch(`${apiUrl}/catalog/categories/?page_size=100`),
+          fetch(`${apiUrl}/catalog/brands/?page_size=100`),
+          fetch(`${apiUrl}/catalog/products/?page_size=100`)
         ]);
 
         // Проверяем, что ответы являются JSON
@@ -54,6 +56,45 @@ const Catalog = () => {
 
     fetchData();
   }, []);
+
+  const addToCart = async (productId, productSlug) => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      alert('Пожалуйста, войдите в систему для добавления товаров в корзину');
+      navigate('/login');
+      return;
+    }
+
+    setAddingToCart(prev => ({ ...prev, [productId]: true }));
+
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+      const response = await fetch(`${apiUrl}/cart/cart/add_item/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
+        },
+        body: JSON.stringify({
+          product_slug: productSlug,
+          quantity: 1
+        })
+      });
+
+      if (response.ok) {
+        alert('Товар добавлен в корзину!');
+      } else {
+        const errorData = await response.json();
+        alert(`Ошибка: ${errorData.error || 'Не удалось добавить товар в корзину'}`);
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Ошибка при добавлении товара в корзину');
+    } finally {
+      setAddingToCart(prev => ({ ...prev, [productId]: false }));
+    }
+  };
 
   const filteredProducts = products.filter(product => {
     const matchesCategory = !selectedCategory || product.category?.slug === selectedCategory;
@@ -191,12 +232,36 @@ const Catalog = () => {
                         </Badge>
                       </div>
                       
-                      <Link 
-                        to={`/product/${product.slug}`}
-                        className="btn btn-outline-primary w-100"
-                      >
-                        Подробнее
-                      </Link>
+                      <div className="d-flex gap-2">
+                        <Link 
+                          to={`/product/${product.slug}`}
+                          className="btn btn-outline-primary flex-grow-1"
+                        >
+                          Подробнее
+                        </Link>
+                        <Button
+                          variant="success"
+                          onClick={() => addToCart(product.id, product.slug)}
+                          disabled={product.stock === 0 || addingToCart[product.id]}
+                          className="flex-grow-1"
+                        >
+                          {addingToCart[product.id] ? (
+                            <>
+                              <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                role="status"
+                                aria-hidden="true"
+                                className="me-1"
+                              />
+                              Добавление...
+                            </>
+                          ) : (
+                            'В корзину'
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </Card.Body>
                 </Card>

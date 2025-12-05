@@ -1,7 +1,7 @@
-
-from rest_framework import serializers
-from django.utils.text import slugify
-from .models import Category, Brand, Product
+#!/usr/bin/env python
+"""
+Тестовый скрипт для проверки генерации slug из названий товаров
+"""
 import re
 
 def transliterate_russian(text):
@@ -39,36 +39,17 @@ def create_slug(text):
     # Приводим к нижнему регистру
     return text.lower()
 
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['id', 'name', 'slug']
+# Тестовые примеры
+test_names = [
+    "SPECTRAL SOFT LIGHT Шпатлевка многофункциональная 1л.",
+    "Koch Chemie Полироль для пластика 500мл",
+    "Автошампунь концентрат 5л.",
+    "Очиститель стёкол 750мл",
+]
 
-class BrandSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Brand
-        fields = ['id', 'name', 'slug']
-
-class ProductSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
-    brand = BrandSerializer(read_only=True)
-    slug = serializers.SlugField(required=False, allow_blank=True)
-
-    class Meta:
-        model = Product
-        fields = ['id', 'category', 'brand', 'name', 'slug', 'description', 'price', 'stock', 'image']
-
-    def validate(self, data):
-        if not data.get('brand'):
-            raise serializers.ValidationError("Поле 'brand' обязательно.")
-        if not data.get('category'):
-            raise serializers.ValidationError("Поле 'category' обязательно.")
-        
-        # Если slug не указан или пустой, создаем из названия
-        if not data.get('slug') and data.get('name'):
-            data['slug'] = create_slug(data['name'])
-        elif data.get('slug'):
-            # Если slug указан, преобразуем его в правильный формат
-            data['slug'] = create_slug(data['slug'])
-        
-        return data
+print("Тестирование генерации slug:\n")
+for name in test_names:
+    slug = create_slug(name)
+    print(f"Название: {name}")
+    print(f"Slug:     {slug}")
+    print("-" * 80)

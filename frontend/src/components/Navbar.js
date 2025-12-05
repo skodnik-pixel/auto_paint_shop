@@ -72,7 +72,7 @@ function CustomNavbar() {
             <Navbar expand="lg" className="main-navbar">
                 <Container fluid>
             <Link to="/" className="navbar-brand navbar-logo">
-                <span className="logo-text">АВТОКРАСКА</span>
+                <span className="logo-text">TIME TO BLOW</span>
                 <span className="logo-icon">🎨</span>
             </Link>
                     
@@ -82,7 +82,7 @@ function CustomNavbar() {
                     
                     <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className="me-auto">
-                            <Link to="/catalog" className="nav-link nav-link-custom">Магазины</Link>
+                            <Link to="/catalog" className="nav-link nav-link-custom">Каталог</Link>
                         </Nav>
                         
                         {/* Поиск */}

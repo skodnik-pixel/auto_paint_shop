@@ -32,38 +32,37 @@ function ProductDetail() {
             });
     }, [slug]);
 
-    const addToCart = () => {
+    const addToCart = async () => {
         const token = localStorage.getItem('token');
         if (!token) {
             alert('Необходимо войти в систему');
             return;
         }
         
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-        fetch(`${apiUrl}/cart/add_item/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ product_id: product.id, quantity: 1 })
-        })
-            .then(async response => {
-                if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
-                }
-                if (!response.headers.get('content-type')?.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/cart/add_item/`);
-                }
-                return response.json();
-            })
-            .then(data => alert('Товар добавлен в корзину!'))
-            .catch(error => {
-                console.error('Error adding to cart:', error);
-                alert('Ошибка при добавлении товара в корзину');
+        try {
+            const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+            const response = await fetch(`${apiUrl}/cart/cart/add_item/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${token}`
+                },
+                body: JSON.stringify({ 
+                    product_slug: product.slug, 
+                    quantity: 1 
+                })
             });
+
+            if (response.ok) {
+                alert('Товар добавлен в корзину!');
+            } else {
+                const errorData = await response.json();
+                alert(`Ошибка: ${errorData.error || 'Не удалось добавить товар в корзину'}`);
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            alert('Ошибка при добавлении товара в корзину');
+        }
     };
 
     if (loading) {
