@@ -16,11 +16,26 @@ const Catalog = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
         const [categoriesRes, brandsRes, productsRes] = await Promise.all([
-          fetch(`${process.env.REACT_APP_API_URL}/catalog/categories/`),
-          fetch(`${process.env.REACT_APP_API_URL}/catalog/brands/`),
-          fetch(`${process.env.REACT_APP_API_URL}/catalog/products/`)
+          fetch(`${apiUrl}/catalog/categories/`),
+          fetch(`${apiUrl}/catalog/brands/`),
+          fetch(`${apiUrl}/catalog/products/`)
         ]);
+
+        // Проверяем, что ответы являются JSON
+        if (!categoriesRes.headers.get('content-type')?.includes('application/json')) {
+          const text = await categoriesRes.text();
+          throw new Error(`Ожидался JSON, получен: ${text.substring(0, 100)}`);
+        }
+        if (!brandsRes.headers.get('content-type')?.includes('application/json')) {
+          const text = await brandsRes.text();
+          throw new Error(`Ожидался JSON, получен: ${text.substring(0, 100)}`);
+        }
+        if (!productsRes.headers.get('content-type')?.includes('application/json')) {
+          const text = await productsRes.text();
+          throw new Error(`Ожидался JSON, получен: ${text.substring(0, 100)}`);
+        }
 
         const categoriesData = await categoriesRes.json();
         const brandsData = await brandsRes.json();

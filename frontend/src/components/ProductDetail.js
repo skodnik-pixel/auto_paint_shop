@@ -9,9 +9,17 @@ function ProductDetail() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch(`${process.env.REACT_APP_API_URL}/catalog/products/?slug=${slug}`)
-            .then(response => {
-                if (!response.ok) throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+        fetch(`${apiUrl}/catalog/products/?slug=${slug}`)
+            .then(async response => {
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
+                }
+                if (!response.headers.get('content-type')?.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/catalog/products/`);
+                }
                 return response.json();
             })
             .then(data => {
@@ -31,7 +39,8 @@ function ProductDetail() {
             return;
         }
         
-        fetch(`${process.env.REACT_APP_API_URL}/cart/add_item/`, {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+        fetch(`${apiUrl}/cart/add_item/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -39,8 +48,15 @@ function ProductDetail() {
             },
             body: JSON.stringify({ product_id: product.id, quantity: 1 })
         })
-            .then(response => {
-                if (!response.ok) throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
+            .then(async response => {
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
+                }
+                if (!response.headers.get('content-type')?.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/cart/add_item/`);
+                }
                 return response.json();
             })
             .then(data => alert('Товар добавлен в корзину!'))

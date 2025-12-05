@@ -10,13 +10,21 @@ function Login() {
     const navigate = useNavigate();
 
     const handleLogin = () => {
-        fetch(`${process.env.REACT_APP_API_URL}/accounts/login/`, {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+        fetch(`${apiUrl}/accounts/login/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
         })
-            .then(response => {
-                if (!response.ok) throw new Error('Неверное имя пользователя или пароль');
+            .then(async response => {
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error('Неверное имя пользователя или пароль');
+                }
+                if (!response.headers.get('content-type')?.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/accounts/login/`);
+                }
                 return response.json();
             })
             .then(data => {

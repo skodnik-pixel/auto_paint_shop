@@ -41,7 +41,8 @@ function Register() {
         }
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/accounts/auth/users/`, {
+            const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+            const response = await fetch(`${apiUrl}/accounts/auth/users/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -53,6 +54,11 @@ function Register() {
                     re_password: formData.re_password
                 }),
             });
+
+            if (!response.headers.get('content-type')?.includes('application/json')) {
+                const text = await response.text();
+                throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/accounts/auth/users/`);
+            }
 
             const data = await response.json();
 

@@ -16,13 +16,18 @@ function Cart() {
             setLoading(false);
             return;
         }
-        fetch(`${process.env.REACT_APP_API_URL}/cart/`, {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+        fetch(`${apiUrl}/cart/`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
             },
         })
-            .then(response => {
+            .then(async response => {
                 if (!response.ok) throw new Error('Failed to fetch cart');
+                if (!response.headers.get('content-type')?.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/cart/`);
+                }
                 return response.json();
             })
             .then(data => {
@@ -41,7 +46,8 @@ function Cart() {
             alert('Пожалуйста, войдите в аккаунт');
             return;
         }
-        fetch(`${process.env.REACT_APP_API_URL}/cart/${cart.id}/`, {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+        fetch(`${apiUrl}/cart/${cart.id}/`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -49,8 +55,12 @@ function Cart() {
             },
             body: JSON.stringify({ items: [{ id: itemId, quantity }] }),
         })
-            .then(response => {
+            .then(async response => {
                 if (!response.ok) throw new Error('Failed to update quantity');
+                if (!response.headers.get('content-type')?.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/cart/`);
+                }
                 return response.json();
             })
             .then(data => setCart(data))
@@ -63,7 +73,8 @@ function Cart() {
             alert('Пожалуйста, войдите в аккаунт');
             return;
         }
-        fetch(`${process.env.REACT_APP_API_URL}/cart/${cart.id}/`, {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+        fetch(`${apiUrl}/cart/${cart.id}/`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -71,8 +82,12 @@ function Cart() {
             },
             body: JSON.stringify({ items: [{ id: itemId, quantity: 0 }] }), // Удаляем, устанавливая quantity=0
         })
-            .then(response => {
+            .then(async response => {
                 if (!response.ok) throw new Error('Failed to remove item');
+                if (!response.headers.get('content-type')?.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/cart/`);
+                }
                 return response.json();
             })
             .then(data => setCart(data))

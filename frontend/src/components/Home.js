@@ -1,19 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Badge, Button, Carousel } from 'react-bootstrap';
+import { Container, Row, Col, Card, Badge, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { FaHeart, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 function Home() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [promoProducts, setPromoProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState(new Set());
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/catalog/products/`);
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+        const response = await fetch(`${apiUrl}/catalog/products/`);
+        if (!response.headers.get('content-type')?.includes('application/json')) {
+          const text = await response.text();
+          throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/catalog/products/`);
+        }
         const data = await response.json();
         const products = data.results || data;
-        // Берем первые 6 товаров как популярные
-        setFeaturedProducts(products.slice(0, 6));
+        // Берем первые 5 товаров как акционные (с "скидкой")
+        setPromoProducts(products.slice(0, 5));
+        // Остальные как популярные
+        setFeaturedProducts(products.slice(5, 11));
         setLoading(false);
       } catch (error) {
         console.error('Error fetching featured products:', error);
@@ -24,230 +34,110 @@ function Home() {
     fetchFeaturedProducts();
   }, []);
 
-  const banners = [
-    {
-      id: 1,
-      title: "Профессиональные материалы для кузовного ремонта",
-      subtitle: "Лучшие бренды для ремонта вашего автомобиля",
-      image: "/images/ban1.jfif", // Изображение для кузовного ремонта
-      link: "/catalog"
-    },
-    {
-      id: 2,
-      title: "Керамические покрытия",
-      subtitle: "Долговечная защита вашего автомобиля",
-      image: "/images/ban2.jfif", // Изображение для керамических покрытий
-      link: "/catalog"
-    },
-    {
-      id: 3,
-      title: "Инструменты для деталинга",
-      subtitle: "Профессиональное оборудование",
-      image: "/images/ban4.jpg", // Изображение для инструментов
-      link: "/catalog"
+  const toggleFavorite = (productId) => {
+    const newFavorites = new Set(favorites);
+    if (newFavorites.has(productId)) {
+      newFavorites.delete(productId);
+    } else {
+      newFavorites.add(productId);
     }
-  ];
+    setFavorites(newFavorites);
+  };
 
-  const categories = [
-    {
-      name: "Автокосметика",
-      icon: "🧴",
-      description: "Шампуни, воски, полироли",
-      link: "/catalog?category=autocosmetics"
-    },
-    {
-      name: "Автохимия", 
-      icon: "🧪",
-      description: "Очистители, обезжириватели",
-      link: "/catalog?category=autochemistry"
-    },
-    {
-      name: "Инструменты",
-      icon: "🛠️", 
-      description: "Щетки, губки, полотенца",
-      link: "/catalog?category=tools"
-    },
-    {
-      name: "Защитные покрытия",
-      icon: "🛡️",
-      description: "Керамика, воски, герметики", 
-      link: "/catalog?category=protective-coatings"
-    }
-  ];
+  const calculateDiscount = (currentPrice, originalPrice) => {
+    if (!originalPrice || originalPrice <= currentPrice) return 0;
+    return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+  };
+
+  const getOriginalPrice = (price) => {
+    // Для демонстрации добавляем 20-30% к цене как "старая цена"
+    return (parseFloat(price) * 1.25).toFixed(2);
+  };
+
 
   return (
-    <div>
-      {/* Hero Banner */}
-      <Carousel className="mb-5">
-        {banners.map((banner) => (
-          <Carousel.Item key={banner.id}>
-            <div 
-              className="hero-banner"
-              style={{
-                backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${banner.image})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                                 height: '600px', // Можно изменить высоту
-                display: 'flex',
-                alignItems: 'center',
-                color: 'white'
-              }}
-            >
-              <Container>
-                <Row>
-                  <Col md={6}>
-                    <h1 className="display-4 fw-bold mb-3">{banner.title}</h1>
-                    <p className="lead mb-4">{banner.subtitle}</p>
-                                         <Link to={banner.link}>
-                       <Button variant="primary" size="lg" className="btn-custom">
-                         Смотреть товары
-                       </Button>
-                     </Link>
-                  </Col>
-                </Row>
-              </Container>
-            </div>
-          </Carousel.Item>
-        ))}
-      </Carousel>
-
-      {/* Категории */}
-      <Container className="mb-5">
-        <div className="text-center mb-4">
-          <h2 className="fw-bold">Категории товаров</h2>
-          <p className="text-muted">Выберите интересующую вас категорию</p>
-        </div>
-        
-        <Row>
-          {categories.map((category, index) => (
-            <Col key={index} lg={3} md={6} className="mb-4">
-              <Link to={category.link} className="text-decoration-none">
-                <Card className="h-100 category-card text-center">
-                  <Card.Body>
-                    <div className="category-icon mb-3">
-                      <span style={{ fontSize: '3rem' }}>{category.icon}</span>
-                    </div>
-                    <Card.Title className="fw-bold">{category.name}</Card.Title>
-                    <Card.Text className="text-muted">{category.description}</Card.Text>
-                  </Card.Body>
-                </Card>
-              </Link>
+    <div className="home-page">
+      {/* Желтый промо-баннер */}
+      <div className="promo-banner">
+        <Container>
+          <Row className="align-items-center">
+            <Col md={8}>
+              <div className="promo-content">
+                <h3 className="promo-subtitle">Особые условия только для вас</h3>
+                <h2 className="promo-title">Бесплатная доставка для всех клиентов магазина</h2>
+                <p className="promo-description">Доставка в ПВЗ или до двери!</p>
+              </div>
             </Col>
-          ))}
-        </Row>
-      </Container>
+            <Col md={4} className="text-end">
+              <div className="promo-image-wrapper">
+                <div className="promo-delivery-box">
+                  <div className="delivery-text">Доставка 24/7</div>
+                </div>
+              </div>
+            </Col>
+          </Row>
+          <div className="promo-arrows">
+            <button className="promo-arrow"><FaChevronLeft /></button>
+            <button className="promo-arrow"><FaChevronRight /></button>
+          </div>
+        </Container>
+      </div>
 
-      {/* Популярные товары */}
+      {/* Акционные товары */}
       <Container className="mb-5">
-        <div className="text-center mb-4">
-          <h2 className="fw-bold">Популярные товары</h2>
-          <p className="text-muted">Самые востребованные товары наших клиентов</p>
+        <div className="section-header mb-4">
+          <h2 className="section-title">Акционные товары</h2>
         </div>
 
         {loading ? (
           <div className="text-center">
-            <div className="spinner-border text-primary" role="status">
+            <div className="spinner-border text-warning" role="status">
               <span className="visually-hidden">Загрузка...</span>
             </div>
           </div>
         ) : (
-          <Row>
-            {featuredProducts.map(product => (
-              <Col key={product.id} lg={4} md={6} className="mb-4">
-                <Card className="h-100 product-card">
-                  <div className="text-center p-3">
-                    <img
-                      src={product.image || 'https://via.placeholder.com/300x200?text=Нет+фото'}
-                      alt={product.name}
-                      className="img-fluid"
-                      style={{ maxHeight: '200px', objectFit: 'contain' }}
-                    />
-                  </div>
-                  <Card.Body className="d-flex flex-column">
-                    <div className="mb-2">
-                      <Badge bg="primary" className="me-1">
-                        {product.category?.name}
-                      </Badge>
-                      <Badge bg="info">
-                        {product.brand?.name}
-                      </Badge>
-                    </div>
-                    
-                    <Card.Title className="h6 mb-2">
-                      {product.name}
-                    </Card.Title>
-                    
-                    <Card.Text className="text-muted small flex-grow-1">
-                      {product.description.length > 80 
-                        ? `${product.description.substring(0, 80)}...` 
-                        : product.description}
-                    </Card.Text>
-                    
-                    <div className="mt-auto">
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <span className="h5 text-primary mb-0">
-                          {product.price} BYN
-                        </span>
-                        <Badge bg={product.stock > 0 ? 'success' : 'danger'}>
-                          {product.stock > 0 ? `В наличии` : 'Нет в наличии'}
-                        </Badge>
+          <>
+            <Row className="promo-products-row">
+              {promoProducts.map(product => {
+                const originalPrice = getOriginalPrice(product.price);
+                const discount = calculateDiscount(parseFloat(product.price), parseFloat(originalPrice));
+                const isFavorite = favorites.has(product.id);
+                
+                return (
+                  <Col key={product.id} className="promo-product-col">
+                    <Card className="promo-product-card">
+                      <div className="product-favorite" onClick={() => toggleFavorite(product.id)}>
+                        <FaHeart className={isFavorite ? 'favorite-active' : ''} />
                       </div>
-                      
-                      <Link 
-                        to={`/product/${product.slug}`}
-                        className="btn btn-outline-primary w-100"
-                      >
-                        Подробнее
-                      </Link>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-          </Row>
+                      <div className="product-image-wrapper">
+                        <img
+                          src={product.image || 'https://via.placeholder.com/200x200?text=Нет+фото'}
+                          alt={product.name}
+                          className="product-image"
+                        />
+                      </div>
+                      <Card.Body className="product-card-body">
+                        <div className="product-price-section">
+                          <div className="product-current-price">{product.price} BYN</div>
+                          <div className="product-original-price">{originalPrice} BYN</div>
+                          <Badge className="product-discount-badge">-{discount}%</Badge>
+                        </div>
+                        <Card.Title className="product-name">{product.name}</Card.Title>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                );
+              })}
+            </Row>
+            <div className="promo-pagination">
+              {[1, 2, 3].map((dot, index) => (
+                <span key={index} className={`pagination-dot ${index === 0 ? 'active' : ''}`}></span>
+              ))}
+            </div>
+          </>
         )}
       </Container>
 
-      {/* Преимущества */}
-      <div className="bg-light py-5">
-        <Container>
-          <div className="text-center mb-4">
-            <h2 className="fw-bold">Почему выбирают нас</h2>
-            <p className="text-muted">Мы предлагаем только качественные товары</p>
-          </div>
-          
-          <Row>
-            <Col md={3} className="text-center mb-4">
-              <div className="feature-icon mb-3">
-                <span style={{ fontSize: '2.5rem' }}>🚚</span>
-              </div>
-              <h5>Быстрая доставка</h5>
-              <p className="text-muted">Доставляем по всей Беларуси</p>
-            </Col>
-            <Col md={3} className="text-center mb-4">
-              <div className="feature-icon mb-3">
-                <span style={{ fontSize: '2.5rem' }}>✅</span>
-              </div>
-              <h5>Гарантия качества</h5>
-              <p className="text-muted">Только оригинальные товары</p>
-            </Col>
-            <Col md={3} className="text-center mb-4">
-              <div className="feature-icon mb-3">
-                <span style={{ fontSize: '2.5rem' }}>💰</span>
-              </div>
-              <h5>Лучшие цены</h5>
-              <p className="text-muted">Конкурентные цены на все товары</p>
-            </Col>
-            <Col md={3} className="text-center mb-4">
-              <div className="feature-icon mb-3">
-                <span style={{ fontSize: '2.5rem' }}>🎯</span>
-              </div>
-              <h5>Профессиональная консультация</h5>
-              <p className="text-muted">Поможем выбрать подходящий товар</p>
-            </Col>
-          </Row>
-        </Container>
-      </div>
     </div>
   );
 }
