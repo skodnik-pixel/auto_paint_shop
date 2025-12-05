@@ -26,9 +26,6 @@ INSTALLED_APPS = [
     'catalog',
     'cart',
     'orders',
-    
-    
-
 ]
 
 MIDDLEWARE = [
@@ -94,7 +91,6 @@ DJOSER = {
         'user_create': 'accounts.serializers.UserCreateSerializer',
         'user': 'accounts.serializers.UserSerializer',
     },
-    'TOKEN_MODEL': 'rest_framework_simplejwt.tokens.AccessToken',
 }
 
 LANGUAGE_CODE = 'ru-ru'
