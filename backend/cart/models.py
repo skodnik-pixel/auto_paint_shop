@@ -8,6 +8,10 @@ class Cart(models.Model):
 
     def __str__(self):
         return f"Корзина {self.user.username}"
+    
+    def get_total_price(self):
+        """Возвращает общую стоимость всех товаров в корзине"""
+        return sum(item.get_total_price() for item in self.items.all())
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
@@ -16,3 +20,7 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
+    
+    def get_total_price(self):
+        """Возвращает общую стоимость этого товара (цена * количество)"""
+        return self.product.price * self.quantity

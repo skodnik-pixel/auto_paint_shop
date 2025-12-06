@@ -18,14 +18,31 @@ class CartViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def add_item(self, request):
+        product_slug = request.data.get('product_slug')
         product_id = request.data.get('product_id')
         quantity = int(request.data.get('quantity', 1))
-        product = Product.objects.get(id=product_id)
+        
+        # Поддерживаем оба варианта: product_slug и product_id
+        if product_slug:
+            try:
+                product = Product.objects.get(slug=product_slug)
+            except Product.DoesNotExist:
+                return Response({'error': 'Товар не найден'}, status=404)
+        elif product_id:
+            try:
+                product = Product.objects.get(id=product_id)
+            except Product.DoesNotExist:
+                return Response({'error': 'Товар не найден'}, status=404)
+        else:
+            return Response({'error': 'Необходимо указать product_slug или product_id'}, status=400)
+        
         cart, created = Cart.objects.get_or_create(user=request.user)
         cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
         if not created:
             cart_item.quantity += quantity
-            cart_item.save()
+        else:
+            cart_item.quantity = quantity
+        cart_item.save()
         return Response(CartSerializer(cart).data)
 
     @action(detail=False, methods=['post'])
