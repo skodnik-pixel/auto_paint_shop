@@ -22,7 +22,12 @@ class Product(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField()
-    image = models.ImageField(upload_to="products/", null=True, blank=True)
+    # Поле для хранения URL изображения (может быть внешняя ссылка или путь к загруженному файлу)
+    image = models.CharField(max_length=500, null=True, blank=True)
+    # Рейтинг товара от 0 до 5 звезд
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
+    # Количество отзывов
+    reviews_count = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.name

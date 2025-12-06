@@ -144,9 +144,9 @@ function CustomNavbar() {
                             </Link>
                             {isAuthenticated && user ? (
                                 <>
-                                    <span className="nav-link nav-icon-link text-muted">
+                                    <Link to="/profile" className="nav-link nav-icon-link">
                                         <FaUser /> {user.username}
-                                    </span>
+                                    </Link>
                                     <a 
                                         href="#" 
                                         onClick={(e) => { e.preventDefault(); handleLogout(); }} 
