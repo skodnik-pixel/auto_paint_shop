@@ -8,7 +8,8 @@ function Register() {
         username: '',
         email: '',
         password: '',
-        re_password: ''
+        re_password: '',
+        phone: ''
     });
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -51,7 +52,8 @@ function Register() {
                     username: formData.username,
                     email: formData.email,
                     password: formData.password,
-                    re_password: formData.re_password
+                    re_password: formData.re_password,
+                    phone: formData.phone
                 }),
             });
 
@@ -156,6 +158,20 @@ function Register() {
                                 required
                                 minLength={8}
                             />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Телефон</Form.Label>
+                            <Form.Control
+                                type="tel"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                placeholder="+375 (XX) XXX-XX-XX"
+                            />
+                            <Form.Text className="text-muted">
+                                Необязательное поле
+                            </Form.Text>
                         </Form.Group>
 
                         <Button 

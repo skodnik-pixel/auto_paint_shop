@@ -7,7 +7,23 @@ import { FaHeart, FaShoppingCart, FaSearch, FaBars, FaUser } from 'react-icons/f
 function CustomNavbar() {
     const [cartCount, setCartCount] = useState(0);
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
+    const [user, setUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+
+    useEffect(() => {
+        // Загружаем данные пользователя из localStorage
+        const token = localStorage.getItem('token');
+        const userData = localStorage.getItem('user');
+        
+        if (token && userData) {
+            try {
+                setUser(JSON.parse(userData));
+                setIsAuthenticated(true);
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+            }
+        }
+    }, []);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -37,10 +53,31 @@ function CustomNavbar() {
         }
     }, [isAuthenticated]);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        const token = localStorage.getItem('token');
+        
+        if (token) {
+            try {
+                const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+                await fetch(`${apiUrl}/accounts/logout/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${token}`
+                    }
+                });
+            } catch (error) {
+                console.error('Error during logout:', error);
+            }
+        }
+        
+        // Очищаем localStorage
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
         setIsAuthenticated(false);
+        setUser(null);
         setCartCount(0);
+        
+        alert('Вы вышли из системы');
         window.location.href = '/';
     };
 
@@ -105,14 +142,28 @@ function CustomNavbar() {
                             <Link to="#favorites" className="nav-link nav-icon-link">
                                 <FaHeart /> Избранное
                             </Link>
-                            {isAuthenticated ? (
-                                <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); }} className="nav-link nav-icon-link">
-                                    <FaUser /> Выйти
-                                </a>
+                            {isAuthenticated && user ? (
+                                <>
+                                    <span className="nav-link nav-icon-link text-muted">
+                                        <FaUser /> {user.username}
+                                    </span>
+                                    <a 
+                                        href="#" 
+                                        onClick={(e) => { e.preventDefault(); handleLogout(); }} 
+                                        className="nav-link nav-icon-link"
+                                    >
+                                        Выйти
+                                    </a>
+                                </>
                             ) : (
-                                <Link to="/login" className="nav-link nav-icon-link">
-                                    <FaUser /> Войти
-                                </Link>
+                                <>
+                                    <Link to="/login" className="nav-link nav-icon-link">
+                                        <FaUser /> Войти
+                                    </Link>
+                                    <Link to="/register" className="nav-link nav-icon-link">
+                                        Регистрация
+                                    </Link>
+                                </>
                             )}
                             <Link to="/cart" className="nav-link nav-icon-link cart-link">
                                 <FaShoppingCart /> Корзина
