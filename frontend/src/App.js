@@ -11,6 +11,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import ProductDetail from './components/ProductDetail';
 import CreateProduct from './components/CreateProduct';
+import Profile from './components/Profile';
 
 function App() {
     return (
@@ -28,6 +29,7 @@ function App() {
                     <Route path="/register" element={<Register />} />
                     <Route path="/product/:slug" element={<ProductDetail />} />
                     <Route path="/create-product" element={<CreateProduct />} />
+                    <Route path="/profile" element={<Profile />} />
                 </Routes>
             </div>
             

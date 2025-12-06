@@ -15,12 +15,27 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def create_order(self, request):
+        # Получаем адрес доставки из запроса
         address = request.data.get('address')
-        cart = Cart.objects.get(user=request.user)
+        
+        # Получаем корзину пользователя
+        try:
+            cart = Cart.objects.get(user=request.user)
+        except Cart.DoesNotExist:
+            return Response({'error': 'Корзина не найдена'}, status=400)
+        
+        # Проверяем, что корзина не пуста
         if not cart.items.exists():
             return Response({'error': 'Корзина пуста'}, status=400)
 
-        order = Order.objects.create(user=request.user, address=address)
+        # Создаем заказ
+        order = Order.objects.create(
+            user=request.user, 
+            address=address,
+            status='pending'  # Устанавливаем начальный статус
+        )
+        
+        # Переносим товары из корзины в заказ
         for item in cart.items.all():
             OrderItem.objects.create(
                 order=order,
@@ -28,5 +43,11 @@ class OrderViewSet(viewsets.ModelViewSet):
                 quantity=item.quantity,
                 price=item.product.price
             )
+        
+        # Рассчитываем общую сумму заказа
+        order.calculate_total()
+        
+        # Очищаем корзину
         cart.items.all().delete()
+        
         return Response(OrderSerializer(order).data)
