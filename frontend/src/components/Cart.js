@@ -17,7 +17,8 @@ function Cart() {
             return;
         }
         const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-        fetch(`${apiUrl}/cart/cart/`, {
+        // ВАЖНО: Правильный URL - /api/cart/ (без двойного cart)
+        fetch(`${apiUrl}/cart/`, {
             headers: {
                 'Authorization': `Token ${token}`,
             },
@@ -26,7 +27,7 @@ function Cart() {
                 if (!response.ok) throw new Error('Failed to fetch cart');
                 if (!response.headers.get('content-type')?.includes('application/json')) {
                     const text = await response.text();
-                    throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/cart/cart/`);
+                    throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/cart/`);
                 }
                 return response.json();
             })
@@ -47,7 +48,8 @@ function Cart() {
             return;
         }
         const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-        fetch(`${apiUrl}/cart/cart/${cart.id}/`, {
+        // ВАЖНО: Правильный URL - /api/cart/{id}/ (без двойного cart)
+        fetch(`${apiUrl}/cart/${cart.id}/`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -59,7 +61,7 @@ function Cart() {
                 if (!response.ok) throw new Error('Failed to update quantity');
                 if (!response.headers.get('content-type')?.includes('application/json')) {
                     const text = await response.text();
-                    throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/cart/cart/`);
+                    throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/cart/`);
                 }
                 return response.json();
             })
@@ -74,7 +76,8 @@ function Cart() {
             return;
         }
         const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-        fetch(`${apiUrl}/cart/cart/${cart.id}/`, {
+        // ВАЖНО: Правильный URL - /api/cart/{id}/ (без двойного cart)
+        fetch(`${apiUrl}/cart/${cart.id}/`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -86,7 +89,7 @@ function Cart() {
                 if (!response.ok) throw new Error('Failed to remove item');
                 if (!response.headers.get('content-type')?.includes('application/json')) {
                     const text = await response.text();
-                    throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/cart/cart/`);
+                    throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/cart/`);
                 }
                 return response.json();
             })

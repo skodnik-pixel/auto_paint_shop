@@ -57,41 +57,98 @@ const Catalog = () => {
     fetchData();
   }, []);
 
+  // Функция для добавления товара в корзину
   const addToCart = async (productId, productSlug) => {
+    // Шаг 1: Получаем токен авторизации из localStorage
     const token = localStorage.getItem('token');
     
+    // Шаг 2: Проверяем, авторизован ли пользователь
     if (!token) {
+      // Если токена нет - показываем сообщение и перенаправляем на страницу входа
       alert('Пожалуйста, войдите в систему для добавления товаров в корзину');
       navigate('/login');
       return;
     }
 
+    // Шаг 3: Устанавливаем состояние загрузки для этого товара
+    // Это отключит кнопку и покажет индикатор загрузки
     setAddingToCart(prev => ({ ...prev, [productId]: true }));
 
     try {
+      // Шаг 4: Формируем URL для API
       const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-      const response = await fetch(`${apiUrl}/cart/cart/add_item/`, {
-        method: 'POST',
+      
+      // Логируем информацию для отладки
+      console.log('=== ДОБАВЛЕНИЕ ТОВАРА В КОРЗИНУ ===');
+      console.log('URL:', `${apiUrl}/cart/add_item/`);
+      console.log('Product Slug:', productSlug);
+      console.log('Token (первые 10 символов):', token.substring(0, 10) + '...');
+
+      // Шаг 5: Отправляем POST запрос на сервер
+      // ВАЖНО: Правильный URL - /api/cart/add_item/ (без двойного cart)
+      const response = await fetch(`${apiUrl}/cart/add_item/`, {
+        method: 'POST', // Метод POST для создания/добавления данных
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`
+          'Content-Type': 'application/json', // Указываем, что отправляем JSON
+          'Authorization': `Token ${token}` // Передаём токен для авторизации
         },
         body: JSON.stringify({
-          product_slug: productSlug,
-          quantity: 1
+          product_slug: productSlug, // Slug товара (например, "jeta-pro")
+          quantity: 1 // Количество товара (всегда 1 при добавлении)
         })
       });
 
+      // Логируем статус ответа
+      console.log('Статус ответа:', response.status, response.statusText);
+
+      // Шаг 6: Проверяем статус ответа
+      
+      // Если 401 - токен недействителен или истёк
+      if (response.status === 401) {
+        alert('Ваша сессия истекла. Пожалуйста, войдите снова.');
+        // Очищаем localStorage и перенаправляем на страницу входа
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/login');
+        return;
+      }
+
+      // Шаг 7: Читаем тело ответа
+      // ВАЖНО: Сначала читаем текст, потом пытаемся распарсить JSON
+      const responseText = await response.text();
+      console.log('Тело ответа (текст):', responseText);
+
+      // Шаг 8: Обрабатываем успешный ответ
       if (response.ok) {
-        alert('Товар добавлен в корзину!');
+        // Пытаемся распарсить JSON
+        try {
+          const data = responseText ? JSON.parse(responseText) : {};
+          console.log('Товар добавлен успешно:', data);
+          alert('Товар добавлен в корзину!');
+        } catch (parseError) {
+          // Если не удалось распарсить JSON, но статус успешный
+          console.log('Ответ не является JSON, но операция успешна');
+          alert('Товар добавлен в корзину!');
+        }
       } else {
-        const errorData = await response.json();
-        alert(`Ошибка: ${errorData.error || 'Не удалось добавить товар в корзину'}`);
+        // Шаг 9: Обрабатываем ошибку
+        try {
+          const errorData = responseText ? JSON.parse(responseText) : {};
+          console.error('Ошибка от сервера:', errorData);
+          alert(`Ошибка: ${errorData.error || errorData.detail || 'Не удалось добавить товар в корзину'}`);
+        } catch (parseError) {
+          // Если не удалось распарсить ошибку
+          console.error('Не удалось распарсить ошибку:', responseText);
+          alert(`Ошибка: ${response.status} ${response.statusText}`);
+        }
       }
     } catch (error) {
-      console.error('Error adding to cart:', error);
-      alert('Ошибка при добавлении товара в корзину');
+      // Шаг 10: Обрабатываем ошибки сети или другие исключения
+      console.error('Исключение при добавлении в корзину:', error);
+      alert(`Ошибка при добавлении товара в корзину: ${error.message}`);
     } finally {
+      // Шаг 11: Всегда снимаем состояние загрузки
+      // Это выполнится в любом случае (успех или ошибка)
       setAddingToCart(prev => ({ ...prev, [productId]: false }));
     }
   };

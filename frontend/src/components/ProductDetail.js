@@ -32,16 +32,29 @@ function ProductDetail() {
             });
     }, [slug]);
 
+    // Функция для добавления товара в корзину
     const addToCart = async () => {
+        // Шаг 1: Получаем токен из localStorage
         const token = localStorage.getItem('token');
+        
+        // Шаг 2: Проверяем авторизацию
         if (!token) {
             alert('Необходимо войти в систему');
             return;
         }
         
         try {
+            // Шаг 3: Формируем URL API
             const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-            const response = await fetch(`${apiUrl}/cart/cart/add_item/`, {
+            
+            // Логируем для отладки
+            console.log('=== ДОБАВЛЕНИЕ ТОВАРА В КОРЗИНУ ===');
+            console.log('URL:', `${apiUrl}/cart/add_item/`);
+            console.log('Product Slug:', product.slug);
+            
+            // Шаг 4: Отправляем запрос
+            // ВАЖНО: Правильный URL - /api/cart/add_item/ (без двойного cart)
+            const response = await fetch(`${apiUrl}/cart/add_item/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -53,14 +66,28 @@ function ProductDetail() {
                 })
             });
 
+            console.log('Статус ответа:', response.status);
+
+            // Шаг 5: Читаем ответ как текст
+            const responseText = await response.text();
+            console.log('Тело ответа:', responseText);
+
+            // Шаг 6: Обрабатываем ответ
             if (response.ok) {
+                // Успешно добавлено
                 alert('Товар добавлен в корзину!');
             } else {
-                const errorData = await response.json();
-                alert(`Ошибка: ${errorData.error || 'Не удалось добавить товар в корзину'}`);
+                // Ошибка от сервера
+                try {
+                    const errorData = responseText ? JSON.parse(responseText) : {};
+                    alert(`Ошибка: ${errorData.error || errorData.detail || 'Не удалось добавить товар в корзину'}`);
+                } catch (parseError) {
+                    alert(`Ошибка: ${response.status} ${response.statusText}`);
+                }
             }
         } catch (error) {
-            console.error('Error adding to cart:', error);
+            // Шаг 7: Обрабатываем исключения
+            console.error('Исключение при добавлении в корзину:', error);
             alert('Ошибка при добавлении товара в корзину');
         }
     };

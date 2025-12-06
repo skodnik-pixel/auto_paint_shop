@@ -8,7 +8,45 @@ function Home() {
   const [promoProducts, setPromoProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState(new Set());
+  
+  // Состояние для слайдера
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // Данные для слайдов
+  const slides = [
+    {
+      id: 1,
+      title: 'Профессиональная автокосметика',
+      subtitle: 'Лучшие бренды для вашего автомобиля',
+      description: 'Широкий ассортимент автокосметики и автохимии от ведущих производителей',
+      buttonText: 'Перейти в каталог',
+      buttonLink: '/catalog',
+      bgColor: '#E31E24',
+      image: 'https://via.placeholder.com/600x400?text=Автокосметика'
+    },
+    {
+      id: 2,
+      title: 'Скидки до 30%',
+      subtitle: 'Акция на всю продукцию',
+      description: 'Специальные цены на автошампуни, полироли и защитные покрытия',
+      buttonText: 'Смотреть акции',
+      buttonLink: '/catalog',
+      bgColor: '#C41E3A',
+      image: 'https://via.placeholder.com/600x400?text=Акции'
+    },
+    {
+      id: 3,
+      title: 'Бесплатная доставка',
+      subtitle: 'При заказе от 100 BYN',
+      description: 'Доставка по всей Беларуси. Быстро и надёжно',
+      buttonText: 'Узнать подробнее',
+      buttonLink: '/catalog',
+      bgColor: '#FF4444',
+      image: 'https://via.placeholder.com/600x400?text=Доставка'
+    }
+  ];
 
+  // Загрузка товаров
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
@@ -34,6 +72,30 @@ function Home() {
     fetchFeaturedProducts();
   }, []);
 
+  // Автоматическая прокрутка слайдера
+  useEffect(() => {
+    // Таймер для автоматической смены слайдов каждые 5 секунд
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+
+    // Очищаем таймер при размонтировании компонента
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
+  // Функции для управления слайдером
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+
   const toggleFavorite = (productId) => {
     const newFavorites = new Set(favorites);
     if (newFavorites.has(productId)) {
@@ -57,30 +119,77 @@ function Home() {
 
   return (
     <div className="home-page">
-      {/* Желтый промо-баннер */}
-      <div className="promo-banner">
-        <Container>
-          <Row className="align-items-center">
-            <Col md={8}>
-              <div className="promo-content">
-                <h3 className="promo-subtitle">Особые условия только для вас</h3>
-                <h2 className="promo-title">Бесплатная доставка для всех клиентов магазина</h2>
-                <p className="promo-description">Доставка в ПВЗ или до двери!</p>
+      {/* Слайдер */}
+      <div className="hero-slider">
+        <div className="slider-container">
+          {/* Слайды */}
+          <div 
+            className="slides-wrapper" 
+            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+          >
+            {slides.map((slide, index) => (
+              <div 
+                key={slide.id} 
+                className="slide"
+                style={{ backgroundColor: slide.bgColor }}
+              >
+                <Container>
+                  <Row className="align-items-center">
+                    <Col md={6} className="slide-content">
+                      <div className="slide-text">
+                        <h3 className="slide-subtitle">{slide.subtitle}</h3>
+                        <h1 className="slide-title">{slide.title}</h1>
+                        <p className="slide-description">{slide.description}</p>
+                        <Link to={slide.buttonLink}>
+                          <Button variant="light" size="lg" className="slide-button">
+                            {slide.buttonText}
+                          </Button>
+                        </Link>
+                      </div>
+                    </Col>
+                    <Col md={6} className="slide-image-col">
+                      <div className="slide-image-wrapper">
+                        <img 
+                          src={slide.image} 
+                          alt={slide.title}
+                          className="slide-image"
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                </Container>
               </div>
-            </Col>
-            <Col md={4} className="text-end">
-              <div className="promo-image-wrapper">
-                <div className="promo-delivery-box">
-                  <div className="delivery-text">Доставка 24/7</div>
-                </div>
-              </div>
-            </Col>
-          </Row>
-          <div className="promo-arrows">
-            <button className="promo-arrow"><FaChevronLeft /></button>
-            <button className="promo-arrow"><FaChevronRight /></button>
+            ))}
           </div>
-        </Container>
+
+          {/* Кнопки навигации */}
+          <button 
+            className="slider-arrow slider-arrow-left" 
+            onClick={prevSlide}
+            aria-label="Предыдущий слайд"
+          >
+            <FaChevronLeft />
+          </button>
+          <button 
+            className="slider-arrow slider-arrow-right" 
+            onClick={nextSlide}
+            aria-label="Следующий слайд"
+          >
+            <FaChevronRight />
+          </button>
+
+          {/* Индикаторы слайдов */}
+          <div className="slider-indicators">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                className={`slider-indicator ${index === currentSlide ? 'active' : ''}`}
+                onClick={() => goToSlide(index)}
+                aria-label={`Перейти к слайду ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Акционные товары */}
