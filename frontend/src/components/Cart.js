@@ -43,10 +43,7 @@ function Cart() {
 
     const updateQuantity = (itemId, quantity) => {
         const token = localStorage.getItem('token');
-        if (!token) {
-            alert('Пожалуйста, войдите в аккаунт');
-            return;
-        }
+        if (!token) return;
         const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
         // ВАЖНО: Правильный URL - /api/cart/{id}/ (без двойного cart)
         fetch(`${apiUrl}/cart/${cart.id}/`, {
@@ -71,10 +68,7 @@ function Cart() {
 
     const removeItem = (itemId) => {
         const token = localStorage.getItem('token');
-        if (!token) {
-            alert('Пожалуйста, войдите в аккаунт');
-            return;
-        }
+        if (!token) return;
         const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
         // ВАЖНО: Правильный URL - /api/cart/{id}/ (без двойного cart)
         fetch(`${apiUrl}/cart/${cart.id}/`, {

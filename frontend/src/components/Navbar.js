@@ -77,7 +77,6 @@ function CustomNavbar() {
         setUser(null);
         setCartCount(0);
         
-        alert('Вы вышли из системы');
         window.location.href = '/';
     };
 

@@ -82,12 +82,12 @@ function ProductDetail() {
         // Здесь можно добавить сохранение в localStorage или на сервер
     };
 
-    // Функция для добавления товара в корзину
+    // Функция для добавления товара в корзину (БЕЗ ALERT!)
     const addToCart = async () => {
         const token = localStorage.getItem('token');
         
         if (!token) {
-            alert('Необходимо войти в систему');
+            navigate('/login');
             return;
         }
         
@@ -107,22 +107,14 @@ function ProductDetail() {
                 })
             });
 
-            const responseText = await response.text();
-
             if (response.ok) {
-                alert(`${quantity} шт. добавлено в корзину!`);
+                console.log(`✓ ${quantity} шт. добавлено в корзину`);
                 setQuantity(1); // Сбрасываем количество
             } else {
-                try {
-                    const errorData = responseText ? JSON.parse(responseText) : {};
-                    alert(`Ошибка: ${errorData.error || errorData.detail || 'Не удалось добавить товар'}`);
-                } catch (parseError) {
-                    alert(`Ошибка: ${response.status} ${response.statusText}`);
-                }
+                console.error('✗ Ошибка добавления в корзину');
             }
         } catch (error) {
-            console.error('Ошибка при добавлении в корзину:', error);
-            alert('Ошибка при добавлении товара в корзину');
+            console.error('✗ Ошибка сети:', error);
         } finally {
             setAddingToCart(false);
         }

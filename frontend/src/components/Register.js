@@ -80,8 +80,7 @@ function Register() {
                 return;
             }
 
-            // Регистрация успешна
-            alert('Регистрация успешна! Теперь вы можете войти в систему.');
+            // Регистрация успешна - перенаправляем на логин
             navigate('/login');
         } catch (error) {
             console.error('Error during registration:', error);

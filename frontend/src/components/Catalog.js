@@ -49,6 +49,14 @@ const Catalog = () => {
         const brandsData = await brandsRes.json();
         const productsData = await productsRes.json();
 
+        // Логирование для отладки
+        console.log('=== ЗАГРУЗКА ДАННЫХ ===');
+        console.log('Категорий загружено:', categoriesData.results?.length || categoriesData.length);
+        console.log('Брендов загружено:', brandsData.results?.length || brandsData.length);
+        console.log('Товаров загружено:', productsData.results?.length || productsData.length);
+        console.log('Категории:', categoriesData.results || categoriesData);
+        console.log('Бренды:', brandsData.results || brandsData);
+
         setCategories(categoriesData.results || categoriesData);
         setBrands(brandsData.results || brandsData);
         setProducts(productsData.results || productsData);
@@ -63,98 +71,55 @@ const Catalog = () => {
     fetchData();
   }, []);
 
-  // Функция для добавления товара в корзину
+  // Функция для добавления товара в корзину (БЕЗ НАДОЕДЛИВЫХ ALERT!)
   const addToCart = async (productId, productSlug) => {
-    // Шаг 1: Получаем токен авторизации из localStorage
     const token = localStorage.getItem('token');
     
-    // Шаг 2: Проверяем, авторизован ли пользователь
+    // Проверяем авторизацию
     if (!token) {
-      // Если токена нет - показываем сообщение и перенаправляем на страницу входа
-      alert('Пожалуйста, войдите в систему для добавления товаров в корзину');
       navigate('/login');
       return;
     }
 
-    // Шаг 3: Устанавливаем состояние загрузки для этого товара
-    // Это отключит кнопку и покажет индикатор загрузки
+    // Показываем индикатор загрузки на кнопке
     setAddingToCart(prev => ({ ...prev, [productId]: true }));
 
     try {
-      // Шаг 4: Формируем URL для API
       const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
       
-      // Логируем информацию для отладки
-      console.log('=== ДОБАВЛЕНИЕ ТОВАРА В КОРЗИНУ ===');
-      console.log('URL:', `${apiUrl}/cart/add_item/`);
-      console.log('Product Slug:', productSlug);
-      console.log('Token (первые 10 символов):', token.substring(0, 10) + '...');
-
-      // Шаг 5: Отправляем POST запрос на сервер
-      // ВАЖНО: Правильный URL - /api/cart/add_item/ (без двойного cart)
       const response = await fetch(`${apiUrl}/cart/add_item/`, {
-        method: 'POST', // Метод POST для создания/добавления данных
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json', // Указываем, что отправляем JSON
-          'Authorization': `Token ${token}` // Передаём токен для авторизации
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
         },
         body: JSON.stringify({
-          product_slug: productSlug, // Slug товара (например, "jeta-pro")
-          quantity: 1 // Количество товара (всегда 1 при добавлении)
+          product_slug: productSlug,
+          quantity: 1
         })
       });
 
-      // Логируем статус ответа
-      console.log('Статус ответа:', response.status, response.statusText);
-
-      // Шаг 6: Проверяем статус ответа
-      
-      // Если 401 - токен недействителен или истёк
       if (response.status === 401) {
-        alert('Ваша сессия истекла. Пожалуйста, войдите снова.');
-        // Очищаем localStorage и перенаправляем на страницу входа
+        // Сессия истекла - перенаправляем на логин
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         navigate('/login');
         return;
       }
 
-      // Шаг 7: Читаем тело ответа
-      // ВАЖНО: Сначала читаем текст, потом пытаемся распарсить JSON
-      const responseText = await response.text();
-      console.log('Тело ответа (текст):', responseText);
-
-      // Шаг 8: Обрабатываем успешный ответ
       if (response.ok) {
-        // Пытаемся распарсить JSON
-        try {
-          const data = responseText ? JSON.parse(responseText) : {};
-          console.log('Товар добавлен успешно:', data);
-          alert('Товар добавлен в корзину!');
-        } catch (parseError) {
-          // Если не удалось распарсить JSON, но статус успешный
-          console.log('Ответ не является JSON, но операция успешна');
-          alert('Товар добавлен в корзину!');
-        }
+        // Товар успешно добавлен - просто логируем в консоль
+        console.log('✓ Товар добавлен в корзину:', productSlug);
+        // Можно добавить визуальную индикацию успеха (например, изменить цвет кнопки на секунду)
       } else {
-        // Шаг 9: Обрабатываем ошибку
-        try {
-          const errorData = responseText ? JSON.parse(responseText) : {};
-          console.error('Ошибка от сервера:', errorData);
-          alert(`Ошибка: ${errorData.error || errorData.detail || 'Не удалось добавить товар в корзину'}`);
-        } catch (parseError) {
-          // Если не удалось распарсить ошибку
-          console.error('Не удалось распарсить ошибку:', responseText);
-          alert(`Ошибка: ${response.status} ${response.statusText}`);
-        }
+        // Ошибка - логируем в консоль
+        const errorData = await response.json().catch(() => ({}));
+        console.error('✗ Ошибка добавления в корзину:', errorData);
       }
     } catch (error) {
-      // Шаг 10: Обрабатываем ошибки сети или другие исключения
-      console.error('Исключение при добавлении в корзину:', error);
-      alert(`Ошибка при добавлении товара в корзину: ${error.message}`);
+      console.error('✗ Ошибка сети:', error);
     } finally {
-      // Шаг 11: Всегда снимаем состояние загрузки
-      // Это выполнится в любом случае (успех или ошибка)
+      // Убираем индикатор загрузки
       setAddingToCart(prev => ({ ...prev, [productId]: false }));
     }
   };

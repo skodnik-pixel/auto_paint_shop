@@ -52,7 +52,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'DEFAULT_PERMISSION_CLASSES': [],
-    'PAGE_SIZE': 12,
+    'PAGE_SIZE': 100,  # Увеличено для отображения всех товаров
 }
 
 ROOT_URLCONF = 'shop.urls'
