@@ -71,17 +71,15 @@ const Catalog = () => {
     fetchData();
   }, []);
 
-  // Функция для добавления товара в корзину (БЕЗ НАДОЕДЛИВЫХ ALERT!)
+  // Функция для добавления товара в корзину
   const addToCart = async (productId, productSlug) => {
     const token = localStorage.getItem('token');
     
-    // Проверяем авторизацию
     if (!token) {
       navigate('/login');
       return;
     }
 
-    // Показываем индикатор загрузки на кнопке
     setAddingToCart(prev => ({ ...prev, [productId]: true }));
 
     try {
@@ -100,7 +98,6 @@ const Catalog = () => {
       });
 
       if (response.status === 401) {
-        // Сессия истекла - перенаправляем на логин
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         navigate('/login');
@@ -108,18 +105,13 @@ const Catalog = () => {
       }
 
       if (response.ok) {
-        // Товар успешно добавлен - просто логируем в консоль
-        console.log('✓ Товар добавлен в корзину:', productSlug);
-        // Можно добавить визуальную индикацию успеха (например, изменить цвет кнопки на секунду)
+        console.log('✓ Товар добавлен в корзину');
       } else {
-        // Ошибка - логируем в консоль
-        const errorData = await response.json().catch(() => ({}));
-        console.error('✗ Ошибка добавления в корзину:', errorData);
+        console.error('✗ Ошибка добавления в корзину');
       }
     } catch (error) {
       console.error('✗ Ошибка сети:', error);
     } finally {
-      // Убираем индикатор загрузки
       setAddingToCart(prev => ({ ...prev, [productId]: false }));
     }
   };

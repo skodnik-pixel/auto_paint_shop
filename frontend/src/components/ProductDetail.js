@@ -1,7 +1,7 @@
 // frontend/src/components/ProductDetail.js
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Button, Spinner, Badge, Nav, Tab, Alert } from 'react-bootstrap';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
     FaShoppingCart, 
     FaHeart, 
@@ -16,6 +16,7 @@ import {
 
 function ProductDetail() {
     const { slug } = useParams();
+    const navigate = useNavigate();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1); // Количество товара
@@ -29,13 +30,17 @@ function ProductDetail() {
             try {
                 const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
                 
-                // Загружаем товар
-                const response = await fetch(`${apiUrl}/catalog/products/?slug=${slug}`);
+                // Загружаем товар по slug
+                const response = await fetch(`${apiUrl}/catalog/products/`);
                 if (!response.ok) {
                     throw new Error(`Ошибка ${response.status}`);
                 }
                 const data = await response.json();
-                const productData = data.results?.[0] || data[0] || null;
+                
+                // Ищем товар с нужным slug
+                const allProducts = data.results || data;
+                const productData = allProducts.find(p => p.slug === slug);
+                
                 setProduct(productData);
                 
                 // Загружаем похожие товары (из той же категории)
@@ -82,11 +87,18 @@ function ProductDetail() {
         // Здесь можно добавить сохранение в localStorage или на сервер
     };
 
-    // Функция для добавления товара в корзину (БЕЗ ALERT!)
+    // Функция для добавления товара в корзину
     const addToCart = async () => {
         const token = localStorage.getItem('token');
         
+        console.log('=== ДОБАВЛЕНИЕ В КОРЗИНУ ===');
+        console.log('Token:', token ? 'Есть' : 'Нет');
+        console.log('Product:', product?.name);
+        console.log('Slug:', product?.slug);
+        console.log('Quantity:', quantity);
+        
         if (!token) {
+            console.log('Нет токена - перенаправление на логин');
             navigate('/login');
             return;
         }
@@ -95,23 +107,34 @@ function ProductDetail() {
         
         try {
             const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-            const response = await fetch(`${apiUrl}/cart/add_item/`, {
+            const url = `${apiUrl}/cart/add_item/`;
+            const body = { 
+                product_slug: product.slug, 
+                quantity: quantity 
+            };
+            
+            console.log('URL:', url);
+            console.log('Body:', body);
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Token ${token}`
                 },
-                body: JSON.stringify({ 
-                    product_slug: product.slug, 
-                    quantity: quantity 
-                })
+                body: JSON.stringify(body)
             });
 
+            console.log('Response status:', response.status);
+            
             if (response.ok) {
+                const data = await response.json();
+                console.log('✓ Успешно добавлено:', data);
                 console.log(`✓ ${quantity} шт. добавлено в корзину`);
-                setQuantity(1); // Сбрасываем количество
+                setQuantity(1);
             } else {
-                console.error('✗ Ошибка добавления в корзину');
+                const errorText = await response.text();
+                console.error('✗ Ошибка:', response.status, errorText);
             }
         } catch (error) {
             console.error('✗ Ошибка сети:', error);

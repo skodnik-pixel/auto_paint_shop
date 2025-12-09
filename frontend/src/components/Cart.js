@@ -32,11 +32,23 @@ function Cart() {
                 return response.json();
             })
             .then(data => {
-                setCart(data[0] || null); // Первый элемент корзины
+                // API возвращает объект с пагинацией: {results: [...]}
+                // Или массив: [...]
+                let cartData = null;
+                
+                if (data.results && Array.isArray(data.results)) {
+                    cartData = data.results[0]; // Пагинированный ответ
+                } else if (Array.isArray(data)) {
+                    cartData = data[0]; // Массив корзин
+                } else {
+                    cartData = data; // Один объект корзины
+                }
+                
+                setCart(cartData || null);
                 setLoading(false);
             })
             .catch(error => {
-                console.error('Error fetching cart:', error);
+                console.error('✗ Ошибка загрузки корзины:', error);
                 setLoading(false);
             });
     }, []);
