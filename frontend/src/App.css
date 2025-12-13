@@ -142,53 +142,90 @@ body {
   color: var(--text-dark);
 }
 
+/*каталог*/
+
 .nav-link-custom {
   color: var(--text-dark) !important;
   font-weight: 500;
-  margin: 0 15px;
-  font-size: 15px;
-  transition: color 0.2s;
+  text-decoration: none !important;
+  padding: 8px 16px;
+  border: 2px solid var(--black);       /* Черная рамка */
+  border-radius: 8px;                   /* Скругленные углы */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень */
+  transition: all 0.3s ease;            /* Плавная анимация */
+  background: var(--white);             /* Белый фон */
 }
 
 .nav-link-custom:hover {
   color: var(--primary-red) !important;
+  border-color: var(--primary-red);     /* Красная рамка при наведении */
+  box-shadow: 0 6px 12px rgba(227, 30, 36, 0.3); /* Красная тень */
+  transform: translateY(-2px);          /* Поднятие кнопки */
 }
 
-/* Поиск */
+
+/* Поиск - единый блок */
 .search-form {
   flex: 1;
   max-width: 600px;
-  margin: 0 30px;
+  margin: 0 20px;
 }
 
+.search-form .input-group {
+  border: 2px solid var(--black);       /* Единая черная рамка */
+  border-radius: 8px;                   /* Скругленные углы */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень */
+  overflow: hidden;                     /* Скрываем внутренние границы */
+  transition: all 0.3s ease;            /* Плавная анимация */
+  background: var(--white);             /* Белый фон */
+  display: flex;                        /* Flexbox */
+}
+
+.search-form .input-group:hover {
+  border-color: var(--primary-red);     /* Красная рамка при наведении */
+  box-shadow: 0 6px 12px rgba(227, 30, 36, 0.3); /* Красная тень */
+  transform: translateY(-2px);          /* Поднятие всего блока */
+}
+
+/* Поле ввода - без рамок */
 .search-input {
-  border: 1px solid var(--border-color);
-  border-radius: 6px 0 0 6px;
-  padding: 10px 16px;
+  border: none !important;              /* Убираем ВСЕ рамки */
+  border-radius: 0 !important;          /* Убираем скругления */
+  padding: 10px 15px;
   font-size: 14px;
-  transition: border-color 0.2s;
+  box-shadow: none !important;          /* Убираем тень */
+  outline: none !important;             /* Убираем outline */
+  background: transparent;              /* Прозрачный фон */
+  flex: 1;                              /* Занимает всё место */
 }
 
 .search-input:focus {
-  border-color: var(--primary-red);
-  box-shadow: 0 0 0 3px rgba(227, 30, 36, 0.1);
-  outline: none;
+  border: none !important;              /* Никаких рамок при фокусе */
+  box-shadow: none !important;          /* Никаких теней при фокусе */
+  outline: none !important;             /* Никаких outline */
 }
 
+/* Кнопка лупы */
 .search-icon-wrapper {
-  background-color: var(--primary-red);
-  border: 1px solid var(--primary-red);
-  border-left: none;
-  border-radius: 0 6px 6px 0;
-  color: var(--white);
+  background-color: var(--primary-red); /* Красный фон */
+  border: none !important;              /* Никаких рамок */
+  border-radius: 0;                     /* Никаких скруглений */
+  color: var(--white);                  /* Белая иконка */
   cursor: pointer;
-  transition: background-color 0.2s;
-  padding: 0 16px;
+  padding: 10px 15px;                   /* Такой же padding */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
 }
 
 .search-icon-wrapper:hover {
-  background-color: var(--dark-red);
+  background-color: var(--dark-red);    /* Темнее при наведении */
 }
+
+
+
+
 
 /* Формы */
 .form-control {
@@ -232,18 +269,32 @@ body {
   gap: 15px;
 }
 
+/*стили для кнопок навигации*/
+
 .nav-icon-link {
   color: var(--black) !important;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
+  text-decoration: none !important;
   font-weight: 500;
-  text-decoration: none;
+  padding: 8px 16px;                    /* Отступы внутри кнопки */
+  border: 2px solid var(--black);       /* Черная рамка */
+  border-radius: 8px;                   /* Скругленные углы */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень */
+  transition: all 0.3s ease;            /* Плавная анимация */
+  background: var(--white);             /* Белый фон */
 }
 
+/* hover эффект*/
+
 .nav-icon-link:hover {
-  color: var(--primary-yellow) !important;
+  color: var(--primary-red) !important;
+  border-color: var(--primary-red);     /* Красная рамка при наведении */
+  box-shadow: 0 6px 12px rgba(227, 30, 36, 0.3); /* Красная тень */
+  transform: translateY(-2px);          /* Поднятие кнопки */
 }
+
 
 .cart-link {
   position: relative;
