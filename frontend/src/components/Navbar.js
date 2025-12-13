@@ -108,8 +108,11 @@ function CustomNavbar() {
             <Navbar expand="lg" className="main-navbar">
                 <Container fluid>
             <Link to="/" className="navbar-brand navbar-logo">
-                <span className="logo-text">TIME TO BLOW</span>
-                <span className="logo-icon">🎨</span>
+                <img 
+                    src="/images/logo(3).jpg" 
+                    alt="Логотип сайта" 
+                    className="navbar-logo-image"
+                />
             </Link>
                     
                     <Navbar.Toggle aria-controls="basic-navbar-nav" className="navbar-toggle">

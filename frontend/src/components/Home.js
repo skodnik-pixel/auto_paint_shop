@@ -16,23 +16,28 @@ function Home() {
   const slides = [
     {
       id: 1,
-      title: 'Профессиональная автокосметика',
-      subtitle: 'Лучшие бренды для вашего автомобиля',
-      description: 'Широкий ассортимент автокосметики и автохимии от ведущих производителей',
+      title: 'Профессиональные материалы для кузовного ремонта',
+      subtitle: 'Краски, лаки, грунты от ведущих производителей',
+      description: 'NOVOL, BODY, SPECTRAL, JETA PRO - всё для качественного ремонта',
       buttonText: 'Перейти в каталог',
       buttonLink: '/catalog',
       bgColor: '#E31E24',
-      image: 'https://via.placeholder.com/600x400?text=Автокосметика'
+      // Замени на свою картинку! Варианты:
+      // 1. URL из интернета: 'https://example.com/banner1.jpg'
+      // 2. Файл в public/images/: '/images/banner1.jpg'
+      // 3. Placeholder пока нет картинки:
+      image: '/images/ban1.jpg'
     },
     {
       id: 2,
       title: 'Скидки до 30%',
-      subtitle: 'Акция на всю продукцию',
-      description: 'Специальные цены на автошампуни, полироли и защитные покрытия',
+      subtitle: 'Акция на инструменты и оборудование',
+      description: 'Пневмо и электроинструменты, абразивы, малярные материалы',
       buttonText: 'Смотреть акции',
       buttonLink: '/catalog',
       bgColor: '#C41E3A',
-      image: 'https://via.placeholder.com/600x400?text=Акции'
+      // Замени на свою картинку для акций
+      image: '/images/ban2.jpg'
     },
     {
       id: 3,
@@ -42,7 +47,8 @@ function Home() {
       buttonText: 'Узнать подробнее',
       buttonLink: '/catalog',
       bgColor: '#FF4444',
-      image: 'https://via.placeholder.com/600x400?text=Доставка'
+      // Замени на свою картинку для доставки
+      image: '/images/ban3.jpg'
     }
   ];
 
@@ -77,7 +83,7 @@ function Home() {
     // Таймер для автоматической смены слайдов каждые 5 секунд
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, 12000);
 
     // Очищаем таймер при размонтировании компонента
     return () => clearInterval(timer);
@@ -131,11 +137,13 @@ function Home() {
               <div 
                 key={slide.id} 
                 className="slide"
-                style={{ backgroundColor: slide.bgColor }}
+                style={{
+                   backgroundImage:`url(${slide.image})`,
+                   backgroundColor: slide.bgColor }}
               >
                 <Container>
                   <Row className="align-items-center">
-                    <Col md={6} className="slide-content">
+                    <Col md={12} className="slide-content">
                       <div className="slide-text">
                         <h3 className="slide-subtitle">{slide.subtitle}</h3>
                         <h1 className="slide-title">{slide.title}</h1>
@@ -145,15 +153,6 @@ function Home() {
                             {slide.buttonText}
                           </Button>
                         </Link>
-                      </div>
-                    </Col>
-                    <Col md={6} className="slide-image-col">
-                      <div className="slide-image-wrapper">
-                        <img 
-                          src={slide.image} 
-                          alt={slide.title}
-                          className="slide-image"
-                        />
                       </div>
                     </Col>
                   </Row>

@@ -17,9 +17,8 @@ const Catalog = () => {
   
   // Новые фильтры
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
-  const [minRating, setMinRating] = useState('');
   const [inStockOnly, setInStockOnly] = useState(false);
-  const [sortBy, setSortBy] = useState(''); // price-asc, price-desc, rating, name
+  const [sortBy, setSortBy] = useState(''); // price-asc, price-desc, name
 
   useEffect(() => {
     const fetchData = async () => {
@@ -133,15 +132,12 @@ const Catalog = () => {
       // Фильтр по цене
       const matchesMinPrice = !priceRange.min || parseFloat(product.price) >= parseFloat(priceRange.min);
       const matchesMaxPrice = !priceRange.max || parseFloat(product.price) <= parseFloat(priceRange.max);
-      
-      // Фильтр по рейтингу
-      const matchesRating = !minRating || parseFloat(product.rating || 0) >= parseFloat(minRating);
-      
+            
       // Фильтр по наличию
       const matchesStock = !inStockOnly || product.stock > 0;
       
       return matchesCategory && matchesBrand && matchesSearch && 
-             matchesMinPrice && matchesMaxPrice && matchesRating && matchesStock;
+             matchesMinPrice && matchesMaxPrice && matchesStock;
     })
     .sort((a, b) => {
       // Сортировка товаров
@@ -150,8 +146,7 @@ const Catalog = () => {
           return parseFloat(a.price) - parseFloat(b.price);
         case 'price-desc':
           return parseFloat(b.price) - parseFloat(a.price);
-        case 'rating':
-          return parseFloat(b.rating || 0) - parseFloat(a.rating || 0);
+
         case 'name':
           return a.name.localeCompare(b.name);
         default:
@@ -165,7 +160,7 @@ const Catalog = () => {
     setSelectedBrand('');
     setSearchTerm('');
     setPriceRange({ min: '', max: '' });
-    setMinRating('');
+
     setInStockOnly(false);
     setSortBy('');
   };
@@ -291,23 +286,7 @@ const Catalog = () => {
                 />
               </Form.Group>
             </Col>
-            
-            <Col md={2}>
-              <Form.Group>
-                <Form.Label className="fw-bold">Рейтинг от</Form.Label>
-                <Form.Select 
-                  value={minRating} 
-                  onChange={(e) => setMinRating(e.target.value)}
-                  className="filter-select"
-                >
-                  <option value="">Любой</option>
-                  <option value="4">⭐ 4+</option>
-                  <option value="3">⭐ 3+</option>
-                  <option value="2">⭐ 2+</option>
-                  <option value="1">⭐ 1+</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
+                        
             
             <Col md={2}>
               <Form.Group>
@@ -320,7 +299,6 @@ const Catalog = () => {
                   <option value="">По умолчанию</option>
                   <option value="price-asc">Цена: по возрастанию</option>
                   <option value="price-desc">Цена: по убыванию</option>
-                  <option value="rating">По рейтингу</option>
                   <option value="name">По названию</option>
                 </Form.Select>
               </Form.Group>

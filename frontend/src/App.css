@@ -104,6 +104,34 @@ body {
   text-transform: uppercase;
 }
 
+/* Стили для логотипа-картинки */
+.navbar-logo-image {
+  height: calc(100% - 2px); /* На всю высоту панели минус небольшой отступ */
+  width: auto;
+  max-width: 200px;
+  object-fit: contain;
+  transition: opacity 0.3s ease;
+  max-height: 80px; /* Ограничение чтобы не был слишком большой */
+}
+
+
+
+.navbar-logo-image:hover {
+  opacity: 0.8;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .navbar-logo-image {
+    height: calc(100% - 8px);
+    max-width: 150px;
+    max-height: 50px;
+  }
+}
+
+
+
+
 .logo-icon {
   font-size: 28px;
   color: var(--primary-red);
@@ -972,12 +1000,30 @@ hr {
   display: flex;
   align-items: center;
   position: relative;
+  background-size: cover;        /* ← Картинка покрывает весь слайд */
+  background-position: center;   /* ← Центрирование картинки */
+  background-repeat: no-repeat;  /* ← Не повторять картинку */
+  position: relative;            /* ← Для наложения затемнения */
 }
+
+  
+.slide-before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);   /* Полупрозрачное черное наложение */
+  z-index: 1;
+}
+
 
 /* Контент слайда */
 .slide-content {
-  z-index: 2;
+  z-index: 2;                   /* Текст поверх затемнения */
   padding: 40px 0;
+  position: relative;
 }
 
 .slide-text {
