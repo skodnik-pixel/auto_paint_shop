@@ -2558,3 +2558,143 @@ hr {
   background-attachment: fixed;
   min-height: 100vh;
 }
+
+/* Стили для выпадающего меню каталога */
+
+/* Стили для основной кнопки "Каталог" */
+.nav-dropdown-custom .dropdown-toggle {
+  background-color: var(--white) !important;    /* Белый фон кнопки */
+  border: 2px solid var(--black) !important;    /* Черная рамка толщиной 2px */
+  border-radius: 8px;                           /* Скругленные углы радиусом 8px */
+  padding: 8px 16px;                            /* Внутренние отступы: 8px сверху/снизу, 16px слева/справа */
+  color: var(--black) !important;               /* Черный цвет текста */
+  text-decoration: none;                        /* Убираем подчеркивание ссылки */
+  font-weight: 500;                             /* Полужирный шрифт */
+  transition: all 0.3s ease;                    /* Плавная анимация всех изменений за 0.3 секунды */
+}
+
+/* Стили при наведении мыши на кнопку "Каталог" */
+.nav-dropdown-custom .dropdown-toggle:hover {
+  background-color: var(--primary-red) !important; /* Красный фон при наведении */
+  border-color: var(--primary-red) !important;     /* Красная рамка при наведении */
+  color: var(--white) !important;                  /* Белый текст при наведении */
+  transform: translateY(-2px);                     /* Поднимаем кнопку на 2px вверх */
+  box-shadow: 0 6px 12px rgba(227, 30, 36, 0.3);  /* Красная тень: смещение 0px по X, 6px по Y, размытие 12px, прозрачность 30% */
+}
+
+/* Стили для выпадающего списка */
+.nav-dropdown-custom .dropdown-menu {
+  background-color: var(--white);               /* Белый фон выпадающего списка */
+  border: 2px solid var(--black);               /* Черная рамка вокруг списка */
+  border-radius: 8px;                           /* Скругленные углы списка */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);   /* Тень списка: 0px по X, 8px по Y, размытие 25px, прозрачность 15% */
+  margin-top: 5px;                              /* Отступ 5px от кнопки сверху */
+}
+
+/* Стили для элементов внутри выпадающего списка */
+.nav-dropdown-custom .dropdown-item {
+  color: var(--black);                          /* Черный цвет текста пунктов меню */
+  padding: 10px 20px;                           /* Внутренние отступы: 10px сверху/снизу, 20px слева/справа */
+  transition: all 0.3s ease;                    /* Плавная анимация при наведении */
+}
+
+/* Стили при наведении на пункты меню */
+.nav-dropdown-custom .dropdown-item:hover {
+  background-color: var(--primary-red);         /* Красный фон пункта при наведении */
+  color: var(--white);                          /* Белый текст пункта при наведении */
+}
+
+/* Боковая панель фильтров */
+.category-filter-sidebar {
+  position: fixed;                    /* Фиксированное позиционирование */
+  top: 0;                            /* Прижато к верху */
+  right: 0;                          /* Прижато к правому краю */
+  width: 350px;                      /* Ширина панели */
+  height: 100vh;                     /* Высота на весь экран */
+  background-color: var(--white);    /* Белый фон */
+  border-left: 3px solid var(--primary-red); /* Красная левая граница */
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2); /* Тень слева */
+  z-index: 1000;                     /* Поверх всех элементов */
+  transform: translateX(100%);        /* Скрыта справа */
+  transition: transform 0.3s ease;   /* Плавная анимация появления */
+}
+
+.category-filter-sidebar.show {
+  transform: translateX(0);          /* Показать панель */
+}
+
+.filter-sidebar-header {
+  background-color: var(--primary-red); /* Красный заголовок */
+  color: var(--white);               /* Белый текст */
+  padding: 20px;                     /* Внутренние отступы */
+  font-size: 18px;                   /* Размер шрифта */
+  font-weight: 600;                  /* Полужирный */
+}
+
+.filter-sidebar-content {
+  padding: 20px;                     /* Внутренние отступы */
+}
+
+.filter-group {
+  margin-bottom: 20px;               /* Отступ между группами фильтров */
+}
+
+.filter-group label {
+  font-weight: 500;                  /* Полужирные подписи */
+  margin-bottom: 8px;                /* Отступ под подписью */
+  display: block;                    /* Блочный элемент */
+}
+/* Вложенное выпадающее меню для фильтров */
+.nav-dropdown-custom .dropdown-submenu {
+  position: relative;                    /* Относительное позиционирование */
+}
+
+.nav-dropdown-custom .dropdown-submenu .dropdown-menu {
+  position: absolute;                    /* Абсолютное позиционирование подменю */
+  top: 0;                               /* Выравнивание по верху родительского элемента */
+  left: 100%;                           /* Размещение справа от родительского элемента */
+  margin-left: 5px;                     /* Небольшой отступ от родительского меню */
+  width: 250px;                         /* Ширина подменю с фильтрами */
+  display: none;                        /* Скрыто по умолчанию */
+  border: none;                         /* Убираем рамку у dropdown-menu */
+  background: transparent;              /* Убираем фон у dropdown-menu */
+  box-shadow: none;                     /* Убираем тень у dropdown-menu */
+  padding: 0;                           /* Убираем отступы у dropdown-menu */
+}
+
+.nav-dropdown-custom .dropdown-submenu:hover .dropdown-menu {
+  display: block;                       /* Показать при наведении */
+}
+
+/* Стили для фильтров в подменю */
+.filter-submenu {
+  padding: 15px;                        /* Внутренние отступы */
+  background-color: var(--white);       /* Белый фон */
+  border: 2px solid var(--black);       /* Черная рамка */
+  border-radius: 8px;                   /* Скругленные углы */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* Тень */
+}
+
+
+
+.filter-submenu .form-group {
+  margin-bottom: 12px;                  /* Отступ между полями */
+}
+
+.filter-submenu label {
+  font-size: 12px;                      /* Маленький размер подписей */
+  font-weight: 500;                     /* Полужирные подписи */
+  margin-bottom: 4px;                   /* Маленький отступ */
+  display: block;                       /* Блочный элемент */
+}
+
+.filter-submenu .form-control,
+.filter-submenu .form-select {
+  font-size: 12px;                      /* Маленький размер текста */
+  padding: 6px 10px;                    /* Компактные отступы */
+}
+
+.filter-submenu .btn {
+  font-size: 12px;                      /* Маленький размер кнопки */
+  padding: 8px 16px;                    /* Компактные отступы кнопки */
+}

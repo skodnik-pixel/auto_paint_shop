@@ -1,7 +1,7 @@
 // frontend/src/components/Navbar.js
 import React, { useEffect, useState } from 'react';
-import { Navbar, Nav, Badge, Container, Row, Col, Form, InputGroup } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Navbar, Nav, Badge, Container, Row, Col, Form, InputGroup, NavDropdown } from 'react-bootstrap';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaHeart, FaShoppingCart, FaSearch, FaBars, FaUser } from 'react-icons/fa';
 
 function CustomNavbar() {
@@ -9,6 +9,10 @@ function CustomNavbar() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
     const [user, setUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+
+    const navigate = useNavigate();
+
+
 
     useEffect(() => {
         // Загружаем данные пользователя из localStorage
@@ -52,6 +56,9 @@ function CustomNavbar() {
                 .catch(error => console.error('Error fetching cart:', error));
         }
     }, [isAuthenticated]);
+
+
+
 
     const handleLogout = async () => {
         const token = localStorage.getItem('token');
@@ -121,7 +128,150 @@ function CustomNavbar() {
                     
                     <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className="me-auto">
-                            <Link to="/catalog" className="nav-link nav-link-custom">Каталог</Link>
+                            <NavDropdown title="Каталог" id="catalog-dropdown" className="nav-dropdown-custom">
+                                <NavDropdown.Item href="/catalog">Все товары</NavDropdown.Item>
+                                <NavDropdown.Divider />
+                                
+                                {/* Краски с подменю фильтров */}
+                                <div className="dropdown-submenu">
+                                    <NavDropdown.Item href="/catalog?category=paints">Краски</NavDropdown.Item>
+                                    <div className="dropdown-menu">
+                                        <div className="filter-submenu">
+                                            
+                                            <div className="form-group">
+                                                <label>Бренд</label>
+                                                <select className="form-select">
+                                                    <option>Все бренды</option>
+                                                    <option>NOVOL</option>
+                                                    <option>BODY</option>
+                                                    <option>SPECTRAL</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Цена от</label>
+                                                <input type="number" className="form-control" placeholder="Мин" />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Цена до</label>
+                                                <input type="number" className="form-control" placeholder="Макс" />
+                                            </div>
+                                            <button className="btn btn-primary btn-sm w-100">Применить</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Грунты с подменю фильтров */}
+                                <div className="dropdown-submenu">
+                                    <NavDropdown.Item href="/catalog?category=primers">Грунты</NavDropdown.Item>
+                                    <div className="dropdown-menu">
+                                        <div className="filter-submenu">
+                                            
+                                            <div className="form-group">
+                                                <label>Бренд</label>
+                                                <select className="form-select">
+                                                    <option>Все бренды</option>
+                                                    <option>NOVOL</option>
+                                                    <option>BODY</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Цена от</label>
+                                                <input type="number" className="form-control" placeholder="Мин" />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Цена до</label>
+                                                <input type="number" className="form-control" placeholder="Макс" />
+                                            </div>
+                                            <button className="btn btn-primary btn-sm w-100">Применить</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Шпатлевки с подменю фильтров */}
+                                <div className="dropdown-submenu">
+                                    <NavDropdown.Item href="/catalog?category=putties">Шпатлевки</NavDropdown.Item>
+                                    <div className="dropdown-menu">
+                                        <div className="filter-submenu">
+                                            
+                                            <div className="form-group">
+                                                <label>Бренд</label>
+                                                <select className="form-select">
+                                                    <option>Все бренды</option>
+                                                    <option>NOVOL</option>
+                                                    <option>BODY</option>
+                                                    <option>SPECTRAL</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Цена от</label>
+                                                <input type="number" className="form-control" placeholder="Мин" />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Цена до</label>
+                                                <input type="number" className="form-control" placeholder="Макс" />
+                                            </div>
+                                            <button className="btn btn-primary btn-sm w-100">Применить</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Инструменты с подменю фильтров */}
+                                <div className="dropdown-submenu">
+                                    <NavDropdown.Item href="/catalog?category=tools">Инструменты</NavDropdown.Item>
+                                    <div className="dropdown-menu">
+                                        <div className="filter-submenu">
+                                            
+                                            <div className="form-group">
+                                                <label>Бренд</label>
+                                                <select className="form-select">
+                                                    <option>Все бренды</option>
+                                                    <option>SATA</option>
+                                                    <option>DeVilbiss</option>
+                                                    <option>3M</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Цена от</label>
+                                                <input type="number" className="form-control" placeholder="Мин" />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Цена до</label>
+                                                <input type="number" className="form-control" placeholder="Макс" />
+                                            </div>
+                                            <button className="btn btn-primary btn-sm w-100">Применить</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Абразивы с подменю фильтров */}
+                                <div className="dropdown-submenu">
+                                    <NavDropdown.Item href="/catalog?category=abrasives">Абразивы</NavDropdown.Item>
+                                    <div className="dropdown-menu">
+                                        <div className="filter-submenu">
+                                            
+                                            <div className="form-group">
+                                                <label>Бренд</label>
+                                                <select className="form-select">
+                                                    <option>Все бренды</option>
+                                                    <option>3M</option>
+                                                    <option>Mirka</option>
+                                                    <option>NORTON</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Цена от</label>
+                                                <input type="number" className="form-control" placeholder="Мин" />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Цена до</label>
+                                                <input type="number" className="form-control" placeholder="Макс" />
+                                            </div>
+                                            <button className="btn btn-primary btn-sm w-100">Применить</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </NavDropdown>
+
                         </Nav>
                         
                         {/* Поиск */}
@@ -175,9 +325,12 @@ function CustomNavbar() {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
+                        
+
         </>
     );
 }
+
 
 export default CustomNavbar;
 
