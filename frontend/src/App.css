@@ -71,10 +71,12 @@ body {
 
 /* Основная навигационная панель */
 .main-navbar {
-  background-color: var(--white) !important;
-  border-bottom: 1px solid var(--border-color);
+  background-color: transparent !important; /* Полностью прозрачный фон панели */
+  backdrop-filter: none;              /* Убираем размытие */
+  -webkit-backdrop-filter: none;      /* Для Safari */
+  border-bottom: none;                /* Убираем границу */
   padding: 20px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: none;                   /* Убираем тень */
 }
 
 .navbar-logo {
@@ -2490,4 +2492,69 @@ hr {
     .filter-checkbox .form-check-label {
         font-size: 14px;
     }
+}
+
+/* Стили главной страницы */
+.home-page {
+  position: relative;
+}
+
+.home-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1); /* Легкое белое наложение */
+  z-index: 1;
+}
+
+.home-page > * {
+  position: relative;
+  z-index: 2; /* Контент поверх наложения */
+}
+/* Эффект при скролле для навигации */
+.main-navbar.scrolled {
+  background-color: rgba(255, 255, 255, 0.95) !important; /* Менее прозрачный при скролле */
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15); /* Более выраженная тень */
+}
+
+/* Кнопки навигации - непрозрачные */
+.main-navbar .nav-link-custom,
+.main-navbar .nav-icon-link {
+  text-shadow: none;                  /* Убираем тень для текста */
+  background-color: var(--white) !important; /* Белый непрозрачный фон кнопок */
+  border-color: var(--black) !important; /* Черные рамки */
+  color: var(--black) !important; /* Черный текст */
+}
+
+.main-navbar .nav-link-custom:hover,
+.main-navbar .nav-icon-link:hover {
+  background-color: var(--primary-red) !important; /* Красный фон при наведении */
+  color: var(--white) !important; /* Белый текст */
+}
+
+/* Поиск - непрозрачный */
+.main-navbar .search-form .input-group {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень для поиска */
+  background-color: var(--white); /* Белый непрозрачный фон */
+  border: 2px solid var(--black); /* Черная рамка */
+}
+
+.main-navbar .search-input {
+  background-color: var(--white) !important; /* Белый непрозрачный фон поля ввода */
+  color: var(--black) !important; /* Черный текст */
+}
+
+.main-navbar .search-input::placeholder {
+  color: var(--medium-gray) !important; /* Серый placeholder */
+}
+/* Фон для всего приложения */
+.app-background {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
 }

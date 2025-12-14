@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Badge, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { FaHeart, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
+
 function Home() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [promoProducts, setPromoProducts] = useState([]);

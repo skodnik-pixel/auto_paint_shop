@@ -12,30 +12,38 @@ import Register from './components/Register';
 import ProductDetail from './components/ProductDetail';
 import CreateProduct from './components/CreateProduct';
 import Profile from './components/Profile';
+import backgroundImage from './assets/images/background.jpg';
 
 function App() {
     return (
-        <Router>
-            {/* Шапка сайта */}
-            <Navbar />
-            
-            {/* Основной контент */}
-            <div className="main-content">
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/catalog" element={<Catalog />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/product/:slug" element={<ProductDetail />} />
-                    <Route path="/create-product" element={<CreateProduct />} />
-                    <Route path="/profile" element={<Profile />} />
-                </Routes>
-            </div>
-            
-            {/* Футер сайта */}
-            <Footer />
-        </Router>
+        <div 
+            className="App app-background"
+            style={{
+                backgroundImage: `url(${backgroundImage})`
+            }}
+        >
+            <Router>
+                {/* Шапка сайта */}
+                <Navbar />
+                
+                {/* Основной контент */}
+                <div className="main-content">
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/catalog" element={<Catalog />} />
+                        <Route path="/cart" element={<Cart />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        <Route path="/product/:slug" element={<ProductDetail />} />
+                        <Route path="/create-product" element={<CreateProduct />} />
+                        <Route path="/profile" element={<Profile />} />
+                    </Routes>
+                </div>
+                
+                {/* Футер сайта */}
+                <Footer />
+            </Router>
+        </div>
     );
 }
 
