@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge, Spinner, Alert, Form, Button } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+// Добавляем useSearchParams для чтения URL параметров
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 const Catalog = () => {
   const [products, setProducts] = useState([]);
@@ -14,6 +15,7 @@ const Catalog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [addingToCart, setAddingToCart] = useState({});
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   
   // Новые фильтры
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
@@ -69,6 +71,49 @@ const Catalog = () => {
 
     fetchData();
   }, []);
+
+  // useEffect для обработки URL параметров поиска, категорий и фильтров подменю
+  useEffect(() => {
+      // Получаем параметр search из URL (?search=краска)
+      const searchFromUrl = searchParams.get('search');
+      if (searchFromUrl) {
+          // Устанавливаем поисковый запрос из URL
+          setSearchTerm(searchFromUrl);
+      }
+      
+      // Получаем параметр category из URL (?category=kraski)
+      const categoryFromUrl = searchParams.get('category');
+      if (categoryFromUrl) {
+          // Устанавливаем выбранную категорию из URL
+          setSelectedCategory(categoryFromUrl);
+      }
+      
+      // НОВЫЕ ПАРАМЕТРЫ ДЛЯ ПОДМЕНЮ ФИЛЬТРОВ
+      // Получаем параметр brand из URL (?brand=novol)
+      const brandFromUrl = searchParams.get('brand');
+      if (brandFromUrl) {
+          // Устанавливаем выбранный бренд из URL
+          setSelectedBrand(brandFromUrl);
+      }
+      
+      // Получаем параметры цены из URL (?price_min=10&price_max=100)
+      const priceMinFromUrl = searchParams.get('price_min');
+      const priceMaxFromUrl = searchParams.get('price_max');
+      if (priceMinFromUrl || priceMaxFromUrl) {
+          // Устанавливаем диапазон цен из URL
+          setPriceRange({
+              min: priceMinFromUrl || '',
+              max: priceMaxFromUrl || ''
+          });
+      }
+      
+      console.log('=== ОБРАБОТКА URL ПАРАМЕТРОВ ===');
+      console.log('Поиск:', searchFromUrl);
+      console.log('Категория:', categoryFromUrl);
+      console.log('Бренд:', brandFromUrl);
+      console.log('Цена от:', priceMinFromUrl);
+      console.log('Цена до:', priceMaxFromUrl);
+  }, [searchParams]);
 
   // Функция для добавления товара в корзину
   const addToCart = async (productId, productSlug) => {
@@ -184,140 +229,14 @@ const Catalog = () => {
 
   return (
     <Container className="my-5">
-      <div className="text-center mb-5">
-        <h1>Каталог товаров</h1>
-        <p className="text-muted">Профессиональная автокосметика и автохимия</p>
-      </div>
+      {/* УБИРАЕМ ЗАГОЛОВОК КАТАЛОГА - ЗАДАЧА №7 
+      Заголовок "Каталог товаров" и описание убраны для чистоты интерфейса
+      */}
 
-      {/* Панель фильтров */}
-      <Card className="filters-card mb-4">
-        <Card.Body>
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 className="mb-0">Фильтры</h5>
-            <Button 
-              variant="outline-secondary" 
-              size="sm"
-              onClick={resetFilters}
-            >
-              Сбросить все
-            </Button>
-          </div>
-          
-          {/* Первая строка фильтров */}
-          <Row className="mb-3">
-            <Col md={3}>
-              <Form.Group>
-                <Form.Label className="fw-bold">Категория</Form.Label>
-                <Form.Select 
-                  value={selectedCategory} 
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="filter-select"
-                >
-                  <option value="">Все категории</option>
-                  {categories.map(category => (
-                    <option key={category.id} value={category.slug}>
-                      {category.name}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            
-            <Col md={3}>
-              <Form.Group>
-                <Form.Label className="fw-bold">Бренд</Form.Label>
-                <Form.Select 
-                  value={selectedBrand} 
-                  onChange={(e) => setSelectedBrand(e.target.value)}
-                  className="filter-select"
-                >
-                  <option value="">Все бренды</option>
-                  {brands.map(brand => (
-                    <option key={brand.id} value={brand.slug}>
-                      {brand.name}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            
-            <Col md={6}>
-              <Form.Group>
-                <Form.Label className="fw-bold">Поиск</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Поиск товаров..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="filter-input"
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          
-          {/* Вторая строка фильтров */}
-          <Row>
-            <Col md={3}>
-              <Form.Group>
-                <Form.Label className="fw-bold">Цена от (BYN)</Form.Label>
-                <Form.Control
-                  type="number"
-                  placeholder="Мин. цена"
-                  value={priceRange.min}
-                  onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
-                  className="filter-input"
-                  min="0"
-                  step="0.01"
-                />
-              </Form.Group>
-            </Col>
-            
-            <Col md={3}>
-              <Form.Group>
-                <Form.Label className="fw-bold">Цена до (BYN)</Form.Label>
-                <Form.Control
-                  type="number"
-                  placeholder="Макс. цена"
-                  value={priceRange.max}
-                  onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
-                  className="filter-input"
-                  min="0"
-                  step="0.01"
-                />
-              </Form.Group>
-            </Col>
-                        
-            
-            <Col md={2}>
-              <Form.Group>
-                <Form.Label className="fw-bold">Сортировка</Form.Label>
-                <Form.Select 
-                  value={sortBy} 
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="filter-select"
-                >
-                  <option value="">По умолчанию</option>
-                  <option value="price-asc">Цена: по возрастанию</option>
-                  <option value="price-desc">Цена: по убыванию</option>
-                  <option value="name">По названию</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            
-            <Col md={2} className="d-flex align-items-end">
-              <Form.Group>
-                <Form.Check 
-                  type="checkbox"
-                  label="Только в наличии"
-                  checked={inStockOnly}
-                  onChange={(e) => setInStockOnly(e.target.checked)}
-                  className="filter-checkbox"
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+      {/* УБИРАЕМ БЛОК ФИЛЬТРОВ - ЗАДАЧА №2 
+      Панель фильтров закомментирована для упрощения интерфейса
+      Поиск теперь работает через навигацию
+      */}
 
       {/* Результаты поиска */}
       {filteredProducts.length === 0 ? (

@@ -20,12 +20,12 @@ function Footer() {
       <div className="footer-main">
         <Container>
           <Row>
-            {/* Колонка 1: О компании */}
+            {/* Колонка 1: О компании - обновленная информация для магазина кузовного ремонта */}
             <Col lg={3} md={6} className="footer-column">
               <h5 className="footer-title">TIME TO BLOW</h5>
               <p className="footer-description">
-                Профессиональная автокосметика и автохимия. 
-                Широкий ассортимент товаров от ведущих производителей.
+                Профессиональные материалы для кузовного ремонта и покраски автомобилей. 
+                Краски, грунты, шпатлевки, абразивы и инструменты от ведущих мировых брендов.
               </p>
               {/* Социальные сети */}
               <div className="footer-social">
@@ -44,60 +44,69 @@ function Footer() {
               </div>
             </Col>
 
-            {/* Колонка 2: Информация */}
+            {/* Колонка 2: Информация - обновленные ссылки для кузовного ремонта */}
             <Col lg={3} md={6} className="footer-column">
               <h5 className="footer-title">Информация</h5>
               <ul className="footer-links">
-                <li><Link to="/catalog">Каталог товаров</Link></li>
+                <li><Link to="/catalog">Каталог материалов</Link></li>
                 <li><Link to="/about">О компании</Link></li>
+                <li><Link to="/paint-selection">Подбор краски по коду</Link></li>
                 <li><Link to="/delivery">Доставка и оплата</Link></li>
-                <li><Link to="/warranty">Гарантия и возврат</Link></li>
+                <li><Link to="/warranty">Гарантия качества</Link></li>
                 <li><Link to="/contacts">Контакты</Link></li>
               </ul>
             </Col>
 
-            {/* Колонка 3: Покупателям */}
+            {/* Колонка 3: Покупателям - специализированные услуги для кузовного ремонта */}
             <Col lg={3} md={6} className="footer-column">
               <h5 className="footer-title">Покупателям</h5>
               <ul className="footer-links">
                 <li><Link to="/how-to-order">Как сделать заказ</Link></li>
-                <li><Link to="/payment">Способы оплаты</Link></li>
+                <li><Link to="/wholesale">Оптовым покупателям</Link></li>
                 <li><Link to="/pickup">Пункты самовывоза</Link></li>
-                <li><Link to="/discount">Дисконтная программа</Link></li>
+                <li><Link to="/technical-support">Техническая поддержка</Link></li>
+                <li><Link to="/color-matching">Компьютерный подбор цвета</Link></li>
                 <li><Link to="/faq">Вопросы и ответы</Link></li>
               </ul>
             </Col>
 
-            {/* Колонка 4: Контакты */}
+            {/* Колонка 4: Контакты - реальные контакты для магазина кузовного ремонта */}
             <Col lg={3} md={6} className="footer-column">
               <h5 className="footer-title">Контакты</h5>
               <ul className="footer-contacts">
                 <li>
                   <FaPhone className="contact-icon" />
                   <div className="contact-info">
-                    <a href="tel:+375333550203">+375 (33) 355-02-03</a>
-                    <span className="contact-label">Звонки и Viber</span>
+                    <a href="tel:+375291234567">+375 (29) 123-45-67</a>
+                    <span className="contact-label">Основной номер</span>
+                  </div>
+                </li>
+                <li>
+                  <FaPhone className="contact-icon" />
+                  <div className="contact-info">
+                    <a href="tel:+375331234567">+375 (33) 123-45-67</a>
+                    <span className="contact-label">Viber, Telegram</span>
                   </div>
                 </li>
                 <li>
                   <FaEnvelope className="contact-icon" />
                   <div className="contact-info">
-                    <a href="mailto:info@timetoblow.by">info@timetoblow.by</a>
-                    <span className="contact-label">Email для связи</span>
+                    <a href="mailto:info@bodyrepair.by">info@timetoblow.by</a>
+                    <span className="contact-label">Email для заказов</span>
                   </div>
                 </li>
                 <li>
                   <FaMapMarkerAlt className="contact-icon" />
                   <div className="contact-info">
-                    <span>г. Минск, ул. Примерная, 123</span>
-                    <span className="contact-label">Наш адрес</span>
+                    <span>г. Минск, ул. Промышленная, 15А</span>
+                    <span className="contact-label">Склад и магазин</span>
                   </div>
                 </li>
                 <li>
                   <FaClock className="contact-icon" />
                   <div className="contact-info">
-                    <span>пн-пт: 09:00 - 18:00</span>
-                    <span>сб: 09:00 - 13:00, вс: выходной</span>
+                    <span>пн-пт: 08:00 - 19:00</span>
+                    <span>сб: 09:00 - 15:00, вс: выходной</span>
                   </div>
                 </li>
               </ul>
@@ -111,7 +120,7 @@ function Footer() {
         <Container>
           <Row className="align-items-center">
             <Col md={6} className="footer-copyright">
-              <p>&copy; {new Date().getFullYear()} TIME TO BLOW. Все права защищены.</p>
+              <p>&copy; {new Date().getFullYear()} TIME TO BLOW. Все права защищены. by Skodnik.</p>
             </Col>
             <Col md={6} className="footer-payment">
               <div className="payment-methods">

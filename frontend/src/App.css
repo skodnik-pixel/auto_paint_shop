@@ -310,6 +310,30 @@ body {
   padding: 2px 6px;
 }
 
+/* Стили для кнопки избранного */
+.favorites-link {
+  /* position: relative - для позиционирования бейджа */
+  position: relative;
+}
+
+/* Бейдж с количеством товаров в избранном */
+.favorites-badge {
+  /* position: absolute - абсолютное позиционирование относительно кнопки */
+  position: absolute;
+  /* top: -8px - поднимаем бейдж на 8px выше кнопки */
+  top: -8px;
+  /* right: -8px - сдвигаем бейдж на 8px правее кнопки */
+  right: -8px;
+  /* font-size: 0.7rem - маленький размер текста */
+  font-size: 0.7rem;
+  /* padding: 2px 6px - внутренние отступы бейджа */
+  padding: 2px 6px;
+  /* background-color: #ffc107 - желтый фон (warning цвет Bootstrap) */
+  background-color: #ffc107 !important;
+  /* color: #000 - черный текст для контраста с желтым фоном */
+  color: #000 !important;
+}
+
 /* Желтый промо-баннер */
 .promo-banner {
   background: linear-gradient(135deg, var(--primary-yellow) 0%, var(--dark-yellow) 100%);
@@ -394,46 +418,46 @@ body {
   transform: scale(1.1);
 }
 
-/* Секция акционных товаров */
-.section-header {
+/* Сетка товаров 2 ряда по 5 штук */
+.products-grid-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);  /* 5 колонок */
+  grid-template-rows: repeat(2, 1fr);     /* 2 ряда */
+  gap: 16px;  /* Отступы между карточками */
   margin-bottom: 30px;
 }
 
-.section-title {
-  font-size: 2rem;
-  font-weight: 900;
-  color: var(--black);
-  margin: 0;
-}
-
-.promo-products-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-  overflow-x: auto;
-  padding-bottom: 10px;
+.product-grid-item {
+  width: 100%;
+  height: 100%;
 }
 
 .promo-product-col {
   flex: 0 0 auto;
-  width: 220px;
-  min-width: 220px;
-  padding: 0 10px;
+  width: 180px;  /* Уменьшили с 220px до 180px */
+  min-width: 180px;  /* Уменьшили с 220px до 180px */
+  padding: 0 8px;  /* Уменьшили с 10px до 8px */
 }
 
 .promo-product-card {
-  border: 2px solid var(--black);
-  border-radius: 10px;
+  border: 1px solid var(--border-color);  /* Изменили с 2px solid var(--black) */
+  border-radius: 6px;  /* Уменьшили с 10px до 6px */
   overflow: hidden;
   position: relative;
   background: var(--white);
   transition: all 0.3s;
-  height: 100%;
+  /* height: 280px; - убираем фиксированную высоту */
+  min-height: 280px;  /* Минимальная высота 280px, но может быть больше если нужно */
+  /* display: flex - делаем карточку flex-контейнером */
+  display: flex;
+  /* flex-direction: column - вертикальное расположение элементов */
+  flex-direction: column;
 }
 
 .promo-product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);  /* Уменьшили с -5px до -2px */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);  /* Уменьшили тень */
+  border-color: var(--primary-red);  /* Добавили красную рамку при наведении */
 }
 
 .product-favorite {
@@ -457,16 +481,33 @@ body {
   background-color: var(--primary-yellow);
 }
 
+/* Стили для звездочки избранного */
 .product-favorite .favorite-active {
-  color: var(--red);
-  fill: var(--red);
+  /* color: #ffc107 - желтый цвет для активной звездочки (как настоящая звезда) */
+  color: #ffc107;
+  /* fill: #ffc107 - заливка SVG иконки желтым цветом */
+  fill: #ffc107;
+}
+
+/* Неактивная звездочка (серая) */
+.product-favorite svg {
+  /* color: #ccc - серый цвет для неактивной звездочки */
+  color: #ccc;
+  /* transition: color 0.3s - плавная анимация изменения цвета */
+  transition: color 0.3s;
+}
+
+/* При наведении на звездочку */
+.product-favorite:hover svg {
+  /* color: #ffc107 - желтый цвет при наведении */
+  color: #ffc107;
 }
 
 .product-image-wrapper {
-  padding: 20px;
+  padding: 12px;  /* Уменьшили с 20px до 12px */
   background: var(--light-gray);
   text-align: center;
-  height: 200px;
+  height: 140px;  /* СИЛЬНО уменьшили с 200px до 140px */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -474,12 +515,28 @@ body {
 
 .product-image {
   max-width: 100%;
-  max-height: 160px;
+  max-height: 120px;  /* Уменьшили с 160px до 120px */
   object-fit: contain;
 }
 
 .product-card-body {
-  padding: 15px;
+  padding: 12px;  /* Уменьшили с 15px до 12px */
+}
+
+/* Тело карточки растягивается и прижимает кнопку к низу */
+.promo-product-card .product-card-body {
+  /* flex: 1 - занимает все доступное пространство */
+  flex: 1;
+  /* display: flex - делаем тело карточки flex-контейнером */
+  display: flex;
+  /* flex-direction: column - вертикальное расположение */
+  flex-direction: column;
+}
+
+/* Ссылка с кнопкой прижимается к низу */
+.promo-product-card .product-detail-link {
+  /* margin-top: auto - прижимаем кнопку к низу карточки */
+  margin-top: auto;
 }
 
 .product-price-section {
@@ -491,7 +548,7 @@ body {
 }
 
 .product-current-price {
-  font-size: 1.3rem;
+  font-size: 16px;  /* Уменьшили с 1.3rem до 16px */
   font-weight: 900;
   color: var(--black);
 }
@@ -511,12 +568,12 @@ body {
 }
 
 .product-name {
-  font-size: 0.95rem;
+  font-size: 12px;  /* Уменьшили с 0.95rem до 12px */
   font-weight: 600;
   color: var(--text-dark);
   margin: 0;
   line-height: 1.3;
-  min-height: 40px;
+  min-height: 32px;  /* Уменьшили с 40px до 32px */
 }
 
 .promo-pagination {
@@ -541,38 +598,38 @@ body {
   border-radius: 5px;
 }
 
-/* Карточки товаров - современный дизайн */
+/* Карточки товаров - КОМПАКТНАЯ ВЕРСИЯ для 2 рядов */
 .product-card {
   transition: all 0.3s ease;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 6px;  /* Уменьшили с 8px до 6px */
   background: var(--white);
   overflow: hidden;
-  height: 100%;
+  height: 280px;  /* ФИКСИРОВАННАЯ высота для компактности */
   display: flex;
   flex-direction: column;
 }
 
 .product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);  /* Уменьшили с -4px до -2px */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);  /* Уменьшили тень */
   border-color: var(--primary-red);
 }
 
 .product-card .card-body {
-  padding: 16px;
+  padding: 12px;  /* Уменьшили с 16px до 12px */
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 }
 
 .product-card .card-title {
-  font-size: 14px;
+  font-size: 12px;  /* Уменьшили с 14px до 12px */
   font-weight: 500;
   color: var(--text-dark);
-  line-height: 1.4;
-  margin-bottom: 12px;
-  min-height: 40px;
+  line-height: 1.3;  /* Уменьшили с 1.4 до 1.3 */
+  margin-bottom: 8px;  /* Уменьшили с 12px до 8px */
+  min-height: 32px;  /* Уменьшили с 40px до 32px */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -580,23 +637,23 @@ body {
 }
 
 .product-card .card-text {
-  font-size: 13px;
+  font-size: 11px;  /* Уменьшили с 13px до 11px */
   color: var(--text-light);
-  line-height: 1.5;
-  margin-bottom: 12px;
+  line-height: 1.4;  /* Уменьшили с 1.5 до 1.4 */
+  margin-bottom: 8px;  /* Уменьшили с 12px до 8px */
 }
 
 .product-card img {
   width: 100%;
-  height: 200px;
+  height: 140px;  /* СИЛЬНО уменьшили с 200px до 140px */
   object-fit: contain;
-  padding: 20px;
+  padding: 12px;  /* Уменьшили с 20px до 12px */
   background: var(--light-gray);
   transition: transform 0.3s;
 }
 
 .product-card:hover img {
-  transform: scale(1.05);
+  transform: scale(1.03);  /* Уменьшили с 1.05 до 1.03 */
 }
 
 /* Кнопки - современный дизайн */
@@ -690,8 +747,34 @@ body {
   }
   
   .promo-product-col {
-    width: 180px;
-    min-width: 180px;
+    width: 150px;  /* Еще меньше для мобильных */
+    min-width: 150px;
+  }
+  
+  .promo-product-card {
+    height: 240px;  /* Еще меньше для мобильных */
+  }
+  
+  .product-image-wrapper {
+    height: 120px;  /* Уменьшили для мобильных */
+    padding: 8px;
+  }
+  
+  .product-image {
+    max-height: 100px;  /* Уменьшили для мобильных */
+  }
+  
+  .product-card-body {
+    padding: 8px;  /* Меньше отступы */
+  }
+  
+  .product-name {
+    font-size: 11px;
+    min-height: 28px;
+  }
+  
+  .product-current-price {
+    font-size: 14px;
   }
   
   .nav-icons {
@@ -750,6 +833,55 @@ body {
   color: var(--primary-red) !important;
   font-weight: 700;
   font-size: 20px;
+}
+
+/* Цены в карточках - компактные */
+.product-card .h5.text-primary {
+  font-size: 16px !important;  /* Уменьшили с 20px до 16px */
+  font-weight: 700;
+  margin-bottom: 8px;  /* Добавили отступ */
+}
+
+/* Кнопки в карточках - компактные */
+.product-card .btn {
+  padding: 6px 12px;  /* Уменьшили отступы */
+  font-size: 12px;    /* Уменьшили размер текста */
+  border-radius: 4px; /* Уменьшили скругление */
+}
+
+/* Стили для кнопки "Подробнее" в карточках товаров */
+.product-detail-link {
+  /* text-decoration: none - убираем подчеркивание у ссылки */
+  text-decoration: none;
+  /* display: block - делаем ссылку блочным элементом для правильного отображения */
+  display: block;
+  /* margin-top: auto - прижимаем кнопку к низу карточки */
+  margin-top: auto;
+}
+
+.product-detail-btn {
+  /* width: 100% - кнопка занимает всю ширину карточки */
+  width: 100%;
+  /* margin-top: 8px - отступ сверху от названия товара */
+  margin-top: 8px;
+  /* font-size: 11px - маленький размер текста для компактности */
+  font-size: 11px;
+  /* padding: 6px 12px - внутренние отступы кнопки (вертикальные, горизонтальные) */
+  padding: 6px 12px;
+  /* font-weight: 600 - полужирный шрифт */
+  font-weight: 600;
+  /* border-radius: 4px - скругленные углы */
+  border-radius: 4px;
+  /* transition: all 0.3s - плавная анимация при наведении */
+  transition: all 0.3s;
+}
+
+/* Эффект при наведении мыши на кнопку */
+.product-detail-btn:hover {
+  /* transform: translateY(-1px) - поднимаем кнопку на 1px вверх */
+  transform: translateY(-1px);
+  /* box-shadow - добавляем красную тень при наведении */
+  box-shadow: 0 4px 8px rgba(227, 30, 36, 0.3);
 }
 
 /* Алерты */
@@ -976,6 +1108,12 @@ hr {
   h2 {
     font-size: 24px;
   }
+  
+  /* Сетка товаров для планшетов - 3 колонки */
+  .products-grid-container {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto;  /* Автоматические ряды */
+  }
 }
 
 /* Адаптивность для мобильных */
@@ -997,8 +1135,26 @@ hr {
     margin: 15px 0;
   }
   
+  .product-card {
+    height: 240px;  /* Еще меньше для мобильных */
+  }
+  
   .product-card img {
-    height: 160px;
+    height: 120px;  /* Уменьшили с 160px до 120px */
+    padding: 8px;   /* Еще меньше отступы */
+  }
+  
+  .product-card .card-body {
+    padding: 8px;   /* Меньше отступы */
+  }
+  
+  .product-card .card-title {
+    font-size: 11px;
+    min-height: 28px;
+  }
+  
+  .product-card .card-text {
+    font-size: 10px;
   }
   
   .btn {
@@ -1017,25 +1173,58 @@ hr {
   .container {
     padding: 0 15px;
   }
+  
+  /* Сетка товаров для мобильных - 2 колонки */
+  .products-grid-container {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto;  /* Автоматические ряды */
+    gap: 12px;  /* Меньше отступы */
+  }
+  
+  .promo-product-card {
+    height: 240px;  /* Еще меньше для мобильных */
+  }
+  
+  .product-image-wrapper {
+    height: 120px;  /* Уменьшили для мобильных */
+    padding: 8px;
+  }
+  
+  .product-image {
+    max-height: 100px;  /* Уменьшили для мобильных */
+  }
+  
+  .product-card-body {
+    padding: 8px;  /* Меньше отступы */
+  }
+  
+  .product-name {
+    font-size: 11px;
+    min-height: 28px;
+  }
+  
+  .product-current-price {
+    font-size: 14px;
+  }
 }
 
 
 /* ========================================
-   СЛАЙДЕР НА ГЛАВНОЙ СТРАНИЦЕ
+   СЛАЙДЕР НА ГЛАВНОЙ СТРАНИЦЕ - КОМПАКТНАЯ ВЕРСИЯ
    ======================================== */
 
 .hero-slider {
   position: relative;
   width: 100%;
   overflow: hidden;
-  margin-bottom: 60px;
+  margin-bottom: 30px;  /* Уменьшили отступ снизу с 60px до 30px */
   background: var(--white);
 }
 
 .slider-container {
   position: relative;
   width: 100%;
-  height: 500px;
+  height: 200px;  /* СИЛЬНО уменьшили высоту с 500px до 200px */
   overflow: hidden;
 }
 
@@ -1072,10 +1261,10 @@ hr {
 }
 
 
-/* Контент слайда */
+/* Контент слайда - КОМПАКТНЫЙ */
 .slide-content {
   z-index: 2;                   /* Текст поверх затемнения */
-  padding: 40px 0;
+  padding: 20px 0;  /* Уменьшили отступы с 40px до 20px */
   position: relative;
 }
 
@@ -1084,9 +1273,9 @@ hr {
 }
 
 .slide-subtitle {
-  font-size: 16px;
+  font-size: 12px;  /* Уменьшили с 16px до 12px */
   font-weight: 500;
-  margin-bottom: 12px;
+  margin-bottom: 8px;  /* Уменьшили с 12px до 8px */
   opacity: 0.95;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -1094,26 +1283,26 @@ hr {
 }
 
 .slide-title {
-  font-size: 48px;
+  font-size: 24px;  /* СИЛЬНО уменьшили с 48px до 24px */
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 10px;  /* Уменьшили с 20px до 10px */
   line-height: 1.2;
   animation: slideInLeft 0.8s ease-out 0.2s both;
 }
 
 .slide-description {
-  font-size: 18px;
-  margin-bottom: 30px;
+  font-size: 14px;  /* Уменьшили с 18px до 14px */
+  margin-bottom: 15px;  /* Уменьшили с 30px до 15px */
   opacity: 0.9;
-  line-height: 1.6;
+  line-height: 1.4;  /* Уменьшили с 1.6 до 1.4 */
   animation: slideInLeft 0.8s ease-out 0.4s both;
 }
 
 .slide-button {
-  padding: 14px 32px;
-  font-size: 16px;
+  padding: 8px 20px;  /* Уменьшили с 14px 32px до 8px 20px */
+  font-size: 14px;  /* Уменьшили с 16px до 14px */
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 6px;  /* Уменьшили с 8px до 6px */
   border: none;
   background: var(--white);
   color: var(--primary-red);
@@ -1128,12 +1317,9 @@ hr {
   color: var(--primary-red);
 }
 
-/* Изображение слайда */
+/* Изображение слайда - СКРЫТО для компактности */
 .slide-image-col {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1;
+  display: none;  /* Полностью скрываем изображения для экономии места */
 }
 
 .slide-image-wrapper {
@@ -1147,7 +1333,7 @@ hr {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
-/* Кнопки навигации слайдера */
+/* Кнопки навигации слайдера - КОМПАКТНЫЕ */
 .slider-arrow {
   position: absolute;
   top: 50%;
@@ -1155,8 +1341,8 @@ hr {
   z-index: 10;
   background: rgba(255, 255, 255, 0.9);
   border: none;
-  width: 50px;
-  height: 50px;
+  width: 35px;  /* Уменьшили с 50px до 35px */
+  height: 35px;  /* Уменьшили с 50px до 35px */
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1164,7 +1350,7 @@ hr {
   cursor: pointer;
   transition: all 0.3s;
   color: var(--primary-red);
-  font-size: 20px;
+  font-size: 16px;  /* Уменьшили с 20px до 16px */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -1175,27 +1361,27 @@ hr {
 }
 
 .slider-arrow-left {
-  left: 30px;
+  left: 15px;  /* Уменьшили с 30px до 15px */
 }
 
 .slider-arrow-right {
-  right: 30px;
+  right: 15px;  /* Уменьшили с 30px до 15px */
 }
 
-/* Индикаторы слайдов */
+/* Индикаторы слайдов - КОМПАКТНЫЕ */
 .slider-indicators {
   position: absolute;
-  bottom: 30px;
+  bottom: 15px;  /* Уменьшили с 30px до 15px */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 12px;
+  gap: 8px;  /* Уменьшили с 12px до 8px */
   z-index: 10;
 }
 
 .slider-indicator {
-  width: 12px;
-  height: 12px;
+  width: 8px;  /* Уменьшили с 12px до 8px */
+  height: 8px;  /* Уменьшили с 12px до 8px */
   border-radius: 50%;
   border: 2px solid var(--white);
   background: transparent;
@@ -1211,8 +1397,8 @@ hr {
 
 .slider-indicator.active {
   background: var(--white);
-  width: 32px;
-  border-radius: 6px;
+  width: 20px;  /* Уменьшили с 32px до 20px */
+  border-radius: 4px;  /* Уменьшили с 6px до 4px */
 }
 
 /* Анимации для слайдера */
@@ -1250,59 +1436,59 @@ hr {
 /* Адаптивность слайдера для планшетов */
 @media (max-width: 992px) {
   .slider-container {
-    height: 450px;
+    height: 180px;  /* Уменьшили с 450px до 180px */
   }
 
   .slide-title {
-    font-size: 36px;
+    font-size: 20px;  /* Уменьшили с 36px до 20px */
   }
 
   .slide-description {
-    font-size: 16px;
+    font-size: 13px;  /* Уменьшили с 16px до 13px */
   }
 
   .slider-arrow {
-    width: 45px;
-    height: 45px;
-    font-size: 18px;
+    width: 32px;  /* Уменьшили с 45px до 32px */
+    height: 32px;  /* Уменьшили с 45px до 32px */
+    font-size: 14px;  /* Уменьшили с 18px до 14px */
   }
 
   .slider-arrow-left {
-    left: 20px;
+    left: 12px;  /* Уменьшили с 20px до 12px */
   }
 
   .slider-arrow-right {
-    right: 20px;
+    right: 12px;  /* Уменьшили с 20px до 12px */
   }
 }
 
 /* Адаптивность слайдера для мобильных */
 @media (max-width: 768px) {
   .slider-container {
-    height: 400px;
+    height: 150px;  /* Уменьшили с 400px до 150px */
   }
 
   .slide-content {
-    padding: 20px 0;
+    padding: 15px 0;  /* Уменьшили с 20px до 15px */
   }
 
   .slide-subtitle {
-    font-size: 14px;
+    font-size: 10px;  /* Уменьшили с 14px до 10px */
   }
 
   .slide-title {
-    font-size: 28px;
-    margin-bottom: 15px;
+    font-size: 18px;  /* Уменьшили с 28px до 18px */
+    margin-bottom: 8px;  /* Уменьшили с 15px до 8px */
   }
 
   .slide-description {
-    font-size: 14px;
-    margin-bottom: 20px;
+    font-size: 12px;  /* Уменьшили с 14px до 12px */
+    margin-bottom: 12px;  /* Уменьшили с 20px до 12px */
   }
 
   .slide-button {
-    padding: 12px 24px;
-    font-size: 14px;
+    padding: 6px 16px;  /* Уменьшили с 12px 24px до 6px 16px */
+    font-size: 12px;  /* Уменьшили с 14px до 12px */
   }
 
   .slide-image-col {
@@ -1310,45 +1496,45 @@ hr {
   }
 
   .slider-arrow {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
+    width: 28px;  /* Уменьшили с 40px до 28px */
+    height: 28px;  /* Уменьшили с 40px до 28px */
+    font-size: 12px;  /* Уменьшили с 16px до 12px */
   }
 
   .slider-arrow-left {
-    left: 10px;
+    left: 8px;  /* Уменьшили с 10px до 8px */
   }
 
   .slider-arrow-right {
-    right: 10px;
+    right: 8px;  /* Уменьшили с 10px до 8px */
   }
 
   .slider-indicators {
-    bottom: 20px;
+    bottom: 10px;  /* Уменьшили с 20px до 10px */
   }
 
   .slider-indicator {
-    width: 10px;
-    height: 10px;
+    width: 6px;  /* Уменьшили с 10px до 6px */
+    height: 6px;  /* Уменьшили с 10px до 6px */
   }
 
   .slider-indicator.active {
-    width: 24px;
+    width: 16px;  /* Уменьшили с 24px до 16px */
   }
 }
 
 /* Дополнительные стили для очень маленьких экранов */
 @media (max-width: 480px) {
   .slider-container {
-    height: 350px;
+    height: 120px;  /* Уменьшили с 350px до 120px */
   }
 
   .slide-title {
-    font-size: 24px;
+    font-size: 16px;  /* Уменьшили с 24px до 16px */
   }
 
   .slide-description {
-    font-size: 13px;
+    font-size: 11px;  /* Уменьшили с 13px до 11px */
   }
 }
 
@@ -2697,4 +2883,117 @@ hr {
 .filter-submenu .btn {
   font-size: 12px;                      /* Маленький размер кнопки */
   padding: 8px 16px;                    /* Компактные отступы кнопки */
+}
+
+/* ===== СТИЛИ ДЛЯ ИКОНОК СОЦСЕТЕЙ В ХЕДЕРЕ ===== */
+.header-social {
+  display: flex;
+  align-items: center;
+}
+
+.social-link-header {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: #E31E24;
+  color: white;
+  border-radius: 50%;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.social-link-header:hover {
+  background-color: #c41e3a;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(227, 30, 36, 0.3);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .top-nav-links {
+    flex-direction: column;
+    align-items: center !important;
+  }
+  
+  .nav-links-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  
+  .header-social {
+    justify-content: center;
+  }
+  
+  .social-link-header {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+}
+
+/* Стили для страниц */
+.contact-info-pickup p {
+  margin-bottom: 8px;
+}
+
+.contact-info-pickup a {
+  color: #E31E24;
+  text-decoration: none;
+}
+
+.contact-info-pickup a:hover {
+  text-decoration: underline;
+}
+
+.payment-method {
+  transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+  background-color: #f8f9fa !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+/* ===== АНИМАЦИЯ ДЛЯ ИКОНКИ МЕСТОПОЛОЖЕНИЯ НА КАРТЕ ===== */
+.location-pin {
+  animation: pulse-location 2s infinite;
+  cursor: pointer;
+}
+
+@keyframes pulse-location {
+  0% { 
+    transform: scale(1); 
+    filter: drop-shadow(0 0 5px rgba(227, 30, 36, 0.5));
+  }
+  50% { 
+    transform: scale(1.2); 
+    filter: drop-shadow(0 0 15px rgba(227, 30, 36, 0.8));
+  }
+  100% { 
+    transform: scale(1); 
+    filter: drop-shadow(0 0 5px rgba(227, 30, 36, 0.5));
+  }
+}
+
+/* Эффект при наведении на иконку */
+.location-pin:hover {
+  transform: scale(1.3) !important;
+  filter: drop-shadow(0 0 20px rgba(227, 30, 36, 1)) !important;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .map-container {
+    height: 250px !important;
+  }
+  
+  .location-pin {
+    font-size: 30px !important;
+  }
 }

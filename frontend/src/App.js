@@ -12,6 +12,13 @@ import Register from './components/Register';
 import ProductDetail from './components/ProductDetail';
 import CreateProduct from './components/CreateProduct';
 import Profile from './components/Profile';
+// Импортируем компонент страницы избранного
+import Favorites from './components/Favorites';
+// Импортируем новые страницы для хедера
+import Pickup from './components/Pickup';
+import Delivery from './components/Delivery';
+import PaintSelection from './components/PaintSelection';
+import Wholesale from './components/Wholesale';
 import backgroundImage from './assets/images/background.jpg';
 
 function App() {
@@ -32,11 +39,18 @@ function App() {
                         <Route path="/" element={<Home />} />
                         <Route path="/catalog" element={<Catalog />} />
                         <Route path="/cart" element={<Cart />} />
+                        {/* Добавляем маршрут для страницы избранного */}
+                        <Route path="/favorites" element={<Favorites />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/product/:slug" element={<ProductDetail />} />
                         <Route path="/create-product" element={<CreateProduct />} />
                         <Route path="/profile" element={<Profile />} />
+                        {/* НОВЫЕ МАРШРУТЫ ДЛЯ СТРАНИЦ ХЕДЕРА */}
+                        <Route path="/pickup" element={<Pickup />} />
+                        <Route path="/delivery" element={<Delivery />} />
+                        <Route path="/paint-selection" element={<PaintSelection />} />
+                        <Route path="/wholesale" element={<Wholesale />} />
                     </Routes>
                 </div>
                 

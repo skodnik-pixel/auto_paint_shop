@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaHeart, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+// FaStar - иконка звездочки для избранного
+// FaChevronLeft, FaChevronRight - стрелки для слайдера
+import { FaStar, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 
 function Home() {
@@ -90,6 +92,23 @@ function Home() {
     return () => clearInterval(timer);
   }, [slides.length]);
 
+  // Загружаем избранное из localStorage при загрузке компонента
+  useEffect(() => {
+    // Получаем сохраненное избранное из localStorage
+    const savedFavorites = localStorage.getItem('favorites');
+    if (savedFavorites) {
+      try {
+        // Парсим JSON и создаем Set из массива ID товаров
+        const favoritesArray = JSON.parse(savedFavorites);
+        setFavorites(new Set(favoritesArray));
+      } catch (error) {
+        // Если ошибка парсинга - сбрасываем избранное
+        console.error('Error parsing saved favorites:', error);
+        setFavorites(new Set());
+      }
+    }
+  }, []);
+
   // Функции для управления слайдером
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -103,14 +122,31 @@ function Home() {
     setCurrentSlide(index);
   };
 
+  // Функция добавления/удаления товара из избранного
   const toggleFavorite = (productId) => {
+    // Создаем новый Set на основе текущего состояния избранного
     const newFavorites = new Set(favorites);
+    
     if (newFavorites.has(productId)) {
+      // Если товар уже в избранном - удаляем его
       newFavorites.delete(productId);
     } else {
+      // Если товара нет в избранном - добавляем его
       newFavorites.add(productId);
     }
+    
+    // Обновляем состояние избранного
     setFavorites(newFavorites);
+    
+    // Сохраняем избранное в localStorage для постоянного хранения
+    // Array.from() преобразует Set в обычный массив для JSON
+    localStorage.setItem('favorites', JSON.stringify(Array.from(newFavorites)));
+    
+    // Отправляем событие для обновления счетчика в навигации
+    // CustomEvent - специальное событие браузера для передачи данных между компонентами
+    window.dispatchEvent(new CustomEvent('favoritesUpdated', { 
+      detail: { count: newFavorites.size } 
+    }));
   };
 
   const calculateDiscount = (currentPrice, originalPrice) => {
@@ -192,12 +228,8 @@ function Home() {
         </div>
       </div>
 
-      {/* Акционные товары */}
+      {/* Товары в 2 ряда по 5 штук */}
       <Container className="mb-5">
-        <div className="section-header mb-4">
-          <h2 className="section-title">Акционные товары</h2>
-        </div>
-
         {loading ? (
           <div className="text-center">
             <div className="spinner-border text-warning" role="status">
@@ -205,45 +237,56 @@ function Home() {
             </div>
           </div>
         ) : (
-          <>
-            <Row className="promo-products-row">
-              {promoProducts.map(product => {
-                const originalPrice = getOriginalPrice(product.price);
-                const discount = calculateDiscount(parseFloat(product.price), parseFloat(originalPrice));
-                const isFavorite = favorites.has(product.id);
-                
-                return (
-                  <Col key={product.id} className="promo-product-col">
-                    <Card className="promo-product-card">
-                      <div className="product-favorite" onClick={() => toggleFavorite(product.id)}>
-                        <FaHeart className={isFavorite ? 'favorite-active' : ''} />
+          <div className="products-grid-container">
+            {/* Первые 10 товаров в сетке 2x5 */}
+            {promoProducts.concat(featuredProducts).slice(0, 10).map(product => {
+              const originalPrice = getOriginalPrice(product.price);
+              const discount = calculateDiscount(parseFloat(product.price), parseFloat(originalPrice));
+              const isFavorite = favorites.has(product.id);
+              
+              return (
+                <div key={product.id} className="product-grid-item">
+                  <Card className="promo-product-card">
+                    {/* Кнопка добавления в избранное (звездочка) */}
+                    <div className="product-favorite" onClick={() => toggleFavorite(product.id)}>
+                      {/* FaStar - иконка звездочки, меняет цвет если товар в избранном */}
+                      <FaStar className={isFavorite ? 'favorite-active' : ''} />
+                    </div>
+                    <div className="product-image-wrapper">
+                      <img
+                        src={product.image || 'https://via.placeholder.com/200x200?text=Нет+фото'}
+                        alt={product.name}
+                        className="product-image"
+                      />
+                    </div>
+                    <Card.Body className="product-card-body">
+                      {/* Секция с ценами товара */}
+                      <div className="product-price-section">
+                        {/* Текущая цена товара (отображается крупным шрифтом) */}
+                        <div className="product-current-price">{product.price} BYN</div>
+                        {/* Старая цена товара (зачеркнутая, показывает от какой цены скидка) */}
+                        <div className="product-original-price">{originalPrice} BYN</div>
+                        {/* Badge - цветная метка Bootstrap для показа скидки (красный прямоугольник с белым текстом "-20%") */}
+                        <Badge className="product-discount-badge">-{discount}%</Badge>
                       </div>
-                      <div className="product-image-wrapper">
-                        <img
-                          src={product.image || 'https://via.placeholder.com/200x200?text=Нет+фото'}
-                          alt={product.name}
-                          className="product-image"
-                        />
-                      </div>
-                      <Card.Body className="product-card-body">
-                        <div className="product-price-section">
-                          <div className="product-current-price">{product.price} BYN</div>
-                          <div className="product-original-price">{originalPrice} BYN</div>
-                          <Badge className="product-discount-badge">-{discount}%</Badge>
-                        </div>
-                        <Card.Title className="product-name">{product.name}</Card.Title>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                );
-              })}
-            </Row>
-            <div className="promo-pagination">
-              {[1, 2, 3].map((dot, index) => (
-                <span key={index} className={`pagination-dot ${index === 0 ? 'active' : ''}`}></span>
-              ))}
-            </div>
-          </>
+                      {/* Card.Title - заголовок карточки Bootstrap, отображает название товара */}
+                      <Card.Title className="product-name">{product.name}</Card.Title>
+                      
+                      {/* Добавляем кнопку "Подробнее" для перехода на страницу товара */}
+                      {/* Link - компонент React Router для навигации без перезагрузки страницы */}
+                      {/* product.slug - человекочитаемый URL товара, если нет - используем ID */}
+                      <Link to={`/product/${product.slug || product.id}`} className="product-detail-link">
+                        {/* Button - кнопка Bootstrap с красным цветом (variant="primary") и маленьким размером (size="sm") */}
+                        <Button variant="primary" size="sm" className="product-detail-btn">
+                          Подробнее
+                        </Button>
+                      </Link>
+                    </Card.Body>
+                  </Card>
+                </div>
+              );
+            })}
+          </div>
         )}
       </Container>
 
