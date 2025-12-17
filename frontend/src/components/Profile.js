@@ -185,7 +185,7 @@ function Profile() {
                         {activeTab === 'profile' && (
                             <Card className="profile-content-card">
                                 <Card.Header>
-                                    <h4 className="mb-0">Личная информация</h4>
+                                    <h4 className="mb-0">Личный кабинет</h4>
                                 </Card.Header>
                                 <Card.Body>
                                     <Row>

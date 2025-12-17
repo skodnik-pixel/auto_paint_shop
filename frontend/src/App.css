@@ -173,25 +173,37 @@ body {
   margin: 0 20px;
 }
 
+/* Блок поиска в обычном состоянии - чёрная рамка как у других кнопок */
 .search-form .input-group {
-  border: 2px solid var(--black);       /* Единая черная рамка */
+  border: 2px solid var(--black);       /* Чёрная рамка как у кнопок навигации */
   border-radius: 8px;                   /* Скругленные углы */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень как у кнопок */
   overflow: hidden;                     /* Скрываем внутренние границы */
   transition: all 0.3s ease;            /* Плавная анимация */
   background: var(--white);             /* Белый фон */
   display: flex;                        /* Flexbox */
 }
 
+/* При наведении - красная рамка (вместо чёрной) + поднятие и тень */
 .search-form .input-group:hover {
-  border-color: var(--primary-red);     /* Красная рамка при наведении */
-  box-shadow: 0 6px 12px rgba(227, 30, 36, 0.3); /* Красная тень */
-  transform: translateY(-2px);          /* Поднятие всего блока */
+  border-color: var(--primary-red) !important;     /* Красная рамка при наведении */
+  box-shadow: 0 6px 12px rgba(227, 30, 36, 0.3) !important; /* Красная тень */
+  transform: translateY(-2px) !important;          /* Поднятие всего блока */
 }
 
-/* Поле ввода - без рамок */
-.search-input {
+/* При фокусе (клике на поле ввода) - красная рамка */
+.search-form .input-group:focus-within {
+  border-color: var(--primary-red) !important;     /* Красная рамка при фокусе */
+  box-shadow: 0 6px 12px rgba(227, 30, 36, 0.3) !important; /* Красная тень */
+  transform: translateY(-2px) !important;          /* Поднятие блока */
+}
+
+/* Поле ввода - БЕЗ ВСЕХ рамок */
+.search-input,
+.form-control.search-input,
+input.search-input {
   border: none !important;              /* Убираем ВСЕ рамки */
+  border-width: 0 !important;           /* Толщина рамки = 0 */
   border-radius: 0 !important;          /* Убираем скругления */
   padding: 10px 15px;
   font-size: 14px;
@@ -201,17 +213,26 @@ body {
   flex: 1;                              /* Занимает всё место */
 }
 
-.search-input:focus {
+.search-input:focus,
+.form-control.search-input:focus,
+input.search-input:focus {
   border: none !important;              /* Никаких рамок при фокусе */
+  border-width: 0 !important;           /* Толщина рамки = 0 */
   box-shadow: none !important;          /* Никаких теней при фокусе */
   outline: none !important;             /* Никаких outline */
 }
 
-/* Кнопка лупы */
-.search-icon-wrapper {
+/* Кнопка лупы - БЕЗ ВСЕХ рамок */
+.search-icon-wrapper,
+.input-group-text.search-icon-wrapper {
   background-color: var(--primary-red); /* Красный фон */
   border: none !important;              /* Никаких рамок */
-  border-radius: 0;                     /* Никаких скруглений */
+  border-width: 0 !important;           /* Толщина рамки = 0 */
+  border-left: none !important;         /* Убираем левую рамку */
+  border-right: none !important;        /* Убираем правую рамку */
+  border-top: none !important;          /* Убираем верхнюю рамку */
+  border-bottom: none !important;       /* Убираем нижнюю рамку */
+  border-radius: 0 !important;          /* Никаких скруглений */
   color: var(--white);                  /* Белая иконка */
   cursor: pointer;
   padding: 10px 15px;                   /* Такой же padding */
@@ -219,10 +240,22 @@ body {
   align-items: center;
   justify-content: center;
   transition: background-color 0.3s ease;
+  outline: none !important;             /* Убираем outline */
+  margin: 0 !important;                 /* Убираем отступы */
 }
 
-.search-icon-wrapper:hover {
+.search-icon-wrapper:hover,
+.input-group-text.search-icon-wrapper:hover {
   background-color: var(--dark-red);    /* Темнее при наведении */
+  border: none !important;              /* Никаких рамок при наведении */
+}
+
+.search-icon-wrapper:focus,
+.input-group-text.search-icon-wrapper:focus {
+  outline: none !important;             /* Убираем outline при фокусе */
+  box-shadow: none !important;          /* Убираем тень при фокусе */
+  border: none !important;              /* Убираем рамку при фокусе */
+  border-width: 0 !important;           /* Толщина рамки = 0 */
 }
 
 
@@ -231,7 +264,7 @@ body {
 
 /* Формы */
 .form-control {
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--black);       /* Чёрная рамка как у карточек */
   border-radius: 6px;
   padding: 10px 14px;
   font-size: 14px;
@@ -440,8 +473,9 @@ body {
 }
 
 .promo-product-card {
-  border: 1px solid var(--border-color);  /* Изменили с 2px solid var(--black) */
-  border-radius: 6px;  /* Уменьшили с 10px до 6px */
+  border: 2px solid var(--black);           /* Толстая чёрная рамка как на скрине */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень */
   overflow: hidden;
   position: relative;
   background: var(--white);
@@ -455,9 +489,9 @@ body {
 }
 
 .promo-product-card:hover {
-  transform: translateY(-2px);  /* Уменьшили с -5px до -2px */
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);  /* Уменьшили тень */
-  border-color: var(--primary-red);  /* Добавили красную рамку при наведении */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(227, 30, 36, 0.3); /* Красная тень при наведении */
+  border-color: var(--primary-red);
 }
 
 .product-favorite {
@@ -601,18 +635,19 @@ body {
 /* Карточки товаров - КОМПАКТНАЯ ВЕРСИЯ для 2 рядов */
 .product-card {
   transition: all 0.3s ease;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;  /* Уменьшили с 8px до 6px */
+  border: 2px solid var(--black);           /* Толстая чёрная рамка как на скрине */
+  border-radius: 8px;
   background: var(--white);
   overflow: hidden;
   height: 280px;  /* ФИКСИРОВАННАЯ высота для компактности */
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень */
 }
 
 .product-card:hover {
-  transform: translateY(-2px);  /* Уменьшили с -4px до -2px */
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);  /* Уменьшили тень */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(227, 30, 36, 0.3); /* Красная тень при наведении */
   border-color: var(--primary-red);
 }
 
@@ -945,7 +980,7 @@ body {
 /* Модальные окна */
 .modal-content {
   border-radius: 12px;
-  border: none;
+  border: 2px solid var(--black);       /* Чёрная рамка как у карточек */
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
@@ -3159,3 +3194,186 @@ hr {
     width: 100%;
   }
 }
+
+/* ===== СТИЛИ ДЛЯ ПАГИНАЦИИ ===== */
+
+/* Контейнер пагинации */
+.pagination-container {
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+
+/* Стили для пагинации Bootstrap */
+.pagination {
+  gap: 8px; /* Отступы между кнопками */
+}
+
+.pagination .page-item {
+  margin: 0; /* Убираем стандартные отступы Bootstrap */
+}
+
+.pagination .page-link {
+  border: 2px solid var(--black); /* Черная рамка как у других кнопок */
+  border-radius: 8px; /* Скругленные углы */
+  color: var(--text-dark); /* Темный текст */
+  background: var(--white); /* Белый фон */
+  padding: 10px 16px; /* Отступы внутри кнопки */
+  font-weight: 500; /* Жирный шрифт */
+  transition: all 0.3s ease; /* Плавная анимация */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Легкая тень */
+}
+
+.pagination .page-link:hover {
+  background: var(--primary-red); /* Красный фон при наведении */
+  color: var(--white); /* Белый текст при наведении */
+  border-color: var(--primary-red); /* Красная рамка при наведении */
+  transform: translateY(-2px); /* Поднятие кнопки */
+  box-shadow: 0 4px 8px rgba(227, 30, 36, 0.3); /* Красная тень */
+}
+
+.pagination .page-item.active .page-link {
+  background: var(--primary-red); /* Красный фон для активной страницы */
+  color: var(--white); /* Белый текст */
+  border-color: var(--primary-red); /* Красная рамка */
+  font-weight: 600; /* Более жирный шрифт */
+  box-shadow: 0 4px 8px rgba(227, 30, 36, 0.3); /* Красная тень */
+}
+
+.pagination .page-item.disabled .page-link {
+  background: var(--light-gray); /* Серый фон для неактивных кнопок */
+  color: var(--text-light); /* Светлый текст */
+  border-color: var(--border-color); /* Серая рамка */
+  cursor: not-allowed; /* Курсор "запрещено" */
+  box-shadow: none; /* Без тени */
+}
+
+.pagination .page-item.disabled .page-link:hover {
+  background: var(--light-gray); /* Не меняем фон при наведении */
+  color: var(--text-light); /* Не меняем цвет текста */
+  border-color: var(--border-color); /* Не меняем рамку */
+  transform: none; /* Не поднимаем кнопку */
+  box-shadow: none; /* Без тени */
+}
+
+/* Информация о текущей странице */
+.pagination-container .text-muted {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .pagination {
+    gap: 4px; /* Меньше отступы на мобильных */
+  }
+  
+  .pagination .page-link {
+    padding: 8px 12px; /* Меньше отступы внутри кнопок */
+    font-size: 14px; /* Меньше размер шрифта */
+  }
+  
+  /* Скрываем некоторые номера страниц на мобильных */
+  .pagination .page-item:not(.active):not(:first-child):not(:last-child) {
+    display: none;
+  }
+  
+  .pagination .page-item.active {
+    display: inline-block; /* Показываем только активную страницу */
+  }
+}
+
+/* ===== СТИЛИ ДЛЯ ДИНАМИЧЕСКИХ КАТЕГОРИЙ И БРЕНДОВ С ПРОКРУТКОЙ ===== */
+
+
+
+/* ===== 3D ЭФФЕКТ С ЧЁРНЫМ ОРЕОЛОМ КАК НА СКРИНЕ ===== */
+
+/* Все карточки товаров, блоки профиля, информационные секции */
+.product-card,
+.promo-product-card,
+.profile-sidebar,
+.profile-content-card,
+.filter-submenu,
+.product-info-section,
+.product-description-block,
+.order-card,
+.filters-card {
+  border: 3px solid #000000 !important; /* Толстая чёрная рамка */
+  border-radius: 12px !important; /* Более сильное скругление */
+  /* Многослойная тень для 3D эффекта */
+  box-shadow: 
+    0 4px 6px rgba(0, 0, 0, 0.3),      /* Близкая тень */
+    0 8px 15px rgba(0, 0, 0, 0.25),    /* Средняя тень */
+    0 12px 25px rgba(0, 0, 0, 0.2),    /* Дальняя тень */
+    0 0 0 1px rgba(0, 0, 0, 0.1) inset !important; /* Внутренняя тень для глубины */
+}
+
+/* Карточки при наведении - усиленный 3D эффект */
+.product-card:hover,
+.promo-product-card:hover {
+  border-color: #000000 !important; /* Чёрная рамка остаётся */
+  transform: translateY(-4px); /* Поднятие карточки выше */
+  /* Ещё более сильная тень при наведении */
+  box-shadow: 
+    0 6px 10px rgba(0, 0, 0, 0.35),
+    0 12px 20px rgba(0, 0, 0, 0.3),
+    0 18px 35px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(0, 0, 0, 0.15) inset,
+    0 0 0 3px rgba(227, 30, 36, 0.2) !important; /* Красный ореол при наведении */
+}
+
+/* Блоки контента на страницах (О компании, Контакты и т.д.) */
+.content-page .card,
+.about-section,
+.contact-section,
+.delivery-section,
+.warranty-section {
+  border: 3px solid #000000 !important;
+  border-radius: 12px !important;
+  box-shadow: 
+    0 4px 6px rgba(0, 0, 0, 0.3),
+    0 8px 15px rgba(0, 0, 0, 0.25),
+    0 12px 25px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(0, 0, 0, 0.1) inset !important;
+}
+
+/* Блоки в футере */
+.footer-section {
+  border: 3px solid #000000;
+  border-radius: 12px;
+  padding: 20px;
+  background: var(--white);
+  box-shadow: 
+    0 4px 6px rgba(0, 0, 0, 0.3),
+    0 8px 15px rgba(0, 0, 0, 0.25),
+    0 12px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Формы и инпуты - тоже единый стиль */
+.form-control,
+.form-select {
+  border: 2px solid #000000 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-red) !important;
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 0 0 3px rgba(227, 30, 36, 0.15) !important;
+}
+
+/* Модальные окна */
+.modal-content {
+  border: 3px solid #000000 !important;
+  border-radius: 12px !important;
+  box-shadow: 
+    0 8px 15px rgba(0, 0, 0, 0.35),
+    0 15px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+
+
+

@@ -36,6 +36,11 @@ function CustomNavbar() {
         priceMax: ''     // Максимальная цена
     });
 
+    // Динамическая загрузка категорий и брендов из API
+    const [categories, setCategories] = useState([]); // Все категории из API
+    const [brands, setBrands] = useState([]); // Все бренды из API
+    const [categoryBrands, setCategoryBrands] = useState({}); // Бренды для каждой категории
+
     const navigate = useNavigate();
 
 
@@ -115,6 +120,65 @@ function CustomNavbar() {
         return () => {
             window.removeEventListener('favoritesUpdated', handleFavoritesUpdate);
         };
+    }, []);
+
+    // Загрузка категорий и брендов из API
+    useEffect(() => {
+        const fetchCategoriesAndBrands = async () => {
+            try {
+                const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+                
+                console.log('=== ЗАГРУЗКА КАТЕГОРИЙ И БРЕНДОВ ===');
+                
+                // Загружаем категории
+                const categoriesRes = await fetch(`${apiUrl}/catalog/categories/?page_size=100`);
+                const categoriesData = await categoriesRes.json();
+                const categoriesList = categoriesData.results || categoriesData;
+                setCategories(categoriesList);
+                console.log('Категорий загружено:', categoriesList.length);
+                
+                // Загружаем бренды
+                const brandsRes = await fetch(`${apiUrl}/catalog/brands/?page_size=100`);
+                const brandsData = await brandsRes.json();
+                const brandsList = brandsData.results || brandsData;
+                setBrands(brandsList);
+                console.log('Брендов загружено:', brandsList.length);
+                
+                // Загружаем товары чтобы узнать какие бренды есть в каждой категории
+                const productsRes = await fetch(`${apiUrl}/catalog/products/?page_size=100`);
+                const productsData = await productsRes.json();
+                const products = productsData.results || productsData;
+                
+                // Группируем бренды по категориям
+                const brandsByCategory = {};
+                products.forEach(product => {
+                    const catSlug = product.category?.slug;
+                    const brandSlug = product.brand?.slug;
+                    const brandName = product.brand?.name;
+                    
+                    if (catSlug && brandSlug && brandName) {
+                        if (!brandsByCategory[catSlug]) {
+                            brandsByCategory[catSlug] = [];
+                        }
+                        // Добавляем бренд если его еще нет в списке для этой категории
+                        if (!brandsByCategory[catSlug].find(b => b.slug === brandSlug)) {
+                            brandsByCategory[catSlug].push({
+                                slug: brandSlug,
+                                name: brandName
+                            });
+                        }
+                    }
+                });
+                
+                setCategoryBrands(brandsByCategory);
+                console.log('Бренды по категориям:', brandsByCategory);
+                
+            } catch (error) {
+                console.error('Ошибка загрузки категорий и брендов:', error);
+            }
+        };
+        
+        fetchCategoriesAndBrands();
     }, []);
 
     // Функция обработки поиска
@@ -258,263 +322,60 @@ function CustomNavbar() {
                                 <NavDropdown.Item href="/catalog">Все товары</NavDropdown.Item>
                                 <NavDropdown.Divider />
                                 
-                                {/* Краски с подменю фильтров */}
-                                <div className="dropdown-submenu">
-                                    <NavDropdown.Item href="/catalog?category=kraski">Краски</NavDropdown.Item>
-                                    <div className="dropdown-menu">
-                                        <div className="filter-submenu">
-                                            {/* Выбор бренда для красок - реальные бренды из базы данных */}
-                                            <div className="form-group">
-                                                <label>Бренд</label>
-                                                <select 
-                                                    className="form-select"
-                                                    value={submenuFilters.brand}
-                                                    onChange={(e) => handleSubmenuChange('brand', e.target.value)}
+                                {/* Динамические категории с подменю */}
+                                {categories.map(category => (
+                                    <div key={category.id} className="dropdown-submenu">
+                                        <NavDropdown.Item href={`/catalog?category=${category.slug}`}>
+                                            {category.name}
+                                        </NavDropdown.Item>
+                                        <div className="dropdown-menu">
+                                            <div className="filter-submenu">
+                                                {/* Динамические бренды для каждой категории */}
+                                                <div className="form-group">
+                                                    <label>Бренд</label>
+                                                    <select 
+                                                        className="form-select"
+                                                        value={submenuFilters.brand}
+                                                        onChange={(e) => handleSubmenuChange('brand', e.target.value)}
+                                                    >
+                                                        <option value="">Все бренды</option>
+                                                        {categoryBrands[category.slug]?.map(brand => (
+                                                            <option key={brand.slug} value={brand.slug}>
+                                                                {brand.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="form-group">
+                                                    <label>Цена от</label>
+                                                    <input 
+                                                        type="number" 
+                                                        className="form-control" 
+                                                        placeholder="Мин"
+                                                        value={submenuFilters.priceMin}
+                                                        onChange={(e) => handleSubmenuChange('priceMin', e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className="form-group">
+                                                    <label>Цена до</label>
+                                                    <input 
+                                                        type="number" 
+                                                        className="form-control" 
+                                                        placeholder="Макс"
+                                                        value={submenuFilters.priceMax}
+                                                        onChange={(e) => handleSubmenuChange('priceMax', e.target.value)}
+                                                    />
+                                                </div>
+                                                <button 
+                                                    className="btn btn-primary btn-sm w-100"
+                                                    onClick={() => applySubmenuFilters(category.slug)}
                                                 >
-                                                    <option value="">Все бренды</option>
-                                                    <option value="duxone">DUXONE</option>
-                                                    <option value="novol">NOVOL</option>
-                                                    <option value="spectral">SPECTRAL</option>
-                                                </select>
+                                                    Применить
+                                                </button>
                                             </div>
-                                            {/* Минимальная цена - подключаем обработчик onChange */}
-                                            <div className="form-group">
-                                                <label>Цена от</label>
-                                                <input 
-                                                    type="number" 
-                                                    className="form-control" 
-                                                    placeholder="Мин"
-                                                    value={submenuFilters.priceMin}
-                                                    onChange={(e) => handleSubmenuChange('priceMin', e.target.value)}
-                                                />
-                                            </div>
-                                            {/* Максимальная цена - подключаем обработчик onChange */}
-                                            <div className="form-group">
-                                                <label>Цена до</label>
-                                                <input 
-                                                    type="number" 
-                                                    className="form-control" 
-                                                    placeholder="Макс"
-                                                    value={submenuFilters.priceMax}
-                                                    onChange={(e) => handleSubmenuChange('priceMax', e.target.value)}
-                                                />
-                                            </div>
-                                            {/* Кнопка применения фильтров - подключаем обработчик onClick */}
-                                            <button 
-                                                className="btn btn-primary btn-sm w-100"
-                                                onClick={() => applySubmenuFilters('kraski')}
-                                            >
-                                                Применить
-                                            </button>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                {/* Грунты с подменю фильтров */}
-                                <div className="dropdown-submenu">
-                                    <NavDropdown.Item href="/catalog?category=grunty">Грунты</NavDropdown.Item>
-                                    <div className="dropdown-menu">
-                                        <div className="filter-submenu">
-                                            {/* Выбор бренда для грунтов */}
-                                            <div className="form-group">
-                                                <label>Бренд</label>
-                                                <select 
-                                                    className="form-select"
-                                                    value={submenuFilters.brand}
-                                                    onChange={(e) => handleSubmenuChange('brand', e.target.value)}
-                                                >
-                                                    <option value="">Все бренды</option>
-                                                    <option value="novol">NOVOL</option>
-                                                    <option value="body">BODY</option>
-                                                </select>
-                                            </div>
-                                            {/* Минимальная цена для грунтов */}
-                                            <div className="form-group">
-                                                <label>Цена от</label>
-                                                <input 
-                                                    type="number" 
-                                                    className="form-control" 
-                                                    placeholder="Мин"
-                                                    value={submenuFilters.priceMin}
-                                                    onChange={(e) => handleSubmenuChange('priceMin', e.target.value)}
-                                                />
-                                            </div>
-                                            {/* Максимальная цена для грунтов */}
-                                            <div className="form-group">
-                                                <label>Цена до</label>
-                                                <input 
-                                                    type="number" 
-                                                    className="form-control" 
-                                                    placeholder="Макс"
-                                                    value={submenuFilters.priceMax}
-                                                    onChange={(e) => handleSubmenuChange('priceMax', e.target.value)}
-                                                />
-                                            </div>
-                                            {/* Кнопка применения фильтров для грунтов */}
-                                            <button 
-                                                className="btn btn-primary btn-sm w-100"
-                                                onClick={() => applySubmenuFilters('grunty')}
-                                            >
-                                                Применить
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                {/* Шпатлевки с подменю фильтров */}
-                                <div className="dropdown-submenu">
-                                    <NavDropdown.Item href="/catalog?category=shpaklevki">Шпатлевки</NavDropdown.Item>
-                                    <div className="dropdown-menu">
-                                        <div className="filter-submenu">
-                                            {/* Выбор бренда для шпатлевок */}
-                                            <div className="form-group">
-                                                <label>Бренд</label>
-                                                <select 
-                                                    className="form-select"
-                                                    value={submenuFilters.brand}
-                                                    onChange={(e) => handleSubmenuChange('brand', e.target.value)}
-                                                >
-                                                    <option value="">Все бренды</option>
-                                                    <option value="novol">NOVOL</option>
-                                                    <option value="body">BODY</option>
-                                                    <option value="spectral">SPECTRAL</option>
-                                                </select>
-                                            </div>
-                                            {/* Минимальная цена для шпатлевок */}
-                                            <div className="form-group">
-                                                <label>Цена от</label>
-                                                <input 
-                                                    type="number" 
-                                                    className="form-control" 
-                                                    placeholder="Мин"
-                                                    value={submenuFilters.priceMin}
-                                                    onChange={(e) => handleSubmenuChange('priceMin', e.target.value)}
-                                                />
-                                            </div>
-                                            {/* Максимальная цена для шпатлевок */}
-                                            <div className="form-group">
-                                                <label>Цена до</label>
-                                                <input 
-                                                    type="number" 
-                                                    className="form-control" 
-                                                    placeholder="Макс"
-                                                    value={submenuFilters.priceMax}
-                                                    onChange={(e) => handleSubmenuChange('priceMax', e.target.value)}
-                                                />
-                                            </div>
-                                            {/* Кнопка применения фильтров для шпатлевок */}
-                                            <button 
-                                                className="btn btn-primary btn-sm w-100"
-                                                onClick={() => applySubmenuFilters('shpaklevki')}
-                                            >
-                                                Применить
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Инструменты с подменю фильтров */}
-                                <div className="dropdown-submenu">
-                                    <NavDropdown.Item href="/catalog?category=pnevmoinstrument">Инструменты</NavDropdown.Item>
-                                    <div className="dropdown-menu">
-                                        <div className="filter-submenu">
-                                            {/* Выбор бренда для инструментов - реальные бренды из базы данных */}
-                                            <div className="form-group">
-                                                <label>Бренд</label>
-                                                <select 
-                                                    className="form-select"
-                                                    value={submenuFilters.brand}
-                                                    onChange={(e) => handleSubmenuChange('brand', e.target.value)}
-                                                >
-                                                    <option value="">Все бренды</option>
-                                                    <option value="devilbiss">DeVilbiss</option>
-                                                    <option value="jeta-pro">JETA PRO</option>
-                                                    <option value="sata">SATA</option>
-                                                </select>
-                                            </div>
-                                            {/* Минимальная цена для инструментов */}
-                                            <div className="form-group">
-                                                <label>Цена от</label>
-                                                <input 
-                                                    type="number" 
-                                                    className="form-control" 
-                                                    placeholder="Мин"
-                                                    value={submenuFilters.priceMin}
-                                                    onChange={(e) => handleSubmenuChange('priceMin', e.target.value)}
-                                                />
-                                            </div>
-                                            {/* Максимальная цена для инструментов */}
-                                            <div className="form-group">
-                                                <label>Цена до</label>
-                                                <input 
-                                                    type="number" 
-                                                    className="form-control" 
-                                                    placeholder="Макс"
-                                                    value={submenuFilters.priceMax}
-                                                    onChange={(e) => handleSubmenuChange('priceMax', e.target.value)}
-                                                />
-                                            </div>
-                                            {/* Кнопка применения фильтров для инструментов */}
-                                            <button 
-                                                className="btn btn-primary btn-sm w-100"
-                                                onClick={() => applySubmenuFilters('pnevmoinstrument')}
-                                            >
-                                                Применить
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Абразивы с подменю фильтров */}
-                                <div className="dropdown-submenu">
-                                    <NavDropdown.Item href="/catalog?category=abraziv">Абразивы</NavDropdown.Item>
-                                    <div className="dropdown-menu">
-                                        <div className="filter-submenu">
-                                            {/* Выбор бренда для абразивов - реальные бренды из базы данных */}
-                                            <div className="form-group">
-                                                <label>Бренд</label>
-                                                <select 
-                                                    className="form-select"
-                                                    value={submenuFilters.brand}
-                                                    onChange={(e) => handleSubmenuChange('brand', e.target.value)}
-                                                >
-                                                    <option value="">Все бренды</option>
-                                                    <option value="3m">3M</option>
-                                                    <option value="mirka">Mirka</option>
-                                                </select>
-                                            </div>
-                                            {/* Минимальная цена для абразивов */}
-                                            <div className="form-group">
-                                                <label>Цена от</label>
-                                                <input 
-                                                    type="number" 
-                                                    className="form-control" 
-                                                    placeholder="Мин"
-                                                    value={submenuFilters.priceMin}
-                                                    onChange={(e) => handleSubmenuChange('priceMin', e.target.value)}
-                                                />
-                                            </div>
-                                            {/* Максимальная цена для абразивов */}
-                                            <div className="form-group">
-                                                <label>Цена до</label>
-                                                <input 
-                                                    type="number" 
-                                                    className="form-control" 
-                                                    placeholder="Макс"
-                                                    value={submenuFilters.priceMax}
-                                                    onChange={(e) => handleSubmenuChange('priceMax', e.target.value)}
-                                                />
-                                            </div>
-                                            {/* Кнопка применения фильтров для абразивов */}
-                                            <button 
-                                                className="btn btn-primary btn-sm w-100"
-                                                onClick={() => applySubmenuFilters('abraziv')}
-                                            >
-                                                Применить
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                                ))}
                             </NavDropdown>
 
                         </Nav>

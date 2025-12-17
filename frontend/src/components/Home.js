@@ -15,6 +15,10 @@ function Home() {
   // Состояние для слайдера
   const [currentSlide, setCurrentSlide] = useState(0);
   
+  // Пагинация для товаров на главной
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // 10 товаров на странице (2 ряда по 5)
+  
   // Данные для слайдов
   const slides = [
     {
@@ -159,6 +163,19 @@ function Home() {
     return (parseFloat(price) * 1.25).toFixed(2);
   };
 
+  // Пагинация - вычисляем какие товары показывать
+  const allProducts = promoProducts.concat(featuredProducts);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentProducts = allProducts.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(allProducts.length / itemsPerPage);
+
+  // Функция смены страницы
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 400, behavior: 'smooth' }); // Прокрутка к товарам
+  };
+
 
   return (
     <div className="home-page">
@@ -237,9 +254,10 @@ function Home() {
             </div>
           </div>
         ) : (
+          <>
           <div className="products-grid-container">
-            {/* Первые 10 товаров в сетке 2x5 */}
-            {promoProducts.concat(featuredProducts).slice(0, 10).map(product => {
+            {/* Товары текущей страницы в сетке 2x5 */}
+            {currentProducts.map(product => {
               const originalPrice = getOriginalPrice(product.price);
               const discount = calculateDiscount(parseFloat(product.price), parseFloat(originalPrice));
               const isFavorite = favorites.has(product.id);
@@ -287,6 +305,100 @@ function Home() {
               );
             })}
           </div>
+
+          {/* Пагинация */}
+          {totalPages > 1 && (
+            <div className="pagination-container mt-5">
+              <nav aria-label="Навигация по страницам">
+                <ul className="pagination justify-content-center">
+                  {/* Кнопка "Предыдущая" */}
+                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      ← Предыдущая
+                    </button>
+                  </li>
+
+                  {/* Первая страница */}
+                  {currentPage > 3 && (
+                    <>
+                      <li className="page-item">
+                        <button className="page-link" onClick={() => paginate(1)}>
+                          1
+                        </button>
+                      </li>
+                      {currentPage > 4 && (
+                        <li className="page-item disabled">
+                          <span className="page-link">...</span>
+                        </li>
+                      )}
+                    </>
+                  )}
+
+                  {/* Номера страниц */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => {
+                      return page === currentPage || 
+                             page === currentPage - 1 || 
+                             page === currentPage - 2 ||
+                             page === currentPage + 1 || 
+                             page === currentPage + 2;
+                    })
+                    .map(page => (
+                      <li
+                        key={page}
+                        className={`page-item ${currentPage === page ? 'active' : ''}`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => paginate(page)}
+                        >
+                          {page}
+                        </button>
+                      </li>
+                    ))}
+
+                  {/* Последняя страница */}
+                  {currentPage < totalPages - 2 && (
+                    <>
+                      {currentPage < totalPages - 3 && (
+                        <li className="page-item disabled">
+                          <span className="page-link">...</span>
+                        </li>
+                      )}
+                      <li className="page-item">
+                        <button className="page-link" onClick={() => paginate(totalPages)}>
+                          {totalPages}
+                        </button>
+                      </li>
+                    </>
+                  )}
+
+                  {/* Кнопка "Следующая" */}
+                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Следующая →
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+
+              {/* Информация о текущей странице */}
+              <div className="text-center mt-3 text-muted">
+                Страница {currentPage} из {totalPages} 
+                <span className="mx-2">•</span>
+                Показано {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, allProducts.length)} из {allProducts.length} товаров
+              </div>
+            </div>
+          )}
+          </>
         )}
       </Container>
 
