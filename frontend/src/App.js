@@ -19,6 +19,14 @@ import Pickup from './components/Pickup';
 import Delivery from './components/Delivery';
 import PaintSelection from './components/PaintSelection';
 import Wholesale from './components/Wholesale';
+// Импортируем новые страницы для футера
+import About from './components/About';
+import Warranty from './components/Warranty';
+import HowToOrder from './components/HowToOrder';
+import TechnicalSupport from './components/TechnicalSupport';
+import ColorMatching from './components/ColorMatching';
+import FAQ from './components/FAQ';
+import Contacts from './components/Contacts';
 import backgroundImage from './assets/images/background.jpg';
 
 function App() {
@@ -51,6 +59,14 @@ function App() {
                         <Route path="/delivery" element={<Delivery />} />
                         <Route path="/paint-selection" element={<PaintSelection />} />
                         <Route path="/wholesale" element={<Wholesale />} />
+                        {/* НОВЫЕ МАРШРУТЫ ДЛЯ СТРАНИЦ ФУТЕРА */}
+                        <Route path="/about" element={<About />} />
+                        <Route path="/warranty" element={<Warranty />} />
+                        <Route path="/how-to-order" element={<HowToOrder />} />
+                        <Route path="/technical-support" element={<TechnicalSupport />} />
+                        <Route path="/color-matching" element={<ColorMatching />} />
+                        <Route path="/faq" element={<FAQ />} />
+                        <Route path="/contacts" element={<Contacts />} />
                     </Routes>
                 </div>
                 

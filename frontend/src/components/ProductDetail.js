@@ -1,6 +1,6 @@
 // frontend/src/components/ProductDetail.js
-import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Button, Spinner, Badge, Nav, Tab, Alert } from 'react-bootstrap';
+import { useEffect, useState } from 'react';
+import { Container, Row, Col, Card, Button, Spinner, Badge } from 'react-bootstrap';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
     FaShoppingCart, 
@@ -23,6 +23,7 @@ function ProductDetail() {
     const [addingToCart, setAddingToCart] = useState(false); // Состояние добавления в корзину
     const [isFavorite, setIsFavorite] = useState(false); // Избранное
     const [relatedProducts, setRelatedProducts] = useState([]); // Похожие товары
+    const [activeTab, setActiveTab] = useState('description'); // Активная вкладка в описании
 
     // Загрузка данных товара
     useEffect(() => {
@@ -175,10 +176,11 @@ function ProductDetail() {
                     <span className="breadcrumb-current">{product.name}</span>
                 </nav>
 
-                <Row>
-                    {/* Левая колонка - Изображение */}
-                    <Col lg={6} className="mb-4">
-                        <div className="product-image-section">
+                <Row className="align-items-stretch">
+                    {/* Левая колонка - Изображение + описание */}
+                    <Col lg={6} className="mb-4 d-flex flex-column">
+                        {/* Изображение товара */}
+                        <div className="product-image-section mb-4">
                             <div className="product-main-image">
                                 <img
                                     src={product.image || 'https://via.placeholder.com/600x600?text=Нет+фото'}
@@ -190,11 +192,108 @@ function ProductDetail() {
                                 )}
                             </div>
                         </div>
+                        
+                        {/* НОВЫЙ БЛОК - Описание товара под картинкой с кнопками */}
+                        <div className="product-description-block flex-grow-1">
+                            <Card>
+                                {/* Заменяем табы на кнопки */}
+                                <Card.Header className="p-3">
+                                    <div className="description-buttons">
+                                        <Button 
+                                            variant={activeTab === 'description' ? 'primary' : 'outline-primary'}
+                                            className="description-btn"
+                                            onClick={() => setActiveTab('description')}
+                                        >
+                                            Описание
+                                        </Button>
+                                        <Button 
+                                            variant={activeTab === 'specifications' ? 'primary' : 'outline-primary'}
+                                            className="description-btn"
+                                            onClick={() => setActiveTab('specifications')}
+                                        >
+                                            Характеристики
+                                        </Button>
+                                        <Button 
+                                            variant={activeTab === 'delivery' ? 'primary' : 'outline-primary'}
+                                            className="description-btn"
+                                            onClick={() => setActiveTab('delivery')}
+                                        >
+                                            Доставка
+                                        </Button>
+                                    </div>
+                                </Card.Header>
+                                <Card.Body>
+                                    {/* Контент в зависимости от активной кнопки */}
+                                    {activeTab === 'description' && (
+                                        <div>
+                                            <p>{product.description}</p>
+                                            <p>
+                                                Этот товар от бренда <strong>{product.brand.name}</strong> относится к категории <strong>{product.category.name}</strong> и отличается высоким качеством и надёжностью.
+                                            </p>
+                                            
+                                            <h6>Основные характеристики:</h6>
+                                            <ul>
+                                                <li><strong>Бренд:</strong> {product.brand.name}</li>
+                                                <li><strong>Категория:</strong> {product.category.name}</li>
+                                                <li><strong>Артикул:</strong> {product.slug}</li>
+                                            </ul>
+                                        </div>
+                                    )}
+                                    
+                                    {activeTab === 'specifications' && (
+                                        <div>
+                                            <h6>Технические характеристики:</h6>
+                                            <table className="table table-sm">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Бренд</td>
+                                                        <td><strong>{product.brand.name}</strong></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Категория</td>
+                                                        <td><strong>{product.category.name}</strong></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Артикул</td>
+                                                        <td><strong>{product.slug}</strong></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Наличие</td>
+                                                        <td>
+                                                            <strong className={product.stock > 0 ? 'text-success' : 'text-danger'}>
+                                                                {product.stock > 0 ? `В наличии (${product.stock} шт.)` : 'Нет в наличии'}
+                                                            </strong>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                    
+                                    {activeTab === 'delivery' && (
+                                        <div>
+                                            <h6>Способы доставки:</h6>
+                                            <ul className="mb-3">
+                                                <li><strong>Курьерская доставка по Минску</strong> - 1-2 дня, стоимость 5 BYN</li>
+                                                <li><strong>Доставка по Беларуси</strong> - 2-5 дней, стоимость от 10 BYN</li>
+                                                <li><strong>Самовывоз</strong> - бесплатно, в день заказа</li>
+                                            </ul>
+                                            <h6>Способы оплаты:</h6>
+                                            <ul>
+                                                <li>Наличными при получении</li>
+                                                <li>Банковской картой онлайн</li>
+                                                <li>Банковский перевод</li>
+                                            </ul>
+                                        </div>
+                                    )}
+                                </Card.Body>
+                            </Card>
+                        </div>
                     </Col>
 
-                    {/* Правая колонка - Информация */}
-                    <Col lg={6}>
-                        <div className="product-info-section">
+                    {/* Правая колонка - Информация (как было изначально) */}
+                    <Col lg={6} className="d-flex flex-column">
+                        <div className="product-info-section flex-grow-1 d-flex flex-column">
                             {/* Заголовок и бренд */}
                             <div className="product-header mb-3">
                                 <Badge bg="primary" className="mb-2">{product.brand.name}</Badge>
@@ -313,83 +412,7 @@ function ProductDetail() {
                     </Col>
                 </Row>
 
-                {/* Табы с подробной информацией */}
-                <Row className="mt-5">
-                    <Col>
-                        <Tab.Container defaultActiveKey="description">
-                            <Nav variant="tabs" className="product-tabs">
-                                <Nav.Item>
-                                    <Nav.Link eventKey="description">Описание</Nav.Link>
-                                </Nav.Item>
-                                <Nav.Item>
-                                    <Nav.Link eventKey="specifications">Характеристики</Nav.Link>
-                                </Nav.Item>
-                                <Nav.Item>
-                                    <Nav.Link eventKey="delivery">Доставка и оплата</Nav.Link>
-                                </Nav.Item>
-                            </Nav>
-                            <Tab.Content className="product-tab-content">
-                                <Tab.Pane eventKey="description">
-                                    <div className="tab-pane-content">
-                                        <h3>Описание товара</h3>
-                                        <p>{product.description}</p>
-                                        <p>
-                                            Этот товар от бренда <strong>{product.brand.name}</strong> относится 
-                                            к категории <strong>{product.category.name}</strong> и отличается 
-                                            высоким качеством и надёжностью.
-                                        </p>
-                                    </div>
-                                </Tab.Pane>
-                                <Tab.Pane eventKey="specifications">
-                                    <div className="tab-pane-content">
-                                        <h3>Характеристики</h3>
-                                        <table className="specifications-table">
-                                            <tbody>
-                                                <tr>
-                                                    <td>Бренд</td>
-                                                    <td><strong>{product.brand.name}</strong></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Категория</td>
-                                                    <td><strong>{product.category.name}</strong></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Артикул</td>
-                                                    <td><strong>{product.slug}</strong></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Наличие</td>
-                                                    <td>
-                                                        <strong className={product.stock > 0 ? 'text-success' : 'text-danger'}>
-                                                            {product.stock > 0 ? `В наличии (${product.stock} шт.)` : 'Нет в наличии'}
-                                                        </strong>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </Tab.Pane>
-                                <Tab.Pane eventKey="delivery">
-                                    <div className="tab-pane-content">
-                                        <h3>Доставка и оплата</h3>
-                                        <h5>Способы доставки:</h5>
-                                        <ul>
-                                            <li><strong>Курьерская доставка по Минску</strong> - 1-2 дня, стоимость 5 BYN</li>
-                                            <li><strong>Доставка по Беларуси</strong> - 2-5 дней, стоимость от 10 BYN</li>
-                                            <li><strong>Самовывоз</strong> - бесплатно, в день заказа</li>
-                                        </ul>
-                                        <h5>Способы оплаты:</h5>
-                                        <ul>
-                                            <li>Наличными при получении</li>
-                                            <li>Банковской картой онлайн</li>
-                                            <li>Банковский перевод</li>
-                                        </ul>
-                                    </div>
-                                </Tab.Pane>
-                            </Tab.Content>
-                        </Tab.Container>
-                    </Col>
-                </Row>
+
 
                 {/* Похожие товары */}
                 {relatedProducts.length > 0 && (

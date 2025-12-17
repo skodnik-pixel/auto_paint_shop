@@ -2997,3 +2997,165 @@ hr {
     font-size: 30px !important;
   }
 }
+
+/* ===== СТИЛИ ДЛЯ БЛОКА ОПИСАНИЯ ТОВАРА (ЛЕВЫЙ БЛОК) ===== */
+.product-description-block {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+}
+
+.product-description-block .card {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.product-description-block .card-header {
+  background: transparent;
+  border-bottom: none;
+}
+
+/* Стили для табов в левом блоке */
+.product-info-tabs {
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 0;
+}
+
+.product-info-tabs .nav-link {
+  color: var(--text-dark);
+  font-weight: 500;
+  padding: 16px 20px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.product-info-tabs .nav-link:hover {
+  color: var(--primary-red);
+  border-bottom-color: var(--primary-red);
+  background: transparent;
+}
+
+.product-info-tabs .nav-link.active {
+  color: var(--primary-red);
+  background: transparent;
+  border-bottom-color: var(--primary-red);
+  font-weight: 600;
+}
+
+.product-description-block .card-body {
+  padding: 24px;
+}
+
+.product-description-block h6 {
+  color: var(--text-dark);
+  font-weight: 600;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.product-description-block p {
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.product-description-block ul {
+  margin-bottom: 0;
+}
+
+.product-description-block li {
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.product-description-block .table {
+  margin-bottom: 0;
+}
+
+.product-description-block .table td {
+  padding: 12px 0;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+
+.product-description-block .table td:first-child {
+  font-weight: 500;
+  color: var(--text-dark);
+  width: 40%;
+}
+
+/* Адаптивность для блока описания */
+@media (max-width: 991px) {
+  .product-description-block {
+    margin-top: 20px;
+  }
+  
+  .product-info-tabs .nav-link {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  .product-description-block .card-body {
+    padding: 20px;
+  }
+}
+/* ===== СТИЛИ ДЛЯ КНОПОК ОПИСАНИЯ ===== */
+.description-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.description-btn {
+  flex: 1;
+  min-width: 100px;
+  max-width: calc(33.333% - 6px);
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Исправляем выступающий блок */
+.product-description-block {
+  max-width: 100%;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.product-description-block .card {
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.product-description-block .card-header,
+.product-description-block .card-body {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Адаптивность для кнопок описания */
+@media (max-width: 768px) {
+  .description-buttons {
+    flex-direction: column;
+  }
+  
+  .description-btn {
+    min-width: auto;
+    width: 100%;
+  }
+}
