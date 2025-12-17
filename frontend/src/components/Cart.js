@@ -32,21 +32,30 @@ function Cart() {
                 return response.json();
             })
             .then(data => {
-                setCart(data[0] || null); // Первый элемент корзины
+                // API возвращает объект с пагинацией: {results: [...]}
+                // Или массив: [...]
+                let cartData = null;
+                
+                if (data.results && Array.isArray(data.results)) {
+                    cartData = data.results[0]; // Пагинированный ответ
+                } else if (Array.isArray(data)) {
+                    cartData = data[0]; // Массив корзин
+                } else {
+                    cartData = data; // Один объект корзины
+                }
+                
+                setCart(cartData || null);
                 setLoading(false);
             })
             .catch(error => {
-                console.error('Error fetching cart:', error);
+                console.error('✗ Ошибка загрузки корзины:', error);
                 setLoading(false);
             });
     }, []);
 
     const updateQuantity = (itemId, quantity) => {
         const token = localStorage.getItem('token');
-        if (!token) {
-            alert('Пожалуйста, войдите в аккаунт');
-            return;
-        }
+        if (!token) return;
         const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
         // ВАЖНО: Правильный URL - /api/cart/{id}/ (без двойного cart)
         fetch(`${apiUrl}/cart/${cart.id}/`, {
@@ -71,10 +80,7 @@ function Cart() {
 
     const removeItem = (itemId) => {
         const token = localStorage.getItem('token');
-        if (!token) {
-            alert('Пожалуйста, войдите в аккаунт');
-            return;
-        }
+        if (!token) return;
         const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
         // ВАЖНО: Правильный URL - /api/cart/{id}/ (без двойного cart)
         fetch(`${apiUrl}/cart/${cart.id}/`, {

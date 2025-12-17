@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaHeart, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+// FaStar - иконка звездочки для избранного
+// FaChevronLeft, FaChevronRight - стрелки для слайдера
+import { FaStar, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+
 
 function Home() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -12,27 +15,36 @@ function Home() {
   // Состояние для слайдера
   const [currentSlide, setCurrentSlide] = useState(0);
   
+  // Пагинация для товаров на главной
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // 10 товаров на странице (2 ряда по 5)
+  
   // Данные для слайдов
   const slides = [
     {
       id: 1,
-      title: 'Профессиональная автокосметика',
-      subtitle: 'Лучшие бренды для вашего автомобиля',
-      description: 'Широкий ассортимент автокосметики и автохимии от ведущих производителей',
+      title: 'Профессиональные материалы для кузовного ремонта',
+      subtitle: 'Краски, лаки, грунты от ведущих производителей',
+      description: 'NOVOL, BODY, SPECTRAL, JETA PRO - всё для качественного ремонта',
       buttonText: 'Перейти в каталог',
       buttonLink: '/catalog',
       bgColor: '#E31E24',
-      image: 'https://via.placeholder.com/600x400?text=Автокосметика'
+      // Замени на свою картинку! Варианты:
+      // 1. URL из интернета: 'https://example.com/banner1.jpg'
+      // 2. Файл в public/images/: '/images/banner1.jpg'
+      // 3. Placeholder пока нет картинки:
+      image: '/images/ban1.jpg'
     },
     {
       id: 2,
       title: 'Скидки до 30%',
-      subtitle: 'Акция на всю продукцию',
-      description: 'Специальные цены на автошампуни, полироли и защитные покрытия',
+      subtitle: 'Акция на инструменты и оборудование',
+      description: 'Пневмо и электроинструменты, абразивы, малярные материалы',
       buttonText: 'Смотреть акции',
       buttonLink: '/catalog',
       bgColor: '#C41E3A',
-      image: 'https://via.placeholder.com/600x400?text=Акции'
+      // Замени на свою картинку для акций
+      image: '/images/ban2.jpg'
     },
     {
       id: 3,
@@ -42,7 +54,8 @@ function Home() {
       buttonText: 'Узнать подробнее',
       buttonLink: '/catalog',
       bgColor: '#FF4444',
-      image: 'https://via.placeholder.com/600x400?text=Доставка'
+      // Замени на свою картинку для доставки
+      image: '/images/ban3.jpg'
     }
   ];
 
@@ -77,11 +90,28 @@ function Home() {
     // Таймер для автоматической смены слайдов каждые 5 секунд
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, 12000);
 
     // Очищаем таймер при размонтировании компонента
     return () => clearInterval(timer);
   }, [slides.length]);
+
+  // Загружаем избранное из localStorage при загрузке компонента
+  useEffect(() => {
+    // Получаем сохраненное избранное из localStorage
+    const savedFavorites = localStorage.getItem('favorites');
+    if (savedFavorites) {
+      try {
+        // Парсим JSON и создаем Set из массива ID товаров
+        const favoritesArray = JSON.parse(savedFavorites);
+        setFavorites(new Set(favoritesArray));
+      } catch (error) {
+        // Если ошибка парсинга - сбрасываем избранное
+        console.error('Error parsing saved favorites:', error);
+        setFavorites(new Set());
+      }
+    }
+  }, []);
 
   // Функции для управления слайдером
   const nextSlide = () => {
@@ -96,14 +126,31 @@ function Home() {
     setCurrentSlide(index);
   };
 
+  // Функция добавления/удаления товара из избранного
   const toggleFavorite = (productId) => {
+    // Создаем новый Set на основе текущего состояния избранного
     const newFavorites = new Set(favorites);
+    
     if (newFavorites.has(productId)) {
+      // Если товар уже в избранном - удаляем его
       newFavorites.delete(productId);
     } else {
+      // Если товара нет в избранном - добавляем его
       newFavorites.add(productId);
     }
+    
+    // Обновляем состояние избранного
     setFavorites(newFavorites);
+    
+    // Сохраняем избранное в localStorage для постоянного хранения
+    // Array.from() преобразует Set в обычный массив для JSON
+    localStorage.setItem('favorites', JSON.stringify(Array.from(newFavorites)));
+    
+    // Отправляем событие для обновления счетчика в навигации
+    // CustomEvent - специальное событие браузера для передачи данных между компонентами
+    window.dispatchEvent(new CustomEvent('favoritesUpdated', { 
+      detail: { count: newFavorites.size } 
+    }));
   };
 
   const calculateDiscount = (currentPrice, originalPrice) => {
@@ -114,6 +161,19 @@ function Home() {
   const getOriginalPrice = (price) => {
     // Для демонстрации добавляем 20-30% к цене как "старая цена"
     return (parseFloat(price) * 1.25).toFixed(2);
+  };
+
+  // Пагинация - вычисляем какие товары показывать
+  const allProducts = promoProducts.concat(featuredProducts);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentProducts = allProducts.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(allProducts.length / itemsPerPage);
+
+  // Функция смены страницы
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 400, behavior: 'smooth' }); // Прокрутка к товарам
   };
 
 
@@ -131,11 +191,13 @@ function Home() {
               <div 
                 key={slide.id} 
                 className="slide"
-                style={{ backgroundColor: slide.bgColor }}
+                style={{
+                   backgroundImage:`url(${slide.image})`,
+                   backgroundColor: slide.bgColor }}
               >
                 <Container>
                   <Row className="align-items-center">
-                    <Col md={6} className="slide-content">
+                    <Col md={12} className="slide-content">
                       <div className="slide-text">
                         <h3 className="slide-subtitle">{slide.subtitle}</h3>
                         <h1 className="slide-title">{slide.title}</h1>
@@ -145,15 +207,6 @@ function Home() {
                             {slide.buttonText}
                           </Button>
                         </Link>
-                      </div>
-                    </Col>
-                    <Col md={6} className="slide-image-col">
-                      <div className="slide-image-wrapper">
-                        <img 
-                          src={slide.image} 
-                          alt={slide.title}
-                          className="slide-image"
-                        />
                       </div>
                     </Col>
                   </Row>
@@ -192,12 +245,8 @@ function Home() {
         </div>
       </div>
 
-      {/* Акционные товары */}
+      {/* Товары в 2 ряда по 5 штук */}
       <Container className="mb-5">
-        <div className="section-header mb-4">
-          <h2 className="section-title">Акционные товары</h2>
-        </div>
-
         {loading ? (
           <div className="text-center">
             <div className="spinner-border text-warning" role="status">
@@ -206,43 +255,149 @@ function Home() {
           </div>
         ) : (
           <>
-            <Row className="promo-products-row">
-              {promoProducts.map(product => {
-                const originalPrice = getOriginalPrice(product.price);
-                const discount = calculateDiscount(parseFloat(product.price), parseFloat(originalPrice));
-                const isFavorite = favorites.has(product.id);
-                
-                return (
-                  <Col key={product.id} className="promo-product-col">
-                    <Card className="promo-product-card">
-                      <div className="product-favorite" onClick={() => toggleFavorite(product.id)}>
-                        <FaHeart className={isFavorite ? 'favorite-active' : ''} />
+          <div className="products-grid-container">
+            {/* Товары текущей страницы в сетке 2x5 */}
+            {currentProducts.map(product => {
+              const originalPrice = getOriginalPrice(product.price);
+              const discount = calculateDiscount(parseFloat(product.price), parseFloat(originalPrice));
+              const isFavorite = favorites.has(product.id);
+              
+              return (
+                <div key={product.id} className="product-grid-item">
+                  <Card className="promo-product-card">
+                    {/* Кнопка добавления в избранное (звездочка) */}
+                    <div className="product-favorite" onClick={() => toggleFavorite(product.id)}>
+                      {/* FaStar - иконка звездочки, меняет цвет если товар в избранном */}
+                      <FaStar className={isFavorite ? 'favorite-active' : ''} />
+                    </div>
+                    <div className="product-image-wrapper">
+                      <img
+                        src={product.image || 'https://via.placeholder.com/200x200?text=Нет+фото'}
+                        alt={product.name}
+                        className="product-image"
+                      />
+                    </div>
+                    <Card.Body className="product-card-body">
+                      {/* Секция с ценами товара */}
+                      <div className="product-price-section">
+                        {/* Текущая цена товара (отображается крупным шрифтом) */}
+                        <div className="product-current-price">{product.price} BYN</div>
+                        {/* Старая цена товара (зачеркнутая, показывает от какой цены скидка) */}
+                        <div className="product-original-price">{originalPrice} BYN</div>
+                        {/* Badge - цветная метка Bootstrap для показа скидки (красный прямоугольник с белым текстом "-20%") */}
+                        <Badge className="product-discount-badge">-{discount}%</Badge>
                       </div>
-                      <div className="product-image-wrapper">
-                        <img
-                          src={product.image || 'https://via.placeholder.com/200x200?text=Нет+фото'}
-                          alt={product.name}
-                          className="product-image"
-                        />
-                      </div>
-                      <Card.Body className="product-card-body">
-                        <div className="product-price-section">
-                          <div className="product-current-price">{product.price} BYN</div>
-                          <div className="product-original-price">{originalPrice} BYN</div>
-                          <Badge className="product-discount-badge">-{discount}%</Badge>
-                        </div>
-                        <Card.Title className="product-name">{product.name}</Card.Title>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                );
-              })}
-            </Row>
-            <div className="promo-pagination">
-              {[1, 2, 3].map((dot, index) => (
-                <span key={index} className={`pagination-dot ${index === 0 ? 'active' : ''}`}></span>
-              ))}
+                      {/* Card.Title - заголовок карточки Bootstrap, отображает название товара */}
+                      <Card.Title className="product-name">{product.name}</Card.Title>
+                      
+                      {/* Добавляем кнопку "Подробнее" для перехода на страницу товара */}
+                      {/* Link - компонент React Router для навигации без перезагрузки страницы */}
+                      {/* product.slug - человекочитаемый URL товара, если нет - используем ID */}
+                      <Link to={`/product/${product.slug || product.id}`} className="product-detail-link">
+                        {/* Button - кнопка Bootstrap с красным цветом (variant="primary") и маленьким размером (size="sm") */}
+                        <Button variant="primary" size="sm" className="product-detail-btn">
+                          Подробнее
+                        </Button>
+                      </Link>
+                    </Card.Body>
+                  </Card>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Пагинация */}
+          {totalPages > 1 && (
+            <div className="pagination-container mt-5">
+              <nav aria-label="Навигация по страницам">
+                <ul className="pagination justify-content-center">
+                  {/* Кнопка "Предыдущая" */}
+                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      ← Предыдущая
+                    </button>
+                  </li>
+
+                  {/* Первая страница */}
+                  {currentPage > 3 && (
+                    <>
+                      <li className="page-item">
+                        <button className="page-link" onClick={() => paginate(1)}>
+                          1
+                        </button>
+                      </li>
+                      {currentPage > 4 && (
+                        <li className="page-item disabled">
+                          <span className="page-link">...</span>
+                        </li>
+                      )}
+                    </>
+                  )}
+
+                  {/* Номера страниц */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => {
+                      return page === currentPage || 
+                             page === currentPage - 1 || 
+                             page === currentPage - 2 ||
+                             page === currentPage + 1 || 
+                             page === currentPage + 2;
+                    })
+                    .map(page => (
+                      <li
+                        key={page}
+                        className={`page-item ${currentPage === page ? 'active' : ''}`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => paginate(page)}
+                        >
+                          {page}
+                        </button>
+                      </li>
+                    ))}
+
+                  {/* Последняя страница */}
+                  {currentPage < totalPages - 2 && (
+                    <>
+                      {currentPage < totalPages - 3 && (
+                        <li className="page-item disabled">
+                          <span className="page-link">...</span>
+                        </li>
+                      )}
+                      <li className="page-item">
+                        <button className="page-link" onClick={() => paginate(totalPages)}>
+                          {totalPages}
+                        </button>
+                      </li>
+                    </>
+                  )}
+
+                  {/* Кнопка "Следующая" */}
+                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Следующая →
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+
+              {/* Информация о текущей странице */}
+              <div className="text-center mt-3 text-muted">
+                Страница {currentPage} из {totalPages} 
+                <span className="mx-2">•</span>
+                Показано {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, allProducts.length)} из {allProducts.length} товаров
+              </div>
             </div>
+          )}
           </>
         )}
       </Container>

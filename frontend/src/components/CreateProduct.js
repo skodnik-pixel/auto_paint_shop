@@ -141,7 +141,7 @@ function CreateProduct() {
                 return response.json();
             })
             .then(data => {
-                alert('Продукт создан!');
+                console.log('✓ Продукт создан');
                 navigate('/');
             })
             .catch(error => {

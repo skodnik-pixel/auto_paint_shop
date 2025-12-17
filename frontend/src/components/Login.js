@@ -64,7 +64,6 @@ function Login() {
                     is_admin: data.is_admin
                 }));
                 
-                alert('Вход выполнен успешно!');
                 navigate('/');
                 window.location.reload(); // Обновляем страницу для обновления Navbar
             } else {
