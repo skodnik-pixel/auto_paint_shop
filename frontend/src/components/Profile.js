@@ -34,8 +34,8 @@ function Profile() {
             return;
         }
 
-        // Загружаем заказы
-        fetchOrders(token);
+        // Загружаем заказы из localStorage вместо сервера
+        loadOrdersFromStorage();
         
         // Загружаем историю покупок из localStorage
         loadPurchaseHistory();
@@ -49,6 +49,19 @@ function Profile() {
         } catch (error) {
             console.error('Ошибка загрузки истории покупок:', error);
             setPurchaseHistory([]);
+        }
+    };
+
+    // Функция загрузки заказов из localStorage
+    const loadOrdersFromStorage = () => {
+        try {
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            setOrders(orders);
+            setLoading(false);
+        } catch (error) {
+            console.error('Ошибка загрузки заказов:', error);
+            setOrders([]);
+            setLoading(false);
         }
     };
 
@@ -297,11 +310,7 @@ DIR                                </Card.Header>
                                                                 </Col>
                                                                 <Col md={3}>
                                                                     <small className="text-muted">Дата заказа</small>
-                                                                    <p className="mb-0">{formatDate(order.created_at)}</p>
-                                                                </Col>
-                                                                <Col md={2}>
-                                                                    <small className="text-muted">Сумма</small>
-                                                                    <h6 className="mb-0 text-primary">{order.total_price} BYN</h6>
+                                                                    <p className="mb-0">{formatDate(order.createdAt)}</p>
                                                                 </Col>
                                                                 <Col md={3}>
                                                                     <small className="text-muted">Статус</small>
@@ -311,14 +320,9 @@ DIR                                </Card.Header>
                                                                         </Badge>
                                                                     </div>
                                                                 </Col>
-                                                                <Col md={2} className="text-end">
-                                                                    <Button 
-                                                                        variant="outline-primary" 
-                                                                        size="sm"
-                                                                        onClick={() => {/* Открыть детали заказа */}}
-                                                                    >
-                                                                        Подробнее
-                                                                    </Button>
+                                                                <Col md={4} className="text-end">
+                                                                    <small className="text-muted">Сумма заказа</small>
+                                                                    <h4 className="mb-0 text-primary">{order.totalPrice} BYN</h4>
                                                                 </Col>
                                                             </Row>
                                                             
@@ -329,7 +333,7 @@ DIR                                </Card.Header>
                                                                     <div className="mt-2">
                                                                         {order.items.map((item, index) => (
                                                                             <div key={index} className="order-item-row">
-                                                                                <span>{item.product?.name || 'Товар'}</span>
+                                                                                <span>{item.name}</span>
                                                                                 <span className="text-muted">
                                                                                     {item.quantity} шт. × {item.price} BYN
                                                                                 </span>
@@ -419,15 +423,6 @@ DIR                                </Card.Header>
                                                                 >
                                                                     <FaEye className="me-1" />
                                                                     Подробнее
-                                                                </Button>
-                                                                <Button
-                                                                    variant="outline-danger"
-                                                                    size="sm"
-                                                                    onClick={() => confirmDelete(item.id)}
-                                                                    className="history-btn"
-                                                                >
-                                                                    <FaTrash className="me-1" />
-                                                                    Удалить
                                                                 </Button>
                                                             </div>
                                                         </Card.Body>

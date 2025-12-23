@@ -4337,15 +4337,15 @@ hr {
   display: flex;
   gap: 8px;
   margin-top: auto;
+  justify-content: center; /* Центрируем одну кнопку */
 }
 
 .history-btn {
-  flex: 1;
   border: 2px solid var(--black) !important;
   border-radius: 6px !important;
   font-weight: 600 !important;
   font-size: 12px !important;
-  padding: 8px 12px !important;
+  padding: 8px 16px !important; /* Увеличил padding для одной кнопки */
   transition: all 0.3s ease !important;
 }
 
