@@ -45,7 +45,15 @@ function Profile() {
     const loadPurchaseHistory = () => {
         try {
             const history = JSON.parse(localStorage.getItem('purchaseHistory') || '[]');
-            setPurchaseHistory(history);
+            
+            // Сортировка по дате покупки (новые сверху)
+            const sortedHistory = history.sort((a, b) => {
+                const dateA = new Date(a.purchaseDate || 0);
+                const dateB = new Date(b.purchaseDate || 0);
+                return dateB - dateA; // Сортировка по убыванию (новые сверху)
+            });
+            
+            setPurchaseHistory(sortedHistory);
         } catch (error) {
             console.error('Ошибка загрузки истории покупок:', error);
             setPurchaseHistory([]);
@@ -56,7 +64,15 @@ function Profile() {
     const loadOrdersFromStorage = () => {
         try {
             const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            setOrders(orders);
+            
+            // Сортировка заказов по дате (новые сверху)
+            const sortedOrders = orders.sort((a, b) => {
+                const dateA = new Date(a.createdAt || 0);
+                const dateB = new Date(b.createdAt || 0);
+                return dateB - dateA; // Новые заказы сверху
+            });
+            
+            setOrders(sortedOrders);
             setLoading(false);
         } catch (error) {
             console.error('Ошибка загрузки заказов:', error);
