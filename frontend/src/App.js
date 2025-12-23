@@ -12,6 +12,7 @@ import Register from './components/Register';
 import ProductDetail from './components/ProductDetail';
 import CreateProduct from './components/CreateProduct';
 import Profile from './components/Profile';
+import Checkout from './components/Checkout';
 // Импортируем компонент страницы избранного
 import Favorites from './components/Favorites';
 // Импортируем новые страницы для хедера
@@ -54,6 +55,7 @@ function App() {
                         <Route path="/product/:slug" element={<ProductDetail />} />
                         <Route path="/create-product" element={<CreateProduct />} />
                         <Route path="/profile" element={<Profile />} />
+                        <Route path="/checkout" element={<Checkout />} />
                         {/* НОВЫЕ МАРШРУТЫ ДЛЯ СТРАНИЦ ХЕДЕРА */}
                         <Route path="/pickup" element={<Pickup />} />
                         <Route path="/delivery" element={<Delivery />} />

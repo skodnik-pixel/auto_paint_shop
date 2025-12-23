@@ -3,7 +3,9 @@ import { Container, Row, Col, Card, Badge, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 // FaStar - иконка звездочки для избранного
 // FaChevronLeft, FaChevronRight - стрелки для слайдера
-import { FaStar, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+// FaPlus, FaMinus - иконки для кнопок количества
+// FaShoppingCart - иконка корзины для кнопки "Купить"
+import { FaStar, FaChevronLeft, FaChevronRight, FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa';
 
 
 function Home() {
@@ -11,6 +13,9 @@ function Home() {
   const [promoProducts, setPromoProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState(new Set());
+  
+  // Состояние для количества товаров (для кнопок +/-)
+  const [quantities, setQuantities] = useState({});
   
   // Состояние для слайдера
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -176,6 +181,83 @@ function Home() {
     window.scrollTo({ top: 400, behavior: 'smooth' }); // Прокрутка к товарам
   };
 
+  // Функции для работы с количеством товаров
+  const increaseQuantity = (productId) => {
+    setQuantities(prev => ({
+      ...prev,
+      [productId]: (prev[productId] || 1) + 1
+    }));
+  };
+
+  const decreaseQuantity = (productId) => {
+    setQuantities(prev => ({
+      ...prev,
+      [productId]: Math.max(1, (prev[productId] || 1) - 1)
+    }));
+  };
+
+  // Функция покупки товара (добавление в корзину и историю)
+  const buyProduct = async (product) => {
+    const quantity = quantities[product.id] || 1;
+    
+    try {
+      // Добавляем в корзину
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const existingItem = cart.find(item => item.id === product.id);
+      
+      if (existingItem) {
+        existingItem.quantity += quantity;
+      } else {
+        cart.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          slug: product.slug,
+          quantity: quantity
+        });
+      }
+      
+      localStorage.setItem('cart', JSON.stringify(cart));
+      
+      // Добавляем в историю покупок
+      const history = JSON.parse(localStorage.getItem('purchaseHistory') || '[]');
+      const historyItem = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        slug: product.slug,
+        quantity: quantity,
+        purchaseDate: new Date().toISOString()
+      };
+      
+      // Проверяем есть ли уже такой товар в истории
+      const existingHistoryIndex = history.findIndex(item => item.id === product.id);
+      if (existingHistoryIndex >= 0) {
+        // Обновляем существующий товар в истории
+        history[existingHistoryIndex] = historyItem;
+      } else {
+        // Добавляем новый товар в начало истории
+        history.unshift(historyItem);
+      }
+      
+      localStorage.setItem('purchaseHistory', JSON.stringify(history));
+      
+      // Сбрасываем количество после покупки
+      setQuantities(prev => ({
+        ...prev,
+        [product.id]: 1
+      }));
+      
+      // Можно добавить уведомление о успешном добавлении
+      console.log(`Товар "${product.name}" добавлен в корзину и историю!`);
+      
+    } catch (error) {
+      console.error('Ошибка при добавлении товара:', error);
+    }
+  };
+
 
   return (
     <div className="home-page">
@@ -290,15 +372,50 @@ function Home() {
                       {/* Card.Title - заголовок карточки Bootstrap, отображает название товара */}
                       <Card.Title className="product-name">{product.name}</Card.Title>
                       
-                      {/* Добавляем кнопку "Подробнее" для перехода на страницу товара */}
-                      {/* Link - компонент React Router для навигации без перезагрузки страницы */}
-                      {/* product.slug - человекочитаемый URL товара, если нет - используем ID */}
-                      <Link to={`/product/${product.slug || product.id}`} className="product-detail-link">
-                        {/* Button - кнопка Bootstrap с красным цветом (variant="primary") и маленьким размером (size="sm") */}
-                        <Button variant="primary" size="sm" className="product-detail-btn">
-                          Подробнее
-                        </Button>
-                      </Link>
+                      {/* Блок с кнопками управления товаром */}
+                      <div className="product-actions">
+                        {/* Кнопки количества товара */}
+                        <div className="quantity-controls">
+                          <Button 
+                            variant="outline-secondary" 
+                            size="sm" 
+                            onClick={() => decreaseQuantity(product.id)}
+                            className="quantity-btn"
+                          >
+                            <FaMinus />
+                          </Button>
+                          <span className="quantity-display">{quantities[product.id] || 1}</span>
+                          <Button 
+                            variant="outline-secondary" 
+                            size="sm" 
+                            onClick={() => increaseQuantity(product.id)}
+                            className="quantity-btn"
+                          >
+                            <FaPlus />
+                          </Button>
+                        </div>
+                        
+                        {/* Кнопки действий */}
+                        <div className="action-buttons">
+                          {/* Кнопка "Купить" - добавляет в корзину и историю */}
+                          <Button 
+                            variant="success" 
+                            size="sm" 
+                            onClick={() => buyProduct(product)}
+                            className="buy-btn"
+                          >
+                            <FaShoppingCart className="me-1" />
+                            Купить
+                          </Button>
+                          
+                          {/* Кнопка "Подробнее" для перехода на страницу товара */}
+                          <Link to={`/product/${product.slug || product.id}`} className="product-detail-link">
+                            <Button variant="primary" size="sm" className="product-detail-btn">
+                              Подробнее
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
                     </Card.Body>
                   </Card>
                 </div>

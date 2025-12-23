@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge, Spinner, Alert, Form, Button } from 'react-bootstrap';
 // Добавляем useSearchParams для чтения URL параметров
+// Добавляем иконки для кнопок количества и покупки
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa';
 
 const Catalog = () => {
   const [products, setProducts] = useState([]);
@@ -14,6 +16,10 @@ const Catalog = () => {
   const [selectedBrand, setSelectedBrand] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [addingToCart, setAddingToCart] = useState({});
+  
+  // Состояние для количества товаров (для кнопок +/-)
+  const [quantities, setQuantities] = useState({});
+  
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
@@ -161,6 +167,82 @@ const Catalog = () => {
       console.error('✗ Ошибка сети:', error);
     } finally {
       setAddingToCart(prev => ({ ...prev, [productId]: false }));
+    }
+  };
+
+  // Функции для работы с количеством товаров
+  const increaseQuantity = (productId) => {
+    setQuantities(prev => ({
+      ...prev,
+      [productId]: (prev[productId] || 1) + 1
+    }));
+  };
+
+  const decreaseQuantity = (productId) => {
+    setQuantities(prev => ({
+      ...prev,
+      [productId]: Math.max(1, (prev[productId] || 1) - 1)
+    }));
+  };
+
+  // Функция покупки товара (добавление в корзину и историю)
+  const buyProduct = async (product) => {
+    const quantity = quantities[product.id] || 1;
+    
+    try {
+      // Добавляем в корзину
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const existingItem = cart.find(item => item.id === product.id);
+      
+      if (existingItem) {
+        existingItem.quantity += quantity;
+      } else {
+        cart.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          slug: product.slug,
+          quantity: quantity
+        });
+      }
+      
+      localStorage.setItem('cart', JSON.stringify(cart));
+      
+      // Добавляем в историю покупок
+      const history = JSON.parse(localStorage.getItem('purchaseHistory') || '[]');
+      const historyItem = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        slug: product.slug,
+        quantity: quantity,
+        purchaseDate: new Date().toISOString()
+      };
+      
+      // Проверяем есть ли уже такой товар в истории
+      const existingHistoryIndex = history.findIndex(item => item.id === product.id);
+      if (existingHistoryIndex >= 0) {
+        // Обновляем существующий товар в истории
+        history[existingHistoryIndex] = historyItem;
+      } else {
+        // Добавляем новый товар в начало истории
+        history.unshift(historyItem);
+      }
+      
+      localStorage.setItem('purchaseHistory', JSON.stringify(history));
+      
+      // Сбрасываем количество после покупки
+      setQuantities(prev => ({
+        ...prev,
+        [product.id]: 1
+      }));
+      
+      console.log(`Товар "${product.name}" добавлен в корзину и историю!`);
+      
+    } catch (error) {
+      console.error('Ошибка при добавлении товара:', error);
     }
   };
 
@@ -330,35 +412,53 @@ const Catalog = () => {
                         </Badge>
                       </div>
                       
-                      <div className="d-flex gap-2">
-                        <Link 
-                          to={`/product/${product.slug}`}
-                          className="btn btn-outline-primary flex-grow-1"
-                        >
-                          Подробнее
-                        </Link>
-                        <Button
-                          variant="success"
-                          onClick={() => addToCart(product.id, product.slug)}
-                          disabled={product.stock === 0 || addingToCart[product.id]}
-                          className="flex-grow-1"
-                        >
-                          {addingToCart[product.id] ? (
-                            <>
-                              <Spinner
-                                as="span"
-                                animation="border"
-                                size="sm"
-                                role="status"
-                                aria-hidden="true"
-                                className="me-1"
-                              />
-                              Добавление...
-                            </>
-                          ) : (
-                            'В корзину'
-                          )}
-                        </Button>
+                      {/* Блок с кнопками управления товаром */}
+                      <div className="product-actions">
+                        {/* Кнопки количества товара */}
+                        <div className="quantity-controls">
+                          <Button 
+                            variant="outline-secondary" 
+                            size="sm" 
+                            onClick={() => decreaseQuantity(product.id)}
+                            className="quantity-btn"
+                            disabled={product.stock === 0}
+                          >
+                            <FaMinus />
+                          </Button>
+                          <span className="quantity-display">{quantities[product.id] || 1}</span>
+                          <Button 
+                            variant="outline-secondary" 
+                            size="sm" 
+                            onClick={() => increaseQuantity(product.id)}
+                            className="quantity-btn"
+                            disabled={product.stock === 0}
+                          >
+                            <FaPlus />
+                          </Button>
+                        </div>
+                        
+                        {/* Кнопки действий */}
+                        <div className="action-buttons">
+                          {/* Кнопка "Купить" - добавляет в корзину и историю */}
+                          <Button 
+                            variant="success" 
+                            size="sm" 
+                            onClick={() => buyProduct(product)}
+                            className="buy-btn"
+                            disabled={product.stock === 0}
+                          >
+                            <FaShoppingCart className="me-1" />
+                            Купить
+                          </Button>
+                          
+                          {/* Кнопка "Подробнее" для перехода на страницу товара */}
+                          <Link 
+                            to={`/product/${product.slug}`}
+                            className="btn btn-primary btn-sm product-detail-btn"
+                          >
+                            Подробнее
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </Card.Body>

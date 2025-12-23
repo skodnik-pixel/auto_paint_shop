@@ -1,16 +1,19 @@
 // frontend/src/components/Profile.js
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Nav, Tab, Table, Badge, Button, Form, Alert, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Nav, Badge, Button, Alert, Spinner, Modal } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaShoppingBag, FaHeart, FaCog, FaSignOutAlt, FaBox, FaClock, FaCheckCircle, FaTimes } from 'react-icons/fa';
+import { FaUser, FaShoppingBag, FaHistory, FaCog, FaSignOutAlt, FaBox, FaClock, FaCheckCircle, FaTimes, FaEye, FaTrash } from 'react-icons/fa';
 
 function Profile() {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [orders, setOrders] = useState([]);
+    const [purchaseHistory, setPurchaseHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('profile');
     const [error, setError] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
 
     // Загрузка данных пользователя и заказов
     useEffect(() => {
@@ -33,7 +36,21 @@ function Profile() {
 
         // Загружаем заказы
         fetchOrders(token);
+        
+        // Загружаем историю покупок из localStorage
+        loadPurchaseHistory();
     }, [navigate]);
+
+    // Функция загрузки истории покупок из localStorage
+    const loadPurchaseHistory = () => {
+        try {
+            const history = JSON.parse(localStorage.getItem('purchaseHistory') || '[]');
+            setPurchaseHistory(history);
+        } catch (error) {
+            console.error('Ошибка загрузки истории покупок:', error);
+            setPurchaseHistory([]);
+        }
+    };
 
     // Функция загрузки заказов
     const fetchOrders = async (token) => {
@@ -57,6 +74,38 @@ function Profile() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Удаление товара из истории
+    const removeFromHistory = (productId) => {
+        const updatedHistory = purchaseHistory.filter(item => item.id !== productId);
+        setPurchaseHistory(updatedHistory);
+        localStorage.setItem('purchaseHistory', JSON.stringify(updatedHistory));
+        setShowDeleteModal(false);
+        setItemToDelete(null);
+    };
+
+    // Подтверждение удаления из истории
+    const confirmDelete = (productId) => {
+        setItemToDelete(productId);
+        setShowDeleteModal(true);
+    };
+
+    // Просмотр подробностей товара
+    const viewProductDetails = (productSlug) => {
+        navigate(`/product/${productSlug}`);
+    };
+
+    // Форматирование даты покупки
+    const formatPurchaseDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     // Выход из системы
@@ -157,11 +206,11 @@ function Profile() {
                                         )}
                                     </Nav.Link>
                                     <Nav.Link 
-                                        className={activeTab === 'favorites' ? 'active' : ''}
-                                        onClick={() => setActiveTab('favorites')}
+                                        className={activeTab === 'history' ? 'active' : ''}
+                                        onClick={() => setActiveTab('history')}
                                     >
-                                        <FaHeart className="me-2" />
-                                        Избранное
+                                        <FaHistory className="me-2" />
+                                        История
                                     </Nav.Link>
                                     <Nav.Link 
                                         className={activeTab === 'settings' ? 'active' : ''}
@@ -186,7 +235,7 @@ function Profile() {
                             <Card className="profile-content-card">
                                 <Card.Header>
                                     <h4 className="mb-0">Личный кабинет</h4>
-                                </Card.Header>
+DIR                                </Card.Header>
                                 <Card.Body>
                                     <Row>
                                         <Col md={6} className="mb-3">
@@ -299,18 +348,94 @@ function Profile() {
                             </Card>
                         )}
 
-                        {/* Вкладка "Избранное" */}
-                        {activeTab === 'favorites' && (
+                        {/* Вкладка "История" */}
+                        {activeTab === 'history' && (
                             <Card className="profile-content-card">
                                 <Card.Header>
-                                    <h4 className="mb-0">Избранные товары</h4>
+                                    <h4 className="mb-0">История покупок</h4>
                                 </Card.Header>
                                 <Card.Body>
-                                    <div className="text-center py-5">
-                                        <FaHeart size={60} className="text-muted mb-3" />
-                                        <h5>У вас пока нет избранных товаров</h5>
-                                        <p className="text-muted">Добавляйте товары в избранное, чтобы не потерять их</p>
-                                    </div>
+                                    {purchaseHistory.length === 0 ? (
+                                        <div className="text-center py-5">
+                                            <FaHistory size={60} className="text-muted mb-3" />
+                                            <h5>У вас пока нет истории покупок</h5>
+                                            <p className="text-muted">История будет пополняться при совершении покупок</p>
+                                            <Button variant="primary" onClick={() => navigate('/catalog')}>
+                                                Перейти в каталог
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Row>
+                                            {purchaseHistory.map(item => (
+                                                <Col key={item.id} md={6} lg={4} className="mb-4">
+                                                    <Card className="history-product-card">
+                                                        {/* Изображение товара */}
+                                                        {item.image && (
+                                                            <div className="history-product-image-wrapper">
+                                                                <Card.Img 
+                                                                    variant="top" 
+                                                                    src={item.image} 
+                                                                    alt={item.name}
+                                                                    className="history-product-image"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        
+                                                        <Card.Body>
+                                                            {/* Название товара */}
+                                                            <Card.Title className="history-product-name">
+                                                                {item.name}
+                                                            </Card.Title>
+                                                            
+                                                            {/* Информация о покупке */}
+                                                            <div className="history-product-info">
+                                                                <div className="history-info-row">
+                                                                    <span className="history-label">Цена:</span>
+                                                                    <span className="history-value">{item.price} BYN</span>
+                                                                </div>
+                                                                {item.quantity && (
+                                                                    <div className="history-info-row">
+                                                                        <span className="history-label">Количество:</span>
+                                                                        <span className="history-value">{item.quantity} шт.</span>
+                                                                    </div>
+                                                                )}
+                                                                {item.purchaseDate && (
+                                                                    <div className="history-info-row">
+                                                                        <span className="history-label">Дата:</span>
+                                                                        <span className="history-value text-muted">
+                                                                            {formatPurchaseDate(item.purchaseDate)}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            
+                                                            {/* Кнопки действий */}
+                                                            <div className="history-actions">
+                                                                <Button
+                                                                    variant="outline-primary"
+                                                                    size="sm"
+                                                                    onClick={() => viewProductDetails(item.slug)}
+                                                                    className="history-btn"
+                                                                >
+                                                                    <FaEye className="me-1" />
+                                                                    Подробнее
+                                                                </Button>
+                                                                <Button
+                                                                    variant="outline-danger"
+                                                                    size="sm"
+                                                                    onClick={() => confirmDelete(item.id)}
+                                                                    className="history-btn"
+                                                                >
+                                                                    <FaTrash className="me-1" />
+                                                                    Удалить
+                                                                </Button>
+                                                            </div>
+                                                        </Card.Body>
+                                                    </Card>
+                                                </Col>
+                                            ))}
+                                        </Row>
+                                    )}
                                 </Card.Body>
                             </Card>
                         )}
@@ -336,6 +461,24 @@ function Profile() {
                         )}
                     </Col>
                 </Row>
+
+                {/* Модальное окно подтверждения удаления из истории */}
+                <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Подтверждение удаления</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        Вы уверены, что хотите удалить этот товар из истории покупок?
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                            Отмена
+                        </Button>
+                        <Button variant="danger" onClick={() => removeFromHistory(itemToDelete)}>
+                            Удалить
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
             </Container>
         </div>
     );
