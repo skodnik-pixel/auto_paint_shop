@@ -1,8 +1,8 @@
 // frontend/src/components/Profile.js
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Nav, Badge, Button, Alert, Spinner, Modal } from 'react-bootstrap';
+import { Container, Row, Col, Card, Nav, Badge, Button, Alert, Spinner, Modal, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaShoppingBag, FaHistory, FaCog, FaSignOutAlt, FaBox, FaClock, FaCheckCircle, FaTimes, FaEye, FaTrash } from 'react-icons/fa';
+import { FaUser, FaShoppingBag, FaHistory, FaCog, FaSignOutAlt, FaBox, FaClock, FaCheckCircle, FaTimes, FaEye, FaTrash, FaTruck, FaBell, FaBuilding, FaPlus } from 'react-icons/fa';
 
 function Profile() {
     const navigate = useNavigate();
@@ -14,6 +14,25 @@ function Profile() {
     const [error, setError] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
+    const [showAddressModal, setShowAddressModal] = useState(false);
+    const [savedAddresses, setSavedAddresses] = useState([
+        {
+            id: 1,
+            name: 'Основной адрес',
+            city: 'Минск',
+            address: 'ул. Примерная, д. 1, кв. 10',
+            postalCode: '220000',
+            isDefault: true
+        }
+    ]);
+    const [newAddress, setNewAddress] = useState({
+        name: '',
+        city: '',
+        address: '',
+        apartment: '',
+        postalCode: '',
+        isDefault: false
+    });
 
     // Загрузка данных пользователя и заказов
     useEffect(() => {
@@ -103,6 +122,42 @@ function Profile() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Функции для работы с адресами
+    const handleAddAddress = () => {
+        if (newAddress.name && newAddress.city && newAddress.address) {
+            const address = {
+                id: Date.now(),
+                ...newAddress,
+                address: newAddress.apartment 
+                    ? `${newAddress.address}, кв. ${newAddress.apartment}`
+                    : newAddress.address
+            };
+            
+            setSavedAddresses([...savedAddresses, address]);
+            setNewAddress({
+                name: '',
+                city: '',
+                address: '',
+                apartment: '',
+                postalCode: '',
+                isDefault: false
+            });
+            setShowAddressModal(false);
+        }
+    };
+
+    const handleDeleteAddress = (addressId) => {
+        setSavedAddresses(savedAddresses.filter(addr => addr.id !== addressId));
+    };
+
+    const handleAddressInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setNewAddress(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
 
     // Удаление товара из истории
@@ -458,15 +513,157 @@ DIR                                </Card.Header>
                                     <h4 className="mb-0">Настройки аккаунта</h4>
                                 </Card.Header>
                                 <Card.Body>
-                                    <Alert variant="info">
-                                        <strong>Скоро здесь появится:</strong>
-                                        <ul className="mb-0 mt-2">
-                                            <li>Изменение пароля</li>
-                                            <li>Редактирование профиля</li>
-                                            <li>Настройки уведомлений</li>
-                                            <li>Управление адресами доставки</li>
-                                        </ul>
-                                    </Alert>
+                                    {/* Управление адресами доставки */}
+                                    <Card className="settings-section mb-4">
+                                        <Card.Header>
+                                            <h5 className="mb-0">
+                                                <FaTruck className="me-2" />
+                                                Адреса доставки
+                                            </h5>
+                                        </Card.Header>
+                                        <Card.Body>
+                                            <div className="saved-addresses">
+                                                <p className="text-muted mb-3">Сохранённые адреса для быстрого оформления заказов</p>
+                                                
+                                                {/* Список сохранённых адресов */}
+                                                <div className="address-list mb-3">
+                                                    {savedAddresses.map(address => (
+                                                        <div key={address.id} className="address-item">
+                                                            <div className="address-header">
+                                                                <strong>{address.name}</strong>
+                                                                {address.isDefault && (
+                                                                    <Badge bg="success" className="ms-2">По умолчанию</Badge>
+                                                                )}
+                                                                <Button
+                                                                    variant="outline-danger"
+                                                                    size="sm"
+                                                                    className="address-delete-btn"
+                                                                    onClick={() => handleDeleteAddress(address.id)}
+                                                                >
+                                                                    <FaTrash />
+                                                                </Button>
+                                                            </div>
+                                                            <p className="mb-1">{address.city}, {address.address}</p>
+                                                            {address.postalCode && (
+                                                                <small className="text-muted">Индекс: {address.postalCode}</small>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                
+                                                <Button 
+                                                    variant="outline-primary" 
+                                                    size="sm" 
+                                                    className="settings-btn"
+                                                    onClick={() => setShowAddressModal(true)}
+                                                >
+                                                    <FaPlus className="me-1" />
+                                                    Добавить адрес
+                                                </Button>
+                                            </div>
+                                        </Card.Body>
+                                    </Card>
+
+                                    {/* Настройки уведомлений */}
+                                    <Card className="settings-section mb-4">
+                                        <Card.Header>
+                                            <h5 className="mb-0">
+                                                <FaBell className="me-2" />
+                                                Уведомления
+                                            </h5>
+                                        </Card.Header>
+                                        <Card.Body>
+                                            <Form>
+                                                <Form.Check 
+                                                    type="checkbox"
+                                                    id="email-orders"
+                                                    label="Email уведомления о статусе заказа"
+                                                    defaultChecked
+                                                    className="mb-2"
+                                                />
+                                                <Form.Check 
+                                                    type="checkbox"
+                                                    id="email-promotions"
+                                                    label="Акции и специальные предложения"
+                                                    defaultChecked
+                                                    className="mb-2"
+                                                />
+                                                <Form.Check 
+                                                    type="checkbox"
+                                                    id="sms-orders"
+                                                    label="SMS уведомления о доставке"
+                                                    className="mb-3"
+                                                />
+                                                <Button variant="success" size="sm" className="settings-btn">
+                                                    Сохранить настройки
+                                                </Button>
+                                            </Form>
+                                        </Card.Body>
+                                    </Card>
+
+                                    {/* Профиль компании (B2B) */}
+                                    <Card className="settings-section">
+                                        <Card.Header>
+                                            <h5 className="mb-0">
+                                                <FaBuilding className="me-2" />
+                                                Профиль компании
+                                            </h5>
+                                        </Card.Header>
+                                        <Card.Body>
+                                            <Form>
+                                                <Row>
+                                                    <Col md={6}>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Название организации</Form.Label>
+                                                            <Form.Control 
+                                                                type="text" 
+                                                                placeholder="ООО 'Автосервис'"
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col md={6}>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>УНП</Form.Label>
+                                                            <Form.Control 
+                                                                type="text" 
+                                                                placeholder="123456789"
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col md={12}>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Юридический адрес</Form.Label>
+                                                            <Form.Control 
+                                                                type="text" 
+                                                                placeholder="г. Минск, ул. Деловая, д. 5"
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col md={6}>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Контактное лицо</Form.Label>
+                                                            <Form.Control 
+                                                                type="text" 
+                                                                placeholder="Иванов Иван Иванович"
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col md={6}>
+                                                        <Form.Group className="mb-3">
+                                                            <Form.Label>Должность</Form.Label>
+                                                            <Form.Control 
+                                                                type="text" 
+                                                                placeholder="Директор"
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                </Row>
+                                                <Button variant="success" size="sm" className="settings-btn">
+                                                    Сохранить данные компании
+                                                </Button>
+                                            </Form>
+                                        </Card.Body>
+                                    </Card>
                                 </Card.Body>
                             </Card>
                         )}
@@ -487,6 +684,93 @@ DIR                                </Card.Header>
                         </Button>
                         <Button variant="danger" onClick={() => removeFromHistory(itemToDelete)}>
                             Удалить
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+
+                {/* Модальное окно добавления адреса */}
+                <Modal show={showAddressModal} onHide={() => setShowAddressModal(false)} centered>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Добавить новый адрес</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form>
+                            <Form.Group className="mb-3">
+                                <Form.Label>Название адреса *</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="name"
+                                    value={newAddress.name}
+                                    onChange={handleAddressInputChange}
+                                    placeholder="Дом, Работа, Склад..."
+                                />
+                            </Form.Group>
+                            
+                            <Row>
+                                <Col md={6}>
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Город *</Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            name="city"
+                                            value={newAddress.city}
+                                            onChange={handleAddressInputChange}
+                                            placeholder="Минск"
+                                        />
+                                    </Form.Group>
+                                </Col>
+                                <Col md={6}>
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Индекс</Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            name="postalCode"
+                                            value={newAddress.postalCode}
+                                            onChange={handleAddressInputChange}
+                                            placeholder="220000"
+                                        />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+                            
+                            <Form.Group className="mb-3">
+                                <Form.Label>Адрес *</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="address"
+                                    value={newAddress.address}
+                                    onChange={handleAddressInputChange}
+                                    placeholder="ул. Примерная, д. 1"
+                                />
+                            </Form.Group>
+                            
+                            <Form.Group className="mb-3">
+                                <Form.Label>Квартира/Офис</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="apartment"
+                                    value={newAddress.apartment}
+                                    onChange={handleAddressInputChange}
+                                    placeholder="10"
+                                />
+                            </Form.Group>
+                            
+                            <Form.Check
+                                type="checkbox"
+                                name="isDefault"
+                                checked={newAddress.isDefault}
+                                onChange={handleAddressInputChange}
+                                label="Сделать адресом по умолчанию"
+                                className="mb-3"
+                            />
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowAddressModal(false)}>
+                            Отмена
+                        </Button>
+                        <Button variant="success" onClick={handleAddAddress}>
+                            Сохранить адрес
                         </Button>
                     </Modal.Footer>
                 </Modal>

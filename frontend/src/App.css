@@ -4426,3 +4426,269 @@ hr {
     padding: 8px 12px !important;
   }
 }
+/* ===== СТИЛИ ДЛЯ НАСТРОЕК ПРОФИЛЯ ===== */
+
+/* Секции настроек */
+.settings-section {
+  border: 2px solid var(--black);
+  border-radius: 8px;
+  background-color: var(--white);
+}
+
+.settings-section .card-header {
+  background-color: var(--light-gray);
+  border-bottom: 2px solid var(--black);
+  font-weight: 600;
+}
+
+.settings-section .card-header h5 {
+  color: var(--text-dark);
+  font-size: 16px;
+}
+
+/* Элементы адресов */
+.address-item {
+  padding: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--light-gray);
+  margin-bottom: 10px;
+}
+
+.address-item strong {
+  color: var(--primary-red);
+  font-size: 14px;
+}
+
+.address-item p {
+  color: var(--text-dark);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+/* Кнопки в настройках */
+.settings-btn {
+  border: 2px solid var(--black) !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  padding: 8px 16px !important;
+  transition: all 0.3s ease !important;
+}
+
+.settings-btn.btn-outline-primary {
+  color: var(--primary-red) !important;
+  border-color: var(--black) !important;
+  background-color: var(--white) !important;
+}
+
+.settings-btn.btn-outline-primary:hover {
+  background-color: var(--primary-red) !important;
+  border-color: var(--primary-red) !important;
+  color: var(--white) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(227, 30, 36, 0.3);
+}
+
+.settings-btn.btn-success {
+  background-color: var(--success) !important;
+  border-color: var(--black) !important;
+  color: var(--white) !important;
+}
+
+.settings-btn.btn-success:hover {
+  background-color: #218838 !important;
+  border-color: var(--success) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* Поля форм в настройках */
+.settings-section .form-control {
+  border: 2px solid var(--black);
+  border-radius: 6px;
+  font-size: 14px;
+  padding: 8px 12px;
+  transition: all 0.3s ease;
+}
+
+.settings-section .form-control:focus {
+  border-color: var(--primary-red);
+  box-shadow: 0 0 0 0.2rem rgba(227, 30, 36, 0.25);
+}
+
+.settings-section .form-label {
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+/* Чекбоксы в настройках */
+.settings-section .form-check-input {
+  border: 2px solid var(--black);
+  border-radius: 4px;
+}
+
+.settings-section .form-check-input:checked {
+  background-color: var(--primary-red);
+  border-color: var(--primary-red);
+}
+
+.settings-section .form-check-label {
+  font-size: 14px;
+  color: var(--text-dark);
+  margin-left: 8px;
+}
+
+/* Адаптивность для настроек */
+@media (max-width: 768px) {
+  .settings-section {
+    margin-bottom: 20px;
+  }
+  
+  .settings-section .card-header h5 {
+    font-size: 14px;
+  }
+  
+  .address-item {
+    padding: 12px;
+  }
+  
+  .settings-btn {
+    font-size: 11px !important;
+    padding: 6px 12px !important;
+  }
+  
+  .settings-section .form-control {
+    font-size: 13px;
+  }
+  
+  .settings-section .form-label {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .settings-section .card-header h5 {
+    font-size: 13px;
+  }
+  
+  .address-item strong {
+    font-size: 13px;
+  }
+  
+  .address-item p {
+    font-size: 12px;
+  }
+  
+  .settings-section .form-check-label {
+    font-size: 13px;
+  }
+}
+/* ===== ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ АДРЕСОВ ===== */
+
+/* Заголовок адреса с кнопкой удаления */
+.address-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.address-delete-btn {
+  border: 1px solid #dc3545 !important;
+  color: #dc3545 !important;
+  background: transparent !important;
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+  border-radius: 4px !important;
+  transition: all 0.3s ease !important;
+}
+
+.address-delete-btn:hover {
+  background-color: #dc3545 !important;
+  color: white !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+/* Модальное окно добавления адреса */
+.modal-content {
+  border: 2px solid var(--black);
+  border-radius: 8px;
+}
+
+.modal-header {
+  border-bottom: 2px solid var(--black);
+  background-color: var(--light-gray);
+}
+
+.modal-title {
+  color: var(--text-dark);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.modal-footer {
+  border-top: 2px solid var(--black);
+  background-color: var(--light-gray);
+}
+
+.modal-footer .btn {
+  border: 2px solid var(--black) !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  padding: 8px 16px !important;
+  transition: all 0.3s ease !important;
+}
+
+.modal-footer .btn-secondary {
+  background-color: var(--medium-gray) !important;
+  color: var(--white) !important;
+}
+
+.modal-footer .btn-secondary:hover {
+  background-color: var(--dark-gray) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.modal-footer .btn-success {
+  background-color: var(--success) !important;
+  color: var(--white) !important;
+}
+
+.modal-footer .btn-success:hover {
+  background-color: #218838 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* Адаптивность для модального окна */
+@media (max-width: 768px) {
+  .address-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .address-delete-btn {
+    align-self: flex-end;
+  }
+  
+  .modal-title {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .modal-title {
+    font-size: 14px;
+  }
+  
+  .modal-footer .btn {
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+  }
+}
