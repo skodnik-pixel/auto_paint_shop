@@ -4,7 +4,7 @@ import { Container, Row, Col, Card, Badge, Spinner, Alert, Form, Button } from '
 // Добавляем useSearchParams для чтения URL параметров
 // Добавляем иконки для кнопок количества и покупки
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa';
+import { FaStar, FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa';
 
 const Catalog = () => {
   const [products, setProducts] = useState([]);
@@ -19,6 +19,13 @@ const Catalog = () => {
   
   // Состояние для количества товаров (для кнопок +/-)
   const [quantities, setQuantities] = useState({});
+  
+  // Состояние для избранного товаров
+  const [favorites, setFavorites] = useState(() => {
+    // Загружаем избранное из localStorage при инициализации
+    const saved = localStorage.getItem('favorites');
+    return saved ? JSON.parse(saved) : [];
+  });
   
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -124,6 +131,33 @@ const Catalog = () => {
       console.log('Цена от:', priceMinFromUrl);
       console.log('Цена до:', priceMaxFromUrl);
   }, [searchParams]);
+
+  // Функция добавления/удаления товара из избранного
+  const toggleFavorite = (product) => {
+    const isFav = favorites.some(fav => fav.id === product.id);
+    let newFavorites;
+    
+    if (isFav) {
+      // Удаляем из избранного
+      newFavorites = favorites.filter(fav => fav.id !== product.id);
+    } else {
+      // Добавляем в избранное
+      newFavorites = [...favorites, product];
+    }
+    
+    setFavorites(newFavorites);
+    localStorage.setItem('favorites', JSON.stringify(newFavorites));
+    
+    // Отправляем событие для обновления счетчика в навигации
+    window.dispatchEvent(new CustomEvent('favoritesUpdated', {
+      detail: { count: newFavorites.length }
+    }));
+  };
+
+  // Функция проверки - находится ли товар в избранном
+  const isFavorite = (productId) => {
+    return favorites.some(fav => fav.id === productId);
+  };
 
   // Функция для добавления товара в корзину
   const addToCart = async (productId, productSlug) => {
@@ -357,13 +391,27 @@ const Catalog = () => {
             {currentProducts.map(product => (
               <Col key={product.id} lg={4} md={6} className="mb-4">
                 <Card className="h-100 product-card">
-                  <div className="text-center p-3">
+                  <div className="text-center p-3 position-relative">
                     <img
                       src={product.image || 'https://via.placeholder.com/200x150?text=Нет+фото'}
                       alt={product.name}
                       className="img-fluid"
                       style={{ maxHeight: '150px', objectFit: 'contain' }}
                     />
+                    
+                    {/* ⭐ ЗВЁЗДОЧКА ИЗБРАННОГО */}
+                    <Button
+                      variant="link"
+                      className={`favorite-btn ${isFavorite(product.id) ? 'favorite-active' : ''}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleFavorite(product);
+                      }}
+                      title={isFavorite(product.id) ? 'Удалить из избранного' : 'Добавить в избранное'}
+                    >
+                      <FaStar />
+                    </Button>
                   </div>
                   <Card.Body className="d-flex flex-column">
                     <div className="mb-2">

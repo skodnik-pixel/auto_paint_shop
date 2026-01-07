@@ -634,6 +634,7 @@ input.search-input:focus {
 
 /* Карточки товаров - КОМПАКТНАЯ ВЕРСИЯ для 2 рядов */
 .product-card {
+  position: relative; /* Добавляем для позиционирования звёздочки */
   transition: all 0.3s ease;
   border: 2px solid var(--black);           /* Толстая чёрная рамка как на скрине */
   border-radius: 8px;
@@ -2087,7 +2088,25 @@ hr {
   font-weight: 600;
 }
 
-.favorite-btn,
+/* Кнопка избранного (звёздочка) - ОБНОВЛЁННЫЕ СТИЛИ */
+.favorite-btn {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 2px solid var(--black) !important;
+  border-radius: 50% !important;
+  width: 35px !important;
+  height: 35px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  color: var(--medium-gray) !important;
+  transition: all 0.3s ease !important;
+  z-index: 2 !important;
+}
+
 .share-btn {
   width: 50px;
   padding: 14px;
@@ -2281,7 +2300,14 @@ hr {
     flex-direction: column;
   }
 
-  .favorite-btn,
+  /* Мобильные стили для кнопки избранного */
+  .favorite-btn {
+    width: 30px !important;
+    height: 30px !important;
+    top: 8px !important;
+    right: 8px !important;
+  }
+
   .share-btn {
     width: 100%;
   }

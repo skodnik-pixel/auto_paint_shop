@@ -9,10 +9,15 @@ import { FaStar, FaChevronLeft, FaChevronRight, FaPlus, FaMinus, FaShoppingCart 
 
 
 function Home() {
-  const [featuredProducts, setFeaturedProducts] = useState([]);
-  const [promoProducts, setPromoProducts] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [favorites, setFavorites] = useState(new Set());
+  
+  // Состояние для избранного товаров
+  const [favorites, setFavorites] = useState(() => {
+    // Загружаем избранное из localStorage при инициализации
+    const saved = localStorage.getItem('favorites');
+    return saved ? JSON.parse(saved) : [];
+  });
   
   // Состояние для количества товаров (для кнопок +/-)
   const [quantities, setQuantities] = useState({});
@@ -75,11 +80,11 @@ function Home() {
           throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/catalog/products/`);
         }
         const data = await response.json();
-        const products = data.results || data;
-        // Берем первые 5 товаров как акционные (с "скидкой")
-        setPromoProducts(products.slice(0, 5));
-        // Остальные как популярные
-        setFeaturedProducts(products.slice(5, 11));
+        const allProducts = data.results || data;
+        
+        // Перемешиваем товары рандомно и берём первые 10
+        const shuffledProducts = [...allProducts].sort(() => Math.random() - 0.5);
+        setProducts(shuffledProducts.slice(0, 10));
         setLoading(false);
       } catch (error) {
         console.error('Error fetching featured products:', error);
@@ -101,23 +106,6 @@ function Home() {
     return () => clearInterval(timer);
   }, [slides.length]);
 
-  // Загружаем избранное из localStorage при загрузке компонента
-  useEffect(() => {
-    // Получаем сохраненное избранное из localStorage
-    const savedFavorites = localStorage.getItem('favorites');
-    if (savedFavorites) {
-      try {
-        // Парсим JSON и создаем Set из массива ID товаров
-        const favoritesArray = JSON.parse(savedFavorites);
-        setFavorites(new Set(favoritesArray));
-      } catch (error) {
-        // Если ошибка парсинга - сбрасываем избранное
-        console.error('Error parsing saved favorites:', error);
-        setFavorites(new Set());
-      }
-    }
-  }, []);
-
   // Функции для управления слайдером
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -132,30 +120,30 @@ function Home() {
   };
 
   // Функция добавления/удаления товара из избранного
-  const toggleFavorite = (productId) => {
-    // Создаем новый Set на основе текущего состояния избранного
-    const newFavorites = new Set(favorites);
+  const toggleFavorite = (product) => {
+    const isFav = favorites.some(fav => fav.id === product.id);
+    let newFavorites;
     
-    if (newFavorites.has(productId)) {
-      // Если товар уже в избранном - удаляем его
-      newFavorites.delete(productId);
+    if (isFav) {
+      // Удаляем из избранного
+      newFavorites = favorites.filter(fav => fav.id !== product.id);
     } else {
-      // Если товара нет в избранном - добавляем его
-      newFavorites.add(productId);
+      // Добавляем в избранное
+      newFavorites = [...favorites, product];
     }
     
-    // Обновляем состояние избранного
     setFavorites(newFavorites);
-    
-    // Сохраняем избранное в localStorage для постоянного хранения
-    // Array.from() преобразует Set в обычный массив для JSON
-    localStorage.setItem('favorites', JSON.stringify(Array.from(newFavorites)));
+    localStorage.setItem('favorites', JSON.stringify(newFavorites));
     
     // Отправляем событие для обновления счетчика в навигации
-    // CustomEvent - специальное событие браузера для передачи данных между компонентами
-    window.dispatchEvent(new CustomEvent('favoritesUpdated', { 
-      detail: { count: newFavorites.size } 
+    window.dispatchEvent(new CustomEvent('favoritesUpdated', {
+      detail: { count: newFavorites.length }
     }));
+  };
+
+  // Функция проверки - находится ли товар в избранном
+  const isFavorite = (productId) => {
+    return favorites.some(fav => fav.id === productId);
   };
 
   const calculateDiscount = (currentPrice, originalPrice) => {
@@ -169,7 +157,7 @@ function Home() {
   };
 
   // Пагинация - вычисляем какие товары показывать
-  const allProducts = promoProducts.concat(featuredProducts);
+  const allProducts = products;
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentProducts = allProducts.slice(indexOfFirstItem, indexOfLastItem);
@@ -342,22 +330,30 @@ function Home() {
             {currentProducts.map(product => {
               const originalPrice = getOriginalPrice(product.price);
               const discount = calculateDiscount(parseFloat(product.price), parseFloat(originalPrice));
-              const isFavorite = favorites.has(product.id);
               
               return (
                 <div key={product.id} className="product-grid-item">
                   <Card className="promo-product-card">
-                    {/* Кнопка добавления в избранное (звездочка) */}
-                    <div className="product-favorite" onClick={() => toggleFavorite(product.id)}>
-                      {/* FaStar - иконка звездочки, меняет цвет если товар в избранном */}
-                      <FaStar className={isFavorite ? 'favorite-active' : ''} />
-                    </div>
                     <div className="product-image-wrapper">
                       <img
                         src={product.image || 'https://via.placeholder.com/200x200?text=Нет+фото'}
                         alt={product.name}
                         className="product-image"
                       />
+                      
+                      {/* ⭐ ЗВЁЗДОЧКА ИЗБРАННОГО */}
+                      <Button
+                        variant="link"
+                        className={`favorite-btn ${isFavorite(product.id) ? 'favorite-active' : ''}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleFavorite(product);
+                        }}
+                        title={isFavorite(product.id) ? 'Удалить из избранного' : 'Добавить в избранное'}
+                      >
+                        <FaStar />
+                      </Button>
                     </div>
                     <Card.Body className="product-card-body">
                       {/* Секция с ценами товара */}

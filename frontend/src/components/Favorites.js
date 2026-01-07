@@ -18,29 +18,22 @@ function Favorites() {
   // Функция загрузки избранных товаров
   const loadFavoriteProducts = async () => {
     try {
-      // Получаем список ID избранных товаров из localStorage
+      // Получаем список избранных товаров из localStorage
       const savedFavorites = localStorage.getItem('favorites');
       if (!savedFavorites) {
         setLoading(false);
         return;
       }
 
-      // Парсим JSON с ID товаров
-      const favoriteIds = JSON.parse(savedFavorites);
-      if (favoriteIds.length === 0) {
+      // Парсим JSON с товарами (теперь это полные объекты, а не только ID)
+      const favoriteProducts = JSON.parse(savedFavorites);
+      if (favoriteProducts.length === 0) {
         setLoading(false);
         return;
       }
 
-      // Загружаем данные товаров с сервера
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-      const response = await fetch(`${apiUrl}/catalog/products/`);
-      const data = await response.json();
-      const allProducts = data.results || data;
-
-      // Фильтруем только избранные товары
-      const favorites = allProducts.filter(product => favoriteIds.includes(product.id));
-      setFavoriteProducts(favorites);
+      // Устанавливаем избранные товары (они уже содержат всю нужную информацию)
+      setFavoriteProducts(favoriteProducts);
       setLoading(false);
     } catch (error) {
       console.error('Error loading favorite products:', error);
@@ -53,18 +46,18 @@ function Favorites() {
     // Получаем текущий список избранного
     const savedFavorites = localStorage.getItem('favorites');
     if (savedFavorites) {
-      const favoriteIds = JSON.parse(savedFavorites);
-      // Удаляем товар из списка
-      const updatedIds = favoriteIds.filter(id => id !== productId);
+      const favoriteProducts = JSON.parse(savedFavorites);
+      // Удаляем товар из списка (по ID)
+      const updatedFavorites = favoriteProducts.filter(product => product.id !== productId);
       // Сохраняем обновленный список
-      localStorage.setItem('favorites', JSON.stringify(updatedIds));
+      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
       
       // Обновляем состояние компонента
       setFavoriteProducts(prev => prev.filter(product => product.id !== productId));
       
       // Отправляем событие для обновления счетчика в навигации
       window.dispatchEvent(new CustomEvent('favoritesUpdated', { 
-        detail: { count: updatedIds.length } 
+        detail: { count: updatedFavorites.length } 
       }));
     }
   };
