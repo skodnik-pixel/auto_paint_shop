@@ -52,18 +52,22 @@ class BrandSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     brand = BrandSerializer(read_only=True)
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(), source='category', write_only=True
+    )
+    brand_id = serializers.PrimaryKeyRelatedField(
+        queryset=Brand.objects.all(), source='brand', write_only=True
+    )
     slug = serializers.SlugField(required=False, allow_blank=True)
 
     class Meta:
         model = Product
-        fields = ['id', 'category', 'brand', 'name', 'slug', 'description', 'price', 'stock', 'image']
+        fields = [
+            'id', 'category', 'category_id', 'brand', 'brand_id',
+            'name', 'slug', 'description', 'price', 'stock', 'image'
+        ]
 
     def validate(self, data):
-        if not data.get('brand'):
-            raise serializers.ValidationError("Поле 'brand' обязательно.")
-        if not data.get('category'):
-            raise serializers.ValidationError("Поле 'category' обязательно.")
-        
         # Если slug не указан или пустой, создаем из названия
         if not data.get('slug') and data.get('name'):
             data['slug'] = create_slug(data['name'])

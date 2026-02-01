@@ -22,7 +22,7 @@ import {
 
 function CustomNavbar() {
     const [cartCount, setCartCount] = useState(0);
-    const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
+    const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('access'));
     const [user, setUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     // Состояние для количества товаров в избранном
@@ -47,10 +47,10 @@ function CustomNavbar() {
 
     useEffect(() => {
         // Загружаем данные пользователя из localStorage
-        const token = localStorage.getItem('token');
+        const accessToken = localStorage.getItem('access');
         const userData = localStorage.getItem('user');
         
-        if (token && userData) {
+        if (accessToken && userData) {
             try {
                 setUser(JSON.parse(userData));
                 setIsAuthenticated(true);
@@ -60,13 +60,37 @@ function CustomNavbar() {
         }
     }, []);
 
+    // Слушаем событие обновления авторизации (например, после логина)
     useEffect(() => {
+        const handleAuthUpdate = () => {
+            const accessToken = localStorage.getItem('access');
+            const userData = localStorage.getItem('user');
+            
+            if (accessToken && userData) {
+                try {
+                    setUser(JSON.parse(userData));
+                    setIsAuthenticated(true);
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                }
+            } else {
+                setIsAuthenticated(false);
+                setUser(null);
+                setCartCount(0); // Сбрасываем счётчик корзины при выходе
+            }
+        };
+
+        window.addEventListener('authUpdated', handleAuthUpdate);
+        return () => window.removeEventListener('authUpdated', handleAuthUpdate);
+    }, []);
+
+    const loadCartCount = () => {
         if (isAuthenticated) {
             const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-            const token = localStorage.getItem('token');
+            const accessToken = localStorage.getItem('access');
             fetch(`${apiUrl}/cart/`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${accessToken}`
                 }
             })
                 .then(async response => {
@@ -85,7 +109,23 @@ function CustomNavbar() {
                     }
                 })
                 .catch(error => console.error('Error fetching cart:', error));
+        } else {
+            // Если пользователь не авторизован, сбрасываем счётчик корзины
+            setCartCount(0);
         }
+    };
+
+    useEffect(() => {
+        loadCartCount();
+    }, [isAuthenticated]);
+
+    // Слушаем событие обновления корзины
+    useEffect(() => {
+        const handleCartUpdate = () => {
+            loadCartCount();
+        };
+        window.addEventListener('cartUpdated', handleCartUpdate);
+        return () => window.removeEventListener('cartUpdated', handleCartUpdate);
     }, [isAuthenticated]);
 
     // Загружаем количество товаров в избранном из localStorage
@@ -231,28 +271,39 @@ function CustomNavbar() {
     };
 
     const handleLogout = async () => {
-        const token = localStorage.getItem('token');
+        // Для JWT logout обычно просто удаляем токены на клиенте
+        // (JWT токены stateless, сервер их не хранит)
         
-        if (token) {
+        // Очищаем корзину на сервере перед выходом
+        const accessToken = localStorage.getItem('access');
+        if (accessToken) {
             try {
                 const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-                await fetch(`${apiUrl}/accounts/logout/`, {
+                await fetch(`${apiUrl}/cart/clear/`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Token ${token}`
+                        'Authorization': `Bearer ${accessToken}`
                     }
                 });
             } catch (error) {
-                console.error('Error during logout:', error);
+                console.error('Error clearing cart:', error);
             }
         }
         
         // Очищаем localStorage
-        localStorage.removeItem('token');
+        localStorage.removeItem('access');
+        localStorage.removeItem('refresh');
         localStorage.removeItem('user');
+        localStorage.removeItem('favorites'); // Очищаем избранное при выходе
+        localStorage.removeItem('cart'); // Очищаем корзину в localStorage
+        localStorage.removeItem('checkoutCart'); // Очищаем корзину для оформления заказа
         setIsAuthenticated(false);
         setUser(null);
         setCartCount(0);
+        setFavoritesCount(0); // Сбрасываем счётчик избранного
+        
+        // Уведомляем другие компоненты об изменении авторизации
+        window.dispatchEvent(new Event('authUpdated'));
         
         window.location.href = '/';
     };

@@ -11,7 +11,7 @@ function CreateProduct() {
     // Функция для преобразования текста в slug формат
     const convertToSlug = (text) => {
         if (!text) return '';
-        
+
         return text
             .toLowerCase()
             .trim()
@@ -86,7 +86,7 @@ function CreateProduct() {
             })
             .then(data => setCategories(data.results || data))
             .catch(error => console.error('Error fetching categories:', error));
-            
+
         fetch(`${apiUrl}/catalog/brands/`)
             .then(async response => {
                 if (!response.ok) throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
@@ -101,20 +101,20 @@ function CreateProduct() {
     }, []);
 
     const handleSubmit = () => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('access');
         if (!token) {
             setError('Пожалуйста, войдите в аккаунт');
             return;
         }
-        
+
         // Преобразуем slug в правильный формат перед отправкой
         const formattedSlug = convertToSlug(slug || name);
-        
+
         if (!formattedSlug) {
             setError('Пожалуйста, заполните поле Slug (можно ввести название продукта)');
             return;
         }
-        
+
         const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
         fetch(`${apiUrl}/catalog/products/`, {
             method: 'POST',
@@ -128,8 +128,8 @@ function CreateProduct() {
                 description,
                 price: parseFloat(price),
                 stock: parseInt(stock),
-                category,
-                brand,
+                category_id: category,
+                brand_id: brand,
             }),
         })
             .then(async response => {

@@ -16,25 +16,25 @@ const Catalog = () => {
   const [selectedBrand, setSelectedBrand] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [addingToCart, setAddingToCart] = useState({});
-  
+
   // Состояние для количества товаров (для кнопок +/-)
   const [quantities, setQuantities] = useState({});
-  
+
   // Состояние для избранного товаров
   const [favorites, setFavorites] = useState(() => {
     // Загружаем избранное из localStorage при инициализации
     const saved = localStorage.getItem('favorites');
     return saved ? JSON.parse(saved) : [];
   });
-  
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
+
   // Новые фильтры
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState(''); // price-asc, price-desc, name
-  
+
   // Пагинация
   const [currentPage, setCurrentPage] = useState(1); // Текущая страница
   const [itemsPerPage] = useState(12); // Товаров на странице (12 = 3 ряда по 4 товара)
@@ -91,52 +91,52 @@ const Catalog = () => {
 
   // useEffect для обработки URL параметров поиска, категорий и фильтров подменю
   useEffect(() => {
-      // Получаем параметр search из URL (?search=краска)
-      const searchFromUrl = searchParams.get('search');
-      if (searchFromUrl) {
-          // Устанавливаем поисковый запрос из URL
-          setSearchTerm(searchFromUrl);
-      }
-      
-      // Получаем параметр category из URL (?category=kraski)
-      const categoryFromUrl = searchParams.get('category');
-      if (categoryFromUrl) {
-          // Устанавливаем выбранную категорию из URL
-          setSelectedCategory(categoryFromUrl);
-      }
-      
-      // НОВЫЕ ПАРАМЕТРЫ ДЛЯ ПОДМЕНЮ ФИЛЬТРОВ
-      // Получаем параметр brand из URL (?brand=novol)
-      const brandFromUrl = searchParams.get('brand');
-      if (brandFromUrl) {
-          // Устанавливаем выбранный бренд из URL
-          setSelectedBrand(brandFromUrl);
-      }
-      
-      // Получаем параметры цены из URL (?price_min=10&price_max=100)
-      const priceMinFromUrl = searchParams.get('price_min');
-      const priceMaxFromUrl = searchParams.get('price_max');
-      if (priceMinFromUrl || priceMaxFromUrl) {
-          // Устанавливаем диапазон цен из URL
-          setPriceRange({
-              min: priceMinFromUrl || '',
-              max: priceMaxFromUrl || ''
-          });
-      }
-      
-      console.log('=== ОБРАБОТКА URL ПАРАМЕТРОВ ===');
-      console.log('Поиск:', searchFromUrl);
-      console.log('Категория:', categoryFromUrl);
-      console.log('Бренд:', brandFromUrl);
-      console.log('Цена от:', priceMinFromUrl);
-      console.log('Цена до:', priceMaxFromUrl);
+    // Получаем параметр search из URL (?search=краска)
+    const searchFromUrl = searchParams.get('search');
+    if (searchFromUrl) {
+      // Устанавливаем поисковый запрос из URL
+      setSearchTerm(searchFromUrl);
+    }
+
+    // Получаем параметр category из URL (?category=kraski)
+    const categoryFromUrl = searchParams.get('category');
+    if (categoryFromUrl) {
+      // Устанавливаем выбранную категорию из URL
+      setSelectedCategory(categoryFromUrl);
+    }
+
+    // НОВЫЕ ПАРАМЕТРЫ ДЛЯ ПОДМЕНЮ ФИЛЬТРОВ
+    // Получаем параметр brand из URL (?brand=novol)
+    const brandFromUrl = searchParams.get('brand');
+    if (brandFromUrl) {
+      // Устанавливаем выбранный бренд из URL
+      setSelectedBrand(brandFromUrl);
+    }
+
+    // Получаем параметры цены из URL (?price_min=10&price_max=100)
+    const priceMinFromUrl = searchParams.get('price_min');
+    const priceMaxFromUrl = searchParams.get('price_max');
+    if (priceMinFromUrl || priceMaxFromUrl) {
+      // Устанавливаем диапазон цен из URL
+      setPriceRange({
+        min: priceMinFromUrl || '',
+        max: priceMaxFromUrl || ''
+      });
+    }
+
+    console.log('=== ОБРАБОТКА URL ПАРАМЕТРОВ ===');
+    console.log('Поиск:', searchFromUrl);
+    console.log('Категория:', categoryFromUrl);
+    console.log('Бренд:', brandFromUrl);
+    console.log('Цена от:', priceMinFromUrl);
+    console.log('Цена до:', priceMaxFromUrl);
   }, [searchParams]);
 
   // Функция добавления/удаления товара из избранного
   const toggleFavorite = (product) => {
     const isFav = favorites.some(fav => fav.id === product.id);
     let newFavorites;
-    
+
     if (isFav) {
       // Удаляем из избранного
       newFavorites = favorites.filter(fav => fav.id !== product.id);
@@ -144,10 +144,10 @@ const Catalog = () => {
       // Добавляем в избранное
       newFavorites = [...favorites, product];
     }
-    
+
     setFavorites(newFavorites);
     localStorage.setItem('favorites', JSON.stringify(newFavorites));
-    
+
     // Отправляем событие для обновления счетчика в навигации
     window.dispatchEvent(new CustomEvent('favoritesUpdated', {
       detail: { count: newFavorites.length }
@@ -161,8 +161,8 @@ const Catalog = () => {
 
   // Функция для добавления товара в корзину
   const addToCart = async (productId, productSlug) => {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem('access');
+
     if (!token) {
       navigate('/login');
       return;
@@ -172,7 +172,7 @@ const Catalog = () => {
 
     try {
       const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-      
+
       const response = await fetch(`${apiUrl}/cart/add_item/`, {
         method: 'POST',
         headers: {
@@ -219,64 +219,56 @@ const Catalog = () => {
     }));
   };
 
-  // Функция покупки товара (добавление в корзину и историю)
+  // Функция покупки товара (добавление в корзину)
   const buyProduct = async (product) => {
+    // Проверяем авторизацию
+    const accessToken = localStorage.getItem('access');
+    if (!accessToken) {
+      alert('Для добавления товаров в корзину необходимо войти в систему');
+      navigate('/login');
+      return;
+    }
+
     const quantity = quantities[product.id] || 1;
-    
+    setAddingToCart(prev => ({ ...prev, [product.id]: true }));
+
     try {
-      // Добавляем в корзину
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const existingItem = cart.find(item => item.id === product.id);
-      
-      if (existingItem) {
-        existingItem.quantity += quantity;
-      } else {
-        cart.push({
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image: product.image,
-          slug: product.slug,
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+
+      // Добавляем товар в корзину на сервере
+      const response = await fetch(`${apiUrl}/cart/add_item/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          product_id: product.id,
           quantity: quantity
-        });
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка при добавлении товара в корзину');
       }
-      
-      localStorage.setItem('cart', JSON.stringify(cart));
-      
-      // Добавляем в историю покупок
-      const history = JSON.parse(localStorage.getItem('purchaseHistory') || '[]');
-      const historyItem = {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        slug: product.slug,
-        quantity: quantity,
-        purchaseDate: new Date().toISOString()
-      };
-      
-      // Проверяем есть ли уже такой товар в истории
-      const existingHistoryIndex = history.findIndex(item => item.id === product.id);
-      if (existingHistoryIndex >= 0) {
-        // Обновляем существующий товар в истории
-        history[existingHistoryIndex] = historyItem;
-      } else {
-        // Добавляем новый товар в начало истории
-        history.unshift(historyItem);
-      }
-      
-      localStorage.setItem('purchaseHistory', JSON.stringify(history));
-      
+
+      // Уведомляем Navbar об обновлении корзины
+      window.dispatchEvent(new Event('cartUpdated'));
+
       // Сбрасываем количество после покупки
       setQuantities(prev => ({
         ...prev,
         [product.id]: 1
       }));
-      
-      console.log(`Товар "${product.name}" добавлен в корзину и историю!`);
-      
+
+      alert(`Товар "${product.name}" успешно добавлен в корзину!`);
+
     } catch (error) {
       console.error('Ошибка при добавлении товара:', error);
+      alert(error.message || 'Ошибка при добавлении товара в корзину');
+    } finally {
+      setAddingToCart(prev => ({ ...prev, [product.id]: false }));
     }
   };
 
@@ -285,24 +277,24 @@ const Catalog = () => {
     .filter(product => {
       // Фильтр по категории
       const matchesCategory = !selectedCategory || product.category?.slug === selectedCategory;
-      
+
       // Фильтр по бренду
       const matchesBrand = !selectedBrand || product.brand?.slug === selectedBrand;
-      
+
       // Фильтр по поиску
-      const matchesSearch = !searchTerm || 
+      const matchesSearch = !searchTerm ||
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.description.toLowerCase().includes(searchTerm.toLowerCase());
-      
+
       // Фильтр по цене
       const matchesMinPrice = !priceRange.min || parseFloat(product.price) >= parseFloat(priceRange.min);
       const matchesMaxPrice = !priceRange.max || parseFloat(product.price) <= parseFloat(priceRange.max);
-            
+
       // Фильтр по наличию
       const matchesStock = !inStockOnly || product.stock > 0;
-      
-      return matchesCategory && matchesBrand && matchesSearch && 
-             matchesMinPrice && matchesMaxPrice && matchesStock;
+
+      return matchesCategory && matchesBrand && matchesSearch &&
+        matchesMinPrice && matchesMaxPrice && matchesStock;
     })
     .sort((a, b) => {
       // Сортировка товаров
@@ -318,7 +310,7 @@ const Catalog = () => {
           return 0;
       }
     });
-  
+
   // Функция сброса всех фильтров
   const resetFilters = () => {
     setSelectedCategory('');
@@ -386,7 +378,7 @@ const Catalog = () => {
               Найдено товаров: {filteredProducts.length}
             </Badge>
           </div>
-          
+
           <Row>
             {currentProducts.map(product => (
               <Col key={product.id} lg={4} md={6} className="mb-4">
@@ -398,7 +390,7 @@ const Catalog = () => {
                       className="img-fluid"
                       style={{ maxHeight: '150px', objectFit: 'contain' }}
                     />
-                    
+
                     {/* ⭐ ЗВЁЗДОЧКА ИЗБРАННОГО */}
                     <Button
                       variant="link"
@@ -422,11 +414,11 @@ const Catalog = () => {
                         {product.brand?.name}
                       </Badge>
                     </div>
-                    
+
                     <Card.Title className="h6 mb-2">
                       {product.name}
                     </Card.Title>
-                    
+
                     {/* Рейтинг товара */}
                     {product.rating > 0 && (
                       <div className="product-rating mb-2">
@@ -443,13 +435,13 @@ const Catalog = () => {
                         )}
                       </div>
                     )}
-                    
+
                     <Card.Text className="text-muted small flex-grow-1">
-                      {product.description.length > 100 
-                        ? `${product.description.substring(0, 100)}...` 
+                      {product.description.length > 100
+                        ? `${product.description.substring(0, 100)}...`
                         : product.description}
                     </Card.Text>
-                    
+
                     <div className="mt-auto">
                       <div className="d-flex justify-content-between align-items-center mb-2">
                         <span className="h5 text-primary mb-0">
@@ -459,14 +451,14 @@ const Catalog = () => {
                           {product.stock > 0 ? `В наличии: ${product.stock}` : 'Нет в наличии'}
                         </Badge>
                       </div>
-                      
+
                       {/* Блок с кнопками управления товаром */}
                       <div className="product-actions">
                         {/* Кнопки количества товара */}
                         <div className="quantity-controls">
-                          <Button 
-                            variant="outline-secondary" 
-                            size="sm" 
+                          <Button
+                            variant="outline-secondary"
+                            size="sm"
                             onClick={() => decreaseQuantity(product.id)}
                             className="quantity-btn"
                             disabled={product.stock === 0}
@@ -474,9 +466,9 @@ const Catalog = () => {
                             <FaMinus />
                           </Button>
                           <span className="quantity-display">{quantities[product.id] || 1}</span>
-                          <Button 
-                            variant="outline-secondary" 
-                            size="sm" 
+                          <Button
+                            variant="outline-secondary"
+                            size="sm"
                             onClick={() => increaseQuantity(product.id)}
                             className="quantity-btn"
                             disabled={product.stock === 0}
@@ -484,13 +476,13 @@ const Catalog = () => {
                             <FaPlus />
                           </Button>
                         </div>
-                        
+
                         {/* Кнопки действий */}
                         <div className="action-buttons">
                           {/* Кнопка "Купить" - добавляет в корзину и историю */}
-                          <Button 
-                            variant="success" 
-                            size="sm" 
+                          <Button
+                            variant="success"
+                            size="sm"
                             onClick={() => buyProduct(product)}
                             className="buy-btn"
                             disabled={product.stock === 0}
@@ -498,9 +490,9 @@ const Catalog = () => {
                             <FaShoppingCart className="me-1" />
                             Купить
                           </Button>
-                          
+
                           {/* Кнопка "Подробнее" для перехода на страницу товара */}
-                          <Link 
+                          <Link
                             to={`/product/${product.slug}`}
                             className="btn btn-primary btn-sm product-detail-btn"
                           >
@@ -550,11 +542,11 @@ const Catalog = () => {
                   {/* Номера страниц (показываем текущую и по 2 с каждой стороны) */}
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
                     .filter(page => {
-                      return page === currentPage || 
-                             page === currentPage - 1 || 
-                             page === currentPage - 2 ||
-                             page === currentPage + 1 || 
-                             page === currentPage + 2;
+                      return page === currentPage ||
+                        page === currentPage - 1 ||
+                        page === currentPage - 2 ||
+                        page === currentPage + 1 ||
+                        page === currentPage + 2;
                     })
                     .map(page => (
                       <li
@@ -601,7 +593,7 @@ const Catalog = () => {
 
               {/* Информация о текущей странице */}
               <div className="text-center mt-3 text-muted">
-                Страница {currentPage} из {totalPages} 
+                Страница {currentPage} из {totalPages}
                 <span className="mx-2">•</span>
                 Показано {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredProducts.length)} из {filteredProducts.length} товаров
               </div>

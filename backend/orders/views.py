@@ -15,8 +15,12 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def create_order(self, request):
-        # Получаем адрес доставки из запроса
+        # Получаем данные из запроса
         address = request.data.get('address')
+        phone = request.data.get('phone')
+        delivery_method = request.data.get('delivery_method', 'courier')
+        payment_method = request.data.get('payment_method', 'cash')
+        comment = request.data.get('comment', '')
         
         # Получаем корзину пользователя
         try:
@@ -32,7 +36,11 @@ class OrderViewSet(viewsets.ModelViewSet):
         order = Order.objects.create(
             user=request.user, 
             address=address,
-            status='pending'  # Устанавливаем начальный статус
+            phone=phone,
+            delivery_method=delivery_method,
+            payment_method=payment_method,
+            comment=comment,
+            status='pending'
         )
         
         # Переносим товары из корзины в заказ

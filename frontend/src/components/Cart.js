@@ -1,88 +1,218 @@
 
 // frontend/src/components/Cart.js
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Table, Button, Spinner, Modal, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Table, Button, Spinner, Modal, Alert } from 'react-bootstrap';
 import { FaTrash, FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 function Cart() {
-    const [cart, setCart] = useState([]);
+    const [cart, setCart] = useState(null);
+    const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [itemToRemove, setItemToRemove] = useState(null);
+    const [updating, setUpdating] = useState({});
     const navigate = useNavigate();
 
-    // Загружаем корзину из localStorage (так как кнопка "Купить" сохраняет туда)
+    // Загружаем корзину с сервера для авторизованных пользователей
     useEffect(() => {
-        try {
-            const cartData = JSON.parse(localStorage.getItem('cart') || '[]');
-            setCart(cartData);
-            setLoading(false);
-        } catch (error) {
-            console.error('Ошибка загрузки корзины:', error);
-            setCart([]);
-            setLoading(false);
-        }
+        const loadCart = async () => {
+            const accessToken = localStorage.getItem('access');
+            if (!accessToken) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+                const response = await fetch(`${apiUrl}/cart/`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Cart data from API:', data); // Для отладки
+                    
+                    // API может вернуть список или объект с результатами
+                    let cartData = null;
+                    if (Array.isArray(data)) {
+                        cartData = data.length > 0 ? data[0] : null;
+                    } else if (data.results && Array.isArray(data.results)) {
+                        cartData = data.results.length > 0 ? data.results[0] : null;
+                    } else if (data.id) {
+                        // Прямой объект корзины
+                        cartData = data;
+                    }
+                    
+                    if (cartData) {
+                        setCart(cartData);
+                        setCartItems(cartData.items || []);
+                    } else {
+                        setCart(null);
+                        setCartItems([]);
+                    }
+                } else {
+                    console.error('Error loading cart:', response.status, response.statusText);
+                    setCart(null);
+                    setCartItems([]);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки корзины:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadCart();
+
+        // Слушаем событие обновления корзины
+        const handleCartUpdate = () => {
+            loadCart();
+        };
+        window.addEventListener('cartUpdated', handleCartUpdate);
+        return () => window.removeEventListener('cartUpdated', handleCartUpdate);
     }, []);
 
-    // Обновление количества товара
-    const updateQuantity = (productId, newQuantity) => {
-        if (newQuantity < 1) return;
+    // Обновление количества товара на сервере
+    const updateQuantity = async (itemId, newQuantity) => {
+        if (newQuantity < 1 || !cart) return;
         
-        const updatedCart = cart.map(item => 
-            item.id === productId 
-                ? { ...item, quantity: newQuantity }
-                : item
-        );
-        
-        setCart(updatedCart);
-        localStorage.setItem('cart', JSON.stringify(updatedCart));
+        const accessToken = localStorage.getItem('access');
+        if (!accessToken) return;
+
+        setUpdating(prev => ({ ...prev, [itemId]: true }));
+
+        try {
+            const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+            
+            // Обновляем корзину через PATCH
+            const response = await fetch(`${apiUrl}/cart/${cart.id}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    items: cartItems.map(item => 
+                        item.id === itemId 
+                            ? { id: item.id, quantity: newQuantity }
+                            : { id: item.id, quantity: item.quantity }
+                    )
+                })
+            });
+
+            if (response.ok) {
+                const updatedCart = await response.json();
+                setCart(updatedCart);
+                setCartItems(updatedCart.items || []);
+                window.dispatchEvent(new Event('cartUpdated'));
+            } else {
+                const errorData = await response.json();
+                console.error('Error updating quantity:', errorData);
+                alert('Ошибка при обновлении количества товара');
+            }
+        } catch (error) {
+            console.error('Ошибка обновления количества:', error);
+            alert('Ошибка при обновлении количества товара');
+        } finally {
+            setUpdating(prev => ({ ...prev, [itemId]: false }));
+        }
     };
 
     // Увеличить количество
-    const increaseQuantity = (productId) => {
-        const item = cart.find(item => item.id === productId);
-        if (item) {
-            updateQuantity(productId, item.quantity + 1);
-        }
+    const increaseQuantity = (itemId, currentQuantity) => {
+        updateQuantity(itemId, currentQuantity + 1);
     };
 
     // Уменьшить количество
-    const decreaseQuantity = (productId) => {
-        const item = cart.find(item => item.id === productId);
-        if (item && item.quantity > 1) {
-            updateQuantity(productId, item.quantity - 1);
+    const decreaseQuantity = (itemId, currentQuantity) => {
+        if (currentQuantity > 1) {
+            updateQuantity(itemId, currentQuantity - 1);
         }
     };
 
     // Удаление товара из корзины
-    const removeItem = (productId) => {
-        const updatedCart = cart.filter(item => item.id !== productId);
-        setCart(updatedCart);
-        localStorage.setItem('cart', JSON.stringify(updatedCart));
-        setShowModal(false);
-        setItemToRemove(null);
+    const removeItem = async () => {
+        const accessToken = localStorage.getItem('access');
+        if (!accessToken || !itemToRemove || !cart) return;
+
+        try {
+            const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+            const response = await fetch(`${apiUrl}/cart/remove_item/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    item_id: itemToRemove
+                })
+            });
+
+            if (response.ok) {
+                const updatedCart = await response.json();
+                setCart(updatedCart);
+                setCartItems(updatedCart.items || []);
+                window.dispatchEvent(new Event('cartUpdated'));
+            } else {
+                const errorData = await response.json();
+                console.error('Error removing item:', errorData);
+                alert('Ошибка при удалении товара');
+            }
+        } catch (error) {
+            console.error('Ошибка удаления товара:', error);
+            alert('Ошибка при удалении товара');
+        } finally {
+            setShowModal(false);
+            setItemToRemove(null);
+        }
     };
 
     // Подтверждение удаления
-    const confirmRemove = (productId) => {
-        setItemToRemove(productId);
+    const confirmRemove = (itemId) => {
+        setItemToRemove(itemId);
         setShowModal(true);
     };
 
     // Подсчёт общей суммы
     const getTotalPrice = () => {
-        return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+        if (cart && cart.total_price !== undefined) {
+            return parseFloat(cart.total_price).toFixed(2);
+        }
+        return cartItems.reduce((total, item) => {
+            return total + (parseFloat(item.product.price) * item.quantity);
+        }, 0).toFixed(2);
     };
 
     // Переход к оформлению заказа
     const proceedToCheckout = () => {
-        if (cart.length === 0) return;
-        
-        // Сохраняем корзину для оформления заказа
-        localStorage.setItem('checkoutCart', JSON.stringify(cart));
+        if (cartItems.length === 0) return;
+        // Просто переходим на checkout - там корзина загрузится с сервера
         navigate('/checkout');
     };
+
+    // Проверка авторизации
+    const accessToken = localStorage.getItem('access');
+    if (!accessToken) {
+        return (
+            <Container className="my-5">
+                <Alert variant="warning" className="text-center">
+                    <h4>Необходима авторизация</h4>
+                    <p>Для просмотра корзины необходимо войти в систему</p>
+                    <div className="mt-3">
+                        <Button variant="primary" onClick={() => navigate('/login')} className="me-2">
+                            Войти
+                        </Button>
+                        <Button variant="outline-primary" onClick={() => navigate('/register')}>
+                            Зарегистрироваться
+                        </Button>
+                    </div>
+                </Alert>
+            </Container>
+        );
+    }
 
     if (loading) {
         return (
@@ -106,7 +236,7 @@ function Cart() {
                                 </h2>
                             </Card.Header>
                             <Card.Body>
-                                {cart.length === 0 ? (
+                                {cartItems.length === 0 ? (
                                     <div className="empty-cart text-center py-5">
                                         <FaShoppingCart size={60} className="text-muted mb-3" />
                                         <h4>Корзина пуста</h4>
@@ -134,32 +264,32 @@ function Cart() {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {cart.map(item => (
+                                                    {cartItems.map(item => (
                                                         <tr key={item.id}>
                                                             <td>
                                                                 <div className="cart-product-info">
-                                                                    {item.image && (
+                                                                    {item.product?.image && (
                                                                         <img 
-                                                                            src={item.image} 
-                                                                            alt={item.name}
+                                                                            src={item.product.image} 
+                                                                            alt={item.product.name}
                                                                             className="cart-product-image"
                                                                         />
                                                                     )}
                                                                     <div className="cart-product-details">
-                                                                        <h6 className="cart-product-name">{item.name}</h6>
+                                                                        <h6 className="cart-product-name">{item.product?.name || 'Товар'}</h6>
                                                                     </div>
                                                                 </div>
                                                             </td>
                                                             <td>
-                                                                <span className="cart-price">{item.price} BYN</span>
+                                                                <span className="cart-price">{item.product?.price || 0} BYN</span>
                                                             </td>
                                                             <td>
                                                                 <div className="cart-quantity-controls">
                                                                     <Button
                                                                         variant="outline-secondary"
                                                                         size="sm"
-                                                                        onClick={() => decreaseQuantity(item.id)}
-                                                                        disabled={item.quantity <= 1}
+                                                                        onClick={() => decreaseQuantity(item.id, item.quantity)}
+                                                                        disabled={item.quantity <= 1 || updating[item.id]}
                                                                         className="quantity-btn"
                                                                     >
                                                                         <FaMinus />
@@ -168,16 +298,20 @@ function Cart() {
                                                                     <Button
                                                                         variant="outline-secondary"
                                                                         size="sm"
-                                                                        onClick={() => increaseQuantity(item.id)}
+                                                                        onClick={() => increaseQuantity(item.id, item.quantity)}
+                                                                        disabled={updating[item.id]}
                                                                         className="quantity-btn"
                                                                     >
                                                                         <FaPlus />
                                                                     </Button>
+                                                                    {updating[item.id] && (
+                                                                        <Spinner size="sm" className="ms-2" />
+                                                                    )}
                                                                 </div>
                                                             </td>
                                                             <td>
                                                                 <span className="cart-total-price">
-                                                                    {(item.price * item.quantity).toFixed(2)} BYN
+                                                                    {(parseFloat(item.product?.price || 0) * item.quantity).toFixed(2)} BYN
                                                                 </span>
                                                             </td>
                                                             <td>
@@ -237,7 +371,7 @@ function Cart() {
                         <Button variant="secondary" onClick={() => setShowModal(false)}>
                             Отмена
                         </Button>
-                        <Button variant="danger" onClick={() => removeItem(itemToRemove)}>
+                        <Button variant="danger" onClick={removeItem}>
                             Удалить
                         </Button>
                     </Modal.Footer>

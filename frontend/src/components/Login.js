@@ -19,6 +19,18 @@ function Login() {
         });
     };
 
+    // Получение профиля пользователя с access-токеном
+    async function fetchUserProfile(token) {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+        const res = await fetch(`${apiUrl}/accounts/users/me/`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        if (!res.ok) throw new Error('Ошибка при получении профиля');
+        return await res.json();
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -32,7 +44,7 @@ function Login() {
 
         try {
             const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-            const response = await fetch(`${apiUrl}/accounts/login/`, {
+            const response = await fetch(`${apiUrl}/accounts/jwt/create/`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json' 
@@ -43,29 +55,32 @@ function Login() {
                 }),
             });
 
-            if (!response.headers.get('content-type')?.includes('application/json')) {
-                const text = await response.text();
-                throw new Error(`Ошибка сервера. Проверьте URL: ${apiUrl}/accounts/login/`);
-            }
-
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Неверное имя пользователя или пароль');
+                setError(data.detail || 'Неверное имя пользователя или пароль');
+                setLoading(false);
+                return;
             }
 
-            if (data.auth_token) {
-                // Сохраняем токен и данные пользователя
-                localStorage.setItem('token', data.auth_token);
-                localStorage.setItem('user', JSON.stringify({
-                    id: data.user_id,
-                    username: data.username,
-                    email: data.email,
-                    is_admin: data.is_admin
-                }));
-                
+            if (data.access && data.refresh) {
+                // Сохраняем токены
+                localStorage.setItem('access', data.access);
+                localStorage.setItem('refresh', data.refresh);
+
+                // Получаем и сохраняем профиль пользователя
+                try {
+                    const profile = await fetchUserProfile(data.access);
+                    localStorage.setItem('user', JSON.stringify(profile));
+                    
+                    // Уведомляем другие компоненты об изменении авторизации
+                    window.dispatchEvent(new Event('authUpdated'));
+                } catch (profileError) {
+                    console.error(profileError);
+                }
+
                 navigate('/');
-                window.location.reload(); // Обновляем страницу для обновления Navbar
+                window.location.reload();
             } else {
                 throw new Error('Ошибка авторизации');
             }

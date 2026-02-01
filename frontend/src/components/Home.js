@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge, Button } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 // FaStar - иконка звездочки для избранного
 // FaChevronLeft, FaChevronRight - стрелки для слайдера
 // FaPlus, FaMinus - иконки для кнопок количества
@@ -11,6 +11,7 @@ import { FaStar, FaChevronLeft, FaChevronRight, FaPlus, FaMinus, FaShoppingCart 
 function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   
   // Состояние для избранного товаров
   const [favorites, setFavorites] = useState(() => {
@@ -184,53 +185,41 @@ function Home() {
     }));
   };
 
-  // Функция покупки товара (добавление в корзину и историю)
+  // Функция покупки товара (добавление в корзину)
   const buyProduct = async (product) => {
+    // Проверяем авторизацию
+    const accessToken = localStorage.getItem('access');
+    if (!accessToken) {
+      alert('Для добавления товаров в корзину необходимо войти в систему');
+      navigate('/login');
+      return;
+    }
+
     const quantity = quantities[product.id] || 1;
     
     try {
-      // Добавляем в корзину
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const existingItem = cart.find(item => item.id === product.id);
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
       
-      if (existingItem) {
-        existingItem.quantity += quantity;
-      } else {
-        cart.push({
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image: product.image,
-          slug: product.slug,
+      // Добавляем товар в корзину на сервере
+      const response = await fetch(`${apiUrl}/cart/add_item/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          product_id: product.id,
           quantity: quantity
-        });
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка при добавлении товара в корзину');
       }
-      
-      localStorage.setItem('cart', JSON.stringify(cart));
-      
-      // Добавляем в историю покупок
-      const history = JSON.parse(localStorage.getItem('purchaseHistory') || '[]');
-      const historyItem = {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        slug: product.slug,
-        quantity: quantity,
-        purchaseDate: new Date().toISOString()
-      };
-      
-      // Проверяем есть ли уже такой товар в истории
-      const existingHistoryIndex = history.findIndex(item => item.id === product.id);
-      if (existingHistoryIndex >= 0) {
-        // Обновляем существующий товар в истории
-        history[existingHistoryIndex] = historyItem;
-      } else {
-        // Добавляем новый товар в начало истории
-        history.unshift(historyItem);
-      }
-      
-      localStorage.setItem('purchaseHistory', JSON.stringify(history));
+
+      // Уведомляем Navbar об обновлении корзины
+      window.dispatchEvent(new Event('cartUpdated'));
       
       // Сбрасываем количество после покупки
       setQuantities(prev => ({
@@ -238,11 +227,11 @@ function Home() {
         [product.id]: 1
       }));
       
-      // Можно добавить уведомление о успешном добавлении
-      console.log(`Товар "${product.name}" добавлен в корзину и историю!`);
+      alert(`Товар "${product.name}" успешно добавлен в корзину!`);
       
     } catch (error) {
       console.error('Ошибка при добавлении товара:', error);
+      alert(error.message || 'Ошибка при добавлении товара в корзину');
     }
   };
 

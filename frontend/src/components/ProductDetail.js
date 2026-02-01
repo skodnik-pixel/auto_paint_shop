@@ -2,12 +2,12 @@
 import { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Button, Spinner, Badge } from 'react-bootstrap';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-    FaShoppingCart, 
-    FaHeart, 
-    FaShare, 
-    FaTruck, 
-    FaShieldAlt, 
+import {
+    FaShoppingCart,
+    FaHeart,
+    FaShare,
+    FaTruck,
+    FaShieldAlt,
     FaUndo,
     FaCheck,
     FaMinus,
@@ -30,20 +30,20 @@ function ProductDetail() {
         const fetchProduct = async () => {
             try {
                 const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-                
+
                 // Загружаем товар по slug
                 const response = await fetch(`${apiUrl}/catalog/products/`);
                 if (!response.ok) {
                     throw new Error(`Ошибка ${response.status}`);
                 }
                 const data = await response.json();
-                
+
                 // Ищем товар с нужным slug
                 const allProducts = data.results || data;
                 const productData = allProducts.find(p => p.slug === slug);
-                
+
                 setProduct(productData);
-                
+
                 // Загружаем похожие товары (из той же категории)
                 if (productData && productData.category) {
                     const relatedResponse = await fetch(
@@ -57,7 +57,7 @@ function ProductDetail() {
                         setRelatedProducts(related);
                     }
                 }
-                
+
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching product:', error);
@@ -90,33 +90,33 @@ function ProductDetail() {
 
     // Функция для добавления товара в корзину
     const addToCart = async () => {
-        const token = localStorage.getItem('token');
-        
+        const token = localStorage.getItem('access');
+
         console.log('=== ДОБАВЛЕНИЕ В КОРЗИНУ ===');
         console.log('Token:', token ? 'Есть' : 'Нет');
         console.log('Product:', product?.name);
         console.log('Slug:', product?.slug);
         console.log('Quantity:', quantity);
-        
+
         if (!token) {
             console.log('Нет токена - перенаправление на логин');
             navigate('/login');
             return;
         }
-        
+
         setAddingToCart(true);
-        
+
         try {
             const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
             const url = `${apiUrl}/cart/add_item/`;
-            const body = { 
-                product_slug: product.slug, 
-                quantity: quantity 
+            const body = {
+                product_slug: product.slug,
+                quantity: quantity
             };
-            
+
             console.log('URL:', url);
             console.log('Body:', body);
-            
+
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -127,7 +127,7 @@ function ProductDetail() {
             });
 
             console.log('Response status:', response.status);
-            
+
             if (response.ok) {
                 const data = await response.json();
                 console.log('✓ Успешно добавлено:', data);
@@ -192,28 +192,28 @@ function ProductDetail() {
                                 )}
                             </div>
                         </div>
-                        
+
                         {/* НОВЫЙ БЛОК - Описание товара под картинкой с кнопками */}
                         <div className="product-description-block flex-grow-1">
                             <Card>
                                 {/* Заменяем табы на кнопки */}
                                 <Card.Header className="p-3">
                                     <div className="description-buttons">
-                                        <Button 
+                                        <Button
                                             variant={activeTab === 'description' ? 'primary' : 'outline-primary'}
                                             className="description-btn"
                                             onClick={() => setActiveTab('description')}
                                         >
                                             Описание
                                         </Button>
-                                        <Button 
+                                        <Button
                                             variant={activeTab === 'specifications' ? 'primary' : 'outline-primary'}
                                             className="description-btn"
                                             onClick={() => setActiveTab('specifications')}
                                         >
                                             Характеристики
                                         </Button>
-                                        <Button 
+                                        <Button
                                             variant={activeTab === 'delivery' ? 'primary' : 'outline-primary'}
                                             className="description-btn"
                                             onClick={() => setActiveTab('delivery')}
@@ -230,7 +230,7 @@ function ProductDetail() {
                                             <p>
                                                 Этот товар от бренда <strong>{product.brand.name}</strong> относится к категории <strong>{product.category.name}</strong> и отличается высоким качеством и надёжностью.
                                             </p>
-                                            
+
                                             <h6>Основные характеристики:</h6>
                                             <ul>
                                                 <li><strong>Бренд:</strong> {product.brand.name}</li>
@@ -239,7 +239,7 @@ function ProductDetail() {
                                             </ul>
                                         </div>
                                     )}
-                                    
+
                                     {activeTab === 'specifications' && (
                                         <div>
                                             <h6>Технические характеристики:</h6>
@@ -269,7 +269,7 @@ function ProductDetail() {
                                             </table>
                                         </div>
                                     )}
-                                    
+
                                     {activeTab === 'delivery' && (
                                         <div>
                                             <h6>Способы доставки:</h6>
@@ -329,21 +329,21 @@ function ProductDetail() {
                                 <div className="quantity-selector mb-3">
                                     <label className="quantity-label">Количество:</label>
                                     <div className="quantity-controls">
-                                        <button 
-                                            className="quantity-btn" 
+                                        <button
+                                            className="quantity-btn"
                                             onClick={decreaseQuantity}
                                             disabled={quantity <= 1}
                                         >
                                             <FaMinus />
                                         </button>
-                                        <input 
-                                            type="number" 
-                                            className="quantity-input" 
+                                        <input
+                                            type="number"
+                                            className="quantity-input"
                                             value={quantity}
                                             readOnly
                                         />
-                                        <button 
-                                            className="quantity-btn" 
+                                        <button
+                                            className="quantity-btn"
                                             onClick={increaseQuantity}
                                             disabled={quantity >= product.stock}
                                         >
@@ -354,9 +354,9 @@ function ProductDetail() {
 
                                 {/* Кнопки действий */}
                                 <div className="action-buttons">
-                                    <Button 
-                                        variant="primary" 
-                                        size="lg" 
+                                    <Button
+                                        variant="primary"
+                                        size="lg"
                                         className="add-to-cart-btn"
                                         onClick={addToCart}
                                         disabled={product.stock === 0 || addingToCart}
@@ -364,18 +364,18 @@ function ProductDetail() {
                                         <FaShoppingCart className="me-2" />
                                         {addingToCart ? 'Добавление...' : 'Добавить в корзину'}
                                     </Button>
-                                    
-                                    <Button 
-                                        variant="outline-secondary" 
+
+                                    <Button
+                                        variant="outline-secondary"
                                         size="lg"
                                         className="favorite-btn"
                                         onClick={toggleFavorite}
                                     >
                                         <FaHeart className={isFavorite ? 'text-danger' : ''} />
                                     </Button>
-                                    
-                                    <Button 
-                                        variant="outline-secondary" 
+
+                                    <Button
+                                        variant="outline-secondary"
                                         size="lg"
                                         className="share-btn"
                                     >

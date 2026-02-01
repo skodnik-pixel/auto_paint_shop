@@ -1,19 +1,15 @@
-// frontend/src/components/Profile.js
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Nav, Badge, Button, Alert, Spinner, Modal, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaShoppingBag, FaHistory, FaCog, FaSignOutAlt, FaBox, FaClock, FaCheckCircle, FaTimes, FaEye, FaTrash, FaTruck, FaBell, FaBuilding, FaPlus } from 'react-icons/fa';
+import { FaUser, FaShoppingBag, FaCog, FaSignOutAlt, FaBox, FaClock, FaCheckCircle, FaTimes, FaTruck, FaBell, FaBuilding, FaPlus, FaTrash, FaEye } from 'react-icons/fa';
 
 function Profile() {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [orders, setOrders] = useState([]);
-    const [purchaseHistory, setPurchaseHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('profile');
     const [error, setError] = useState(null);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [itemToDelete, setItemToDelete] = useState(null);
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [savedAddresses, setSavedAddresses] = useState([
         {
@@ -36,7 +32,7 @@ function Profile() {
 
     // Загрузка данных пользователя и заказов
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('access');
         const userData = localStorage.getItem('user');
 
         // Проверяем авторизацию
@@ -53,52 +49,10 @@ function Profile() {
             return;
         }
 
-        // Загружаем заказы из localStorage вместо сервера
-        loadOrdersFromStorage();
-        
-        // Загружаем историю покупок из localStorage
-        loadPurchaseHistory();
+        // Загружаем заказы с сервера и переключаем на вкладку заказов если есть параметры в url, 
+        // или если просто хотим по умолчанию открыть заказы можно добавить логику здесь.
+        fetchOrders(token);
     }, [navigate]);
-
-    // Функция загрузки истории покупок из localStorage
-    const loadPurchaseHistory = () => {
-        try {
-            const history = JSON.parse(localStorage.getItem('purchaseHistory') || '[]');
-            
-            // Сортировка по дате покупки (новые сверху)
-            const sortedHistory = history.sort((a, b) => {
-                const dateA = new Date(a.purchaseDate || 0);
-                const dateB = new Date(b.purchaseDate || 0);
-                return dateB - dateA; // Сортировка по убыванию (новые сверху)
-            });
-            
-            setPurchaseHistory(sortedHistory);
-        } catch (error) {
-            console.error('Ошибка загрузки истории покупок:', error);
-            setPurchaseHistory([]);
-        }
-    };
-
-    // Функция загрузки заказов из localStorage
-    const loadOrdersFromStorage = () => {
-        try {
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            
-            // Сортировка заказов по дате (новые сверху)
-            const sortedOrders = orders.sort((a, b) => {
-                const dateA = new Date(a.createdAt || 0);
-                const dateB = new Date(b.createdAt || 0);
-                return dateB - dateA; // Новые заказы сверху
-            });
-            
-            setOrders(sortedOrders);
-            setLoading(false);
-        } catch (error) {
-            console.error('Ошибка загрузки заказов:', error);
-            setOrders([]);
-            setLoading(false);
-        }
-    };
 
     // Функция загрузки заказов
     const fetchOrders = async (token) => {
@@ -106,13 +60,16 @@ function Profile() {
             const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
             const response = await fetch(`${apiUrl}/orders/orders/`, {
                 headers: {
-                    'Authorization': `Token ${token}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
             if (response.ok) {
                 const data = await response.json();
-                setOrders(data.results || data);
+                let fetchedOrders = data.results || data;
+                // Сортируем: новые сверху
+                fetchedOrders.sort((a, b) => new Date(b.created_at || b.id) - new Date(a.created_at || a.id));
+                setOrders(fetchedOrders);
             } else {
                 console.error('Failed to fetch orders');
             }
@@ -130,11 +87,11 @@ function Profile() {
             const address = {
                 id: Date.now(),
                 ...newAddress,
-                address: newAddress.apartment 
+                address: newAddress.apartment
                     ? `${newAddress.address}, кв. ${newAddress.apartment}`
                     : newAddress.address
             };
-            
+
             setSavedAddresses([...savedAddresses, address]);
             setNewAddress({
                 name: '',
@@ -160,42 +117,19 @@ function Profile() {
         }));
     };
 
-    // Удаление товара из истории
-    const removeFromHistory = (productId) => {
-        const updatedHistory = purchaseHistory.filter(item => item.id !== productId);
-        setPurchaseHistory(updatedHistory);
-        localStorage.setItem('purchaseHistory', JSON.stringify(updatedHistory));
-        setShowDeleteModal(false);
-        setItemToDelete(null);
-    };
-
-    // Подтверждение удаления из истории
-    const confirmDelete = (productId) => {
-        setItemToDelete(productId);
-        setShowDeleteModal(true);
-    };
-
     // Просмотр подробностей товара
     const viewProductDetails = (productSlug) => {
-        navigate(`/product/${productSlug}`);
-    };
-
-    // Форматирование даты покупки
-    const formatPurchaseDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('ru-RU', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        if (productSlug) {
+            navigate(`/product/${productSlug}`);
+        } else {
+            console.warn('Product slug is missing');
+        }
     };
 
     // Выход из системы
     const handleLogout = async () => {
-        const token = localStorage.getItem('token');
-        
+        const token = localStorage.getItem('access');
+
         if (token) {
             try {
                 const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
@@ -211,6 +145,7 @@ function Profile() {
         }
 
         localStorage.removeItem('token');
+        localStorage.removeItem('access');
         localStorage.removeItem('user');
         navigate('/');
         window.location.reload();
@@ -219,7 +154,7 @@ function Profile() {
     // Получение статуса заказа
     const getOrderStatus = (status) => {
         const statuses = {
-            'pending': { text: 'Ожидает обработки', variant: 'warning', icon: <FaClock /> },
+            'pending': { text: 'Ожидает', variant: 'warning', icon: <FaClock /> },
             'processing': { text: 'В обработке', variant: 'info', icon: <FaBox /> },
             'shipped': { text: 'Отправлен', variant: 'primary', icon: <FaBox /> },
             'delivered': { text: 'Доставлен', variant: 'success', icon: <FaCheckCircle /> },
@@ -230,6 +165,7 @@ function Profile() {
 
     // Форматирование даты
     const formatDate = (dateString) => {
+        if (!dateString) return 'Неизвестно';
         const date = new Date(dateString);
         return date.toLocaleDateString('ru-RU', {
             year: 'numeric',
@@ -259,50 +195,44 @@ function Profile() {
                 <Row>
                     {/* Боковое меню */}
                     <Col lg={3} className="mb-4">
-                        <Card className="profile-sidebar">
+                        <Card className="profile-sidebar border-0 shadow-sm">
                             <Card.Body>
                                 {/* Информация о пользователе */}
                                 <div className="profile-user-info text-center mb-4">
-                                    <div className="profile-avatar">
-                                        <FaUser />
+                                    <div className="profile-avatar mb-3">
+                                        <FaUser size={40} className="text-primary" />
                                     </div>
-                                    <h5 className="profile-username mt-3">{user.username}</h5>
-                                    <p className="profile-email text-muted">{user.email}</p>
+                                    <h5 className="profile-username mb-1">{user.username}</h5>
+                                    <p className="profile-email text-muted small">{user.email}</p>
                                 </div>
 
                                 {/* Навигация */}
-                                <Nav className="flex-column profile-nav">
-                                    <Nav.Link 
-                                        className={activeTab === 'profile' ? 'active' : ''}
+                                <Nav className="flex-column profile-nav pills-vertical">
+                                    <Nav.Link
+                                        className={`mb-2 ${activeTab === 'profile' ? 'active fw-bold' : ''}`}
                                         onClick={() => setActiveTab('profile')}
                                     >
                                         <FaUser className="me-2" />
                                         Мой профиль
                                     </Nav.Link>
-                                    <Nav.Link 
-                                        className={activeTab === 'orders' ? 'active' : ''}
+                                    <Nav.Link
+                                        className={`mb-2 ${activeTab === 'orders' ? 'active fw-bold' : ''}`}
                                         onClick={() => setActiveTab('orders')}
                                     >
                                         <FaShoppingBag className="me-2" />
                                         Мои заказы
                                         {orders.length > 0 && (
-                                            <Badge bg="primary" className="ms-2">{orders.length}</Badge>
+                                            <Badge bg="danger" className="ms-2 rounded-pill">{orders.length}</Badge>
                                         )}
                                     </Nav.Link>
-                                    <Nav.Link 
-                                        className={activeTab === 'history' ? 'active' : ''}
-                                        onClick={() => setActiveTab('history')}
-                                    >
-                                        <FaHistory className="me-2" />
-                                        История
-                                    </Nav.Link>
-                                    <Nav.Link 
-                                        className={activeTab === 'settings' ? 'active' : ''}
+                                    <Nav.Link
+                                        className={`mb-2 ${activeTab === 'settings' ? 'active fw-bold' : ''}`}
                                         onClick={() => setActiveTab('settings')}
                                     >
                                         <FaCog className="me-2" />
                                         Настройки
                                     </Nav.Link>
+                                    <div className="border-top my-2"></div>
                                     <Nav.Link onClick={handleLogout} className="text-danger">
                                         <FaSignOutAlt className="me-2" />
                                         Выйти
@@ -316,52 +246,62 @@ function Profile() {
                     <Col lg={9}>
                         {/* Вкладка "Мой профиль" */}
                         {activeTab === 'profile' && (
-                            <Card className="profile-content-card">
-                                <Card.Header>
+                            <Card className="profile-content-card border-0 shadow-sm">
+                                <Card.Header className="bg-white border-bottom-0 pt-4 px-4">
                                     <h4 className="mb-0">Личный кабинет</h4>
-DIR                                </Card.Header>
-                                <Card.Body>
+                                </Card.Header>
+                                <Card.Body className="px-4 pb-4">
                                     <Row>
-                                        <Col md={6} className="mb-3">
-                                            <label className="form-label text-muted">Имя пользователя</label>
-                                            <p className="profile-info-value">{user.username}</p>
+                                        <Col md={6} className="mb-4">
+                                            <div className="p-3 bg-light rounded h-100">
+                                                <label className="text-muted small text-uppercase fw-bold mb-1">Имя пользователя</label>
+                                                <p className="fs-5 mb-0 fw-medium">{user.username}</p>
+                                            </div>
                                         </Col>
-                                        <Col md={6} className="mb-3">
-                                            <label className="form-label text-muted">Email</label>
-                                            <p className="profile-info-value">{user.email}</p>
+                                        <Col md={6} className="mb-4">
+                                            <div className="p-3 bg-light rounded h-100">
+                                                <label className="text-muted small text-uppercase fw-bold mb-1">Email</label>
+                                                <p className="fs-5 mb-0 fw-medium">{user.email}</p>
+                                            </div>
                                         </Col>
-                                        <Col md={6} className="mb-3">
-                                            <label className="form-label text-muted">Телефон</label>
-                                            <p className="profile-info-value">{user.phone || 'Не указан'}</p>
+                                        <Col md={6} className="mb-4">
+                                            <div className="p-3 bg-light rounded h-100">
+                                                <label className="text-muted small text-uppercase fw-bold mb-1">Телефон</label>
+                                                <p className="fs-5 mb-0 fw-medium">{user.phone || 'Не указан'}</p>
+                                            </div>
                                         </Col>
-                                        <Col md={6} className="mb-3">
-                                            <label className="form-label text-muted">Статус</label>
-                                            <p className="profile-info-value">
-                                                <Badge bg={user.is_admin ? 'danger' : 'success'}>
-                                                    {user.is_admin ? 'Администратор' : 'Покупатель'}
-                                                </Badge>
-                                            </p>
+                                        <Col md={6} className="mb-4">
+                                            <div className="p-3 bg-light rounded h-100">
+                                                <label className="text-muted small text-uppercase fw-bold mb-1">Статус аккаунта</label>
+                                                <div>
+                                                    <Badge bg={user.is_admin ? 'danger' : 'success'} className="fs-6 fw-normal px-3 py-2">
+                                                        {user.is_admin ? 'Администратор' : 'Покупатель'}
+                                                    </Badge>
+                                                </div>
+                                            </div>
                                         </Col>
                                     </Row>
                                 </Card.Body>
                             </Card>
                         )}
 
-                        {/* Вкладка "Мои заказы" */}
+                        {/* Вкладка "Мои заказы" (Новый дизайн) */}
                         {activeTab === 'orders' && (
-                            <Card className="profile-content-card">
-                                <Card.Header>
+                            <Card className="profile-content-card border-0 shadow-sm">
+                                <Card.Header className="bg-white border-bottom-0 pt-4 px-4">
                                     <h4 className="mb-0">История заказов</h4>
                                 </Card.Header>
-                                <Card.Body>
+                                <Card.Body className="px-4 pb-4">
                                     {error && <Alert variant="danger">{error}</Alert>}
-                                    
+
                                     {orders.length === 0 ? (
                                         <div className="text-center py-5">
-                                            <FaShoppingBag size={60} className="text-muted mb-3" />
-                                            <h5>У вас пока нет заказов</h5>
-                                            <p className="text-muted">Перейдите в каталог и сделайте первый заказ</p>
-                                            <Button variant="primary" onClick={() => navigate('/catalog')}>
+                                            <div className="mb-4">
+                                                <FaShoppingBag size={60} className="text-muted opacity-50" />
+                                            </div>
+                                            <h5 className="mb-3">У вас пока нет заказов</h5>
+                                            <p className="text-muted mb-4">Перейдите в каталог и выберите товары для вашего автомобиля</p>
+                                            <Button variant="primary" size="lg" onClick={() => navigate('/catalog')} className="px-4 rounded-pill">
                                                 Перейти в каталог
                                             </Button>
                                         </div>
@@ -369,52 +309,63 @@ DIR                                </Card.Header>
                                         <div className="orders-list">
                                             {orders.map(order => {
                                                 const status = getOrderStatus(order.status);
+                                                // Раскрываем все товары заказа в виде карточек
                                                 return (
-                                                    <Card key={order.id} className="order-card mb-3">
-                                                        <Card.Body>
-                                                            <Row className="align-items-center">
-                                                                <Col md={2}>
-                                                                    <div className="order-number">
-                                                                        <small className="text-muted">Заказ №</small>
-                                                                        <h6 className="mb-0">{order.id}</h6>
+                                                    <div key={order.id} className="mb-4 p-3 border rounded bg-white">
+                                                        <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                                                            <div className="d-flex align-items-center gap-2">
+                                                                <span className="fw-bold text-dark">Заказ №{order.id}</span>
+                                                                <span className="text-muted small">от {formatDate(order.created_at || order.items?.[0]?.purchaseDate)}</span>
+                                                            </div>
+                                                            <div className="d-flex align-items-center gap-3">
+                                                                <Badge bg={status.variant} text={status.variant === 'warning' || status.variant === 'info' ? 'dark' : 'white'} className="fw-normal px-2 py-1 d-flex align-items-center gap-1">
+                                                                    {status.icon} {status.text}
+                                                                </Badge>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Список товаров в этом заказе */}
+                                                        {order.items && order.items.map((item, idx) => (
+                                                            <Row key={idx} className="align-items-center mb-3">
+                                                                <Col xs={3} sm={2} style={{ maxWidth: '80px' }}>
+                                                                    <div style={{ width: '60px', height: '60px', overflow: 'hidden', borderRadius: '8px', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9f9f9' }}>
+                                                                        {item.product?.image || item.image ? (
+                                                                            <img
+                                                                                src={item.product?.image || item.image}
+                                                                                alt={item.product?.name || item.name}
+                                                                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                                                            />
+                                                                        ) : (
+                                                                            <FaBox className="text-secondary opacity-25" size={24} />
+                                                                        )}
                                                                     </div>
                                                                 </Col>
-                                                                <Col md={3}>
-                                                                    <small className="text-muted">Дата заказа</small>
-                                                                    <p className="mb-0">{formatDate(order.createdAt)}</p>
-                                                                </Col>
-                                                                <Col md={3}>
-                                                                    <small className="text-muted">Статус</small>
-                                                                    <div>
-                                                                        <Badge bg={status.variant} className="status-badge">
-                                                                            {status.icon} {status.text}
-                                                                        </Badge>
+                                                                <Col xs={9} sm={6}>
+                                                                    <h6 className="mb-1 text-truncate" style={{ maxWidth: '100%' }}>{item.product?.name || item.name || 'Товар без названия'}</h6>
+                                                                    <div className="small text-muted mb-1">
+                                                                        {item.quantity} шт. × {item.price} BYN
                                                                     </div>
+                                                                    <Button
+                                                                        variant="link"
+                                                                        className="p-0 text-decoration-none small"
+                                                                        onClick={() => viewProductDetails(item.product?.slug || item.slug)}
+                                                                    >
+                                                                        <FaEye className="me-1" /> Подробнее
+                                                                    </Button>
                                                                 </Col>
-                                                                <Col md={4} className="text-end">
-                                                                    <small className="text-muted">Сумма заказа</small>
-                                                                    <h4 className="mb-0 text-primary">{order.totalPrice} BYN</h4>
+                                                                <Col xs={12} sm={4} className="text-sm-end mt-2 mt-sm-0">
+                                                                    <div className="fw-bold fs-5">
+                                                                        {(parseFloat(item.price) * item.quantity).toFixed(2)} BYN
+                                                                    </div>
                                                                 </Col>
                                                             </Row>
-                                                            
-                                                            {/* Товары в заказе */}
-                                                            {order.items && order.items.length > 0 && (
-                                                                <div className="order-items mt-3 pt-3 border-top">
-                                                                    <small className="text-muted">Товары:</small>
-                                                                    <div className="mt-2">
-                                                                        {order.items.map((item, index) => (
-                                                                            <div key={index} className="order-item-row">
-                                                                                <span>{item.name}</span>
-                                                                                <span className="text-muted">
-                                                                                    {item.quantity} шт. × {item.price} BYN
-                                                                                </span>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </Card.Body>
-                                                    </Card>
+                                                        ))}
+
+                                                        <div className="border-top pt-2 mt-2 d-flex justify-content-end align-items-center">
+                                                            <span className="me-2 text-muted">Итого заказа:</span>
+                                                            <span className="fw-bold fs-4 text-primary">{order.totalPrice || order.total_price} BYN</span>
+                                                        </div>
+                                                    </div>
                                                 );
                                             })}
                                         </div>
@@ -423,137 +374,52 @@ DIR                                </Card.Header>
                             </Card>
                         )}
 
-                        {/* Вкладка "История" */}
-                        {activeTab === 'history' && (
-                            <Card className="profile-content-card">
-                                <Card.Header>
-                                    <h4 className="mb-0">История покупок</h4>
-                                </Card.Header>
-                                <Card.Body>
-                                    {purchaseHistory.length === 0 ? (
-                                        <div className="text-center py-5">
-                                            <FaHistory size={60} className="text-muted mb-3" />
-                                            <h5>У вас пока нет истории покупок</h5>
-                                            <p className="text-muted">История будет пополняться при совершении покупок</p>
-                                            <Button variant="primary" onClick={() => navigate('/catalog')}>
-                                                Перейти в каталог
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <Row>
-                                            {purchaseHistory.map(item => (
-                                                <Col key={item.id} md={6} lg={4} className="mb-4">
-                                                    <Card className="history-product-card">
-                                                        {/* Изображение товара */}
-                                                        {item.image && (
-                                                            <div className="history-product-image-wrapper">
-                                                                <Card.Img 
-                                                                    variant="top" 
-                                                                    src={item.image} 
-                                                                    alt={item.name}
-                                                                    className="history-product-image"
-                                                                />
-                                                            </div>
-                                                        )}
-                                                        
-                                                        <Card.Body>
-                                                            {/* Название товара */}
-                                                            <Card.Title className="history-product-name">
-                                                                {item.name}
-                                                            </Card.Title>
-                                                            
-                                                            {/* Информация о покупке */}
-                                                            <div className="history-product-info">
-                                                                <div className="history-info-row">
-                                                                    <span className="history-label">Цена:</span>
-                                                                    <span className="history-value">{item.price} BYN</span>
-                                                                </div>
-                                                                {item.quantity && (
-                                                                    <div className="history-info-row">
-                                                                        <span className="history-label">Количество:</span>
-                                                                        <span className="history-value">{item.quantity} шт.</span>
-                                                                    </div>
-                                                                )}
-                                                                {item.purchaseDate && (
-                                                                    <div className="history-info-row">
-                                                                        <span className="history-label">Дата:</span>
-                                                                        <span className="history-value text-muted">
-                                                                            {formatPurchaseDate(item.purchaseDate)}
-                                                                        </span>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            
-                                                            {/* Кнопки действий */}
-                                                            <div className="history-actions">
-                                                                <Button
-                                                                    variant="outline-primary"
-                                                                    size="sm"
-                                                                    onClick={() => viewProductDetails(item.slug)}
-                                                                    className="history-btn"
-                                                                >
-                                                                    <FaEye className="me-1" />
-                                                                    Подробнее
-                                                                </Button>
-                                                            </div>
-                                                        </Card.Body>
-                                                    </Card>
-                                                </Col>
-                                            ))}
-                                        </Row>
-                                    )}
-                                </Card.Body>
-                            </Card>
-                        )}
-
                         {/* Вкладка "Настройки" */}
                         {activeTab === 'settings' && (
-                            <Card className="profile-content-card">
-                                <Card.Header>
+                            <Card className="profile-content-card border-0 shadow-sm">
+                                <Card.Header className="bg-white border-bottom-0 pt-4 px-4">
                                     <h4 className="mb-0">Настройки аккаунта</h4>
                                 </Card.Header>
-                                <Card.Body>
+                                <Card.Body className="px-4 pb-4">
                                     {/* Управление адресами доставки */}
-                                    <Card className="settings-section mb-4">
-                                        <Card.Header>
-                                            <h5 className="mb-0">
-                                                <FaTruck className="me-2" />
+                                    <Card className="settings-section mb-4 border shadow-sm">
+                                        <Card.Header className="bg-light border-bottom">
+                                            <h5 className="mb-0 fs-6 fw-bold text-dark">
+                                                <FaTruck className="me-2 text-primary" />
                                                 Адреса доставки
                                             </h5>
                                         </Card.Header>
                                         <Card.Body>
                                             <div className="saved-addresses">
-                                                <p className="text-muted mb-3">Сохранённые адреса для быстрого оформления заказов</p>
-                                                
-                                                {/* Список сохранённых адресов */}
+                                                <p className="text-muted small mb-3">Сохранённые адреса для быстрого оформления заказов</p>
+
                                                 <div className="address-list mb-3">
                                                     {savedAddresses.map(address => (
-                                                        <div key={address.id} className="address-item">
-                                                            <div className="address-header">
-                                                                <strong>{address.name}</strong>
-                                                                {address.isDefault && (
-                                                                    <Badge bg="success" className="ms-2">По умолчанию</Badge>
-                                                                )}
+                                                        <div key={address.id} className="address-item p-3 border rounded mb-2 bg-white position-relative">
+                                                            <div className="d-flex justify-content-between align-items-start">
+                                                                <div>
+                                                                    <strong className="d-block text-dark mb-1">{address.name} {address.isDefault && <Badge bg="success" className="ms-1 small">По умолчанию</Badge>}</strong>
+                                                                    <div className="text-muted small">
+                                                                        {address.city}, {address.address}
+                                                                        {address.postalCode && <span className="d-block text-muted small mt-1">Индекс: {address.postalCode}</span>}
+                                                                    </div>
+                                                                </div>
                                                                 <Button
                                                                     variant="outline-danger"
                                                                     size="sm"
-                                                                    className="address-delete-btn"
+                                                                    className="border-0"
                                                                     onClick={() => handleDeleteAddress(address.id)}
                                                                 >
                                                                     <FaTrash />
                                                                 </Button>
                                                             </div>
-                                                            <p className="mb-1">{address.city}, {address.address}</p>
-                                                            {address.postalCode && (
-                                                                <small className="text-muted">Индекс: {address.postalCode}</small>
-                                                            )}
                                                         </div>
                                                     ))}
                                                 </div>
-                                                
-                                                <Button 
-                                                    variant="outline-primary" 
-                                                    size="sm" 
+
+                                                <Button
+                                                    variant="outline-primary"
+                                                    size="sm"
                                                     className="settings-btn"
                                                     onClick={() => setShowAddressModal(true)}
                                                 >
@@ -565,101 +431,37 @@ DIR                                </Card.Header>
                                     </Card>
 
                                     {/* Настройки уведомлений */}
-                                    <Card className="settings-section mb-4">
-                                        <Card.Header>
-                                            <h5 className="mb-0">
-                                                <FaBell className="me-2" />
+                                    <Card className="settings-section mb-4 border shadow-sm">
+                                        <Card.Header className="bg-light border-bottom">
+                                            <h5 className="mb-0 fs-6 fw-bold text-dark">
+                                                <FaBell className="me-2 text-primary" />
                                                 Уведомления
                                             </h5>
                                         </Card.Header>
                                         <Card.Body>
                                             <Form>
-                                                <Form.Check 
-                                                    type="checkbox"
+                                                <Form.Check
+                                                    type="switch"
                                                     id="email-orders"
                                                     label="Email уведомления о статусе заказа"
                                                     defaultChecked
-                                                    className="mb-2"
+                                                    className="mb-3"
                                                 />
-                                                <Form.Check 
-                                                    type="checkbox"
+                                                <Form.Check
+                                                    type="switch"
                                                     id="email-promotions"
                                                     label="Акции и специальные предложения"
                                                     defaultChecked
-                                                    className="mb-2"
+                                                    className="mb-3"
                                                 />
-                                                <Form.Check 
-                                                    type="checkbox"
+                                                <Form.Check
+                                                    type="switch"
                                                     id="sms-orders"
                                                     label="SMS уведомления о доставке"
                                                     className="mb-3"
                                                 />
-                                                <Button variant="success" size="sm" className="settings-btn">
+                                                <Button variant="success" size="sm" className="mt-2">
                                                     Сохранить настройки
-                                                </Button>
-                                            </Form>
-                                        </Card.Body>
-                                    </Card>
-
-                                    {/* Профиль компании (B2B) */}
-                                    <Card className="settings-section">
-                                        <Card.Header>
-                                            <h5 className="mb-0">
-                                                <FaBuilding className="me-2" />
-                                                Профиль компании
-                                            </h5>
-                                        </Card.Header>
-                                        <Card.Body>
-                                            <Form>
-                                                <Row>
-                                                    <Col md={6}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Название организации</Form.Label>
-                                                            <Form.Control 
-                                                                type="text" 
-                                                                placeholder="ООО 'Автосервис'"
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={6}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>УНП</Form.Label>
-                                                            <Form.Control 
-                                                                type="text" 
-                                                                placeholder="123456789"
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={12}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Юридический адрес</Form.Label>
-                                                            <Form.Control 
-                                                                type="text" 
-                                                                placeholder="г. Минск, ул. Деловая, д. 5"
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={6}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Контактное лицо</Form.Label>
-                                                            <Form.Control 
-                                                                type="text" 
-                                                                placeholder="Иванов Иван Иванович"
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                    <Col md={6}>
-                                                        <Form.Group className="mb-3">
-                                                            <Form.Label>Должность</Form.Label>
-                                                            <Form.Control 
-                                                                type="text" 
-                                                                placeholder="Директор"
-                                                            />
-                                                        </Form.Group>
-                                                    </Col>
-                                                </Row>
-                                                <Button variant="success" size="sm" className="settings-btn">
-                                                    Сохранить данные компании
                                                 </Button>
                                             </Form>
                                         </Card.Body>
@@ -669,24 +471,6 @@ DIR                                </Card.Header>
                         )}
                     </Col>
                 </Row>
-
-                {/* Модальное окно подтверждения удаления из истории */}
-                <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Подтверждение удаления</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        Вы уверены, что хотите удалить этот товар из истории покупок?
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-                            Отмена
-                        </Button>
-                        <Button variant="danger" onClick={() => removeFromHistory(itemToDelete)}>
-                            Удалить
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
 
                 {/* Модальное окно добавления адреса */}
                 <Modal show={showAddressModal} onHide={() => setShowAddressModal(false)} centered>
@@ -705,7 +489,7 @@ DIR                                </Card.Header>
                                     placeholder="Дом, Работа, Склад..."
                                 />
                             </Form.Group>
-                            
+
                             <Row>
                                 <Col md={6}>
                                     <Form.Group className="mb-3">
@@ -732,7 +516,7 @@ DIR                                </Card.Header>
                                     </Form.Group>
                                 </Col>
                             </Row>
-                            
+
                             <Form.Group className="mb-3">
                                 <Form.Label>Адрес *</Form.Label>
                                 <Form.Control
@@ -743,7 +527,7 @@ DIR                                </Card.Header>
                                     placeholder="ул. Примерная, д. 1"
                                 />
                             </Form.Group>
-                            
+
                             <Form.Group className="mb-3">
                                 <Form.Label>Квартира/Офис</Form.Label>
                                 <Form.Control
@@ -754,7 +538,7 @@ DIR                                </Card.Header>
                                     placeholder="10"
                                 />
                             </Form.Group>
-                            
+
                             <Form.Check
                                 type="checkbox"
                                 name="isDefault"

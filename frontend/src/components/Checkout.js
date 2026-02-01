@@ -6,7 +6,8 @@ import { FaShoppingCart, FaUser, FaTruck, FaCreditCard } from 'react-icons/fa';
 
 function Checkout() {
     const [cart, setCart] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true); // Начинаем с true для начальной загрузки
+    const [submitting, setSubmitting] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
     const navigate = useNavigate();
 
@@ -17,30 +18,99 @@ function Checkout() {
         lastName: '',
         phone: '',
         email: '',
-        
+
         // Адрес доставки
         deliveryMethod: 'courier', // courier, pickup, post
         city: '',
         address: '',
         apartment: '',
         postalCode: '',
-        
+
         // Способ оплаты
         paymentMethod: 'cash', // cash, card, transfer
-        
+
         // Комментарий
         comment: ''
     });
 
-    // Загружаем корзину для оформления
+    // Загружаем корзину с сервера и данные пользователя для оформления
     useEffect(() => {
-        const checkoutCart = JSON.parse(localStorage.getItem('checkoutCart') || '[]');
-        if (checkoutCart.length === 0) {
-            // Если корзина пуста, перенаправляем в каталог
-            navigate('/catalog');
-            return;
-        }
-        setCart(checkoutCart);
+        const loadCart = async () => {
+            const accessToken = localStorage.getItem('access');
+            if (!accessToken) {
+                // Если не авторизован, перенаправляем на логин
+                navigate('/login');
+                return;
+            }
+
+            try {
+                const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+
+                // Загружаем корзину
+                const cartResponse = await fetch(`${apiUrl}/cart/`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (cartResponse.ok) {
+                    const data = await cartResponse.json();
+
+                    // Универсальная обработка ответа (список, пагинация, объект)
+                    let cartData = null;
+                    if (Array.isArray(data)) {
+                        cartData = data.length > 0 ? data[0] : null;
+                    } else if (data.results && Array.isArray(data.results)) {
+                        cartData = data.results.length > 0 ? data.results[0] : null;
+                    } else if (data.id) {
+                        cartData = data;
+                    }
+
+                    if (cartData && cartData.items && cartData.items.length > 0) {
+                        // Преобразуем формат корзины с сервера в формат для checkout
+                        const cartItems = cartData.items.map(item => ({
+                            id: item.product.id,
+                            name: item.product.name,
+                            price: item.product.price,
+                            image: item.product.image,
+                            slug: item.product.slug,
+                            quantity: item.quantity
+                        }));
+                        setCart(cartItems);
+                    } else {
+                        // Если корзина пуста, перенаправляем в каталог
+                        navigate('/catalog');
+                        return;
+                    }
+                } else {
+                    navigate('/catalog');
+                    return;
+                }
+
+                // Загружаем данные пользователя для предзаполнения формы
+                const userData = localStorage.getItem('user');
+                if (userData) {
+                    try {
+                        const user = JSON.parse(userData);
+                        setOrderData(prev => ({
+                            ...prev,
+                            email: user.email || prev.email,
+                            phone: user.phone || prev.phone,
+                            // Можно добавить firstName и lastName, если они есть в профиле
+                        }));
+                    } catch (e) {
+                        console.error('Ошибка парсинга данных пользователя:', e);
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки корзины:', error);
+                navigate('/catalog');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadCart();
     }, [navigate]);
 
     // Обработка изменений в форме
@@ -79,12 +149,30 @@ function Checkout() {
     // Оформление заказа
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
+        setSubmitting(true);
 
         try {
-            // Создаём объект заказа
-            const order = {
-                id: Date.now(), // Временный ID
+            const accessToken = localStorage.getItem('access');
+            if (!accessToken) {
+                alert('Необходимо войти в систему');
+                navigate('/login');
+                return;
+            }
+            // Формируем адрес одной строкой
+            const fullAddress = `${orderData.city}, ${orderData.address}${orderData.apartment ? ', кв. ' + orderData.apartment : ''}`;
+
+            // Создаём объект заказа (плоская структура для сервера)
+            const orderPayload = {
+                phone: orderData.phone,
+                address: fullAddress,
+                delivery_method: orderData.deliveryMethod,
+                payment_method: orderData.paymentMethod,
+                comment: orderData.comment
+            };
+
+            // Для локального хранения (если нужно) оставляем полную структуру
+            const localOrder = {
+                id: Date.now(),
                 items: cart,
                 customerInfo: {
                     firstName: orderData.firstName,
@@ -94,7 +182,7 @@ function Checkout() {
                 },
                 delivery: {
                     method: orderData.deliveryMethod,
-                    address: `${orderData.city}, ${orderData.address}${orderData.apartment ? ', кв. ' + orderData.apartment : ''}`,
+                    address: fullAddress,
                     postalCode: orderData.postalCode,
                     cost: getDeliveryPrice()
                 },
@@ -107,47 +195,74 @@ function Checkout() {
                 createdAt: new Date().toISOString()
             };
 
-            // Сохраняем заказ в localStorage (в реальном проекте отправляем на сервер)
+            // Сохраняем заказ в localStorage (для совместимости, если нужно)
             const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            orders.unshift(order);
+            orders.unshift(localOrder);
             localStorage.setItem('orders', JSON.stringify(orders));
 
-            // Добавляем товары в историю покупок
-            const history = JSON.parse(localStorage.getItem('purchaseHistory') || '[]');
-            cart.forEach(item => {
-                const historyItem = {
-                    ...item,
-                    purchaseDate: new Date().toISOString(),
-                    orderId: order.id
-                };
-                
-                // Проверяем есть ли уже такой товар в истории
-                const existingIndex = history.findIndex(h => h.id === item.id);
-                if (existingIndex >= 0) {
-                    history[existingIndex] = historyItem;
-                } else {
-                    history.unshift(historyItem);
-                }
-            });
-            localStorage.setItem('purchaseHistory', JSON.stringify(history));
+            // Отправка заказа на сервер
+            const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+            console.log('Sending order to:', `${apiUrl}/orders/orders/create_order/`);
 
-            // Очищаем корзину
+            const response = await fetch(`${apiUrl}/orders/orders/create_order/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify(orderPayload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Server Error:', errorData);
+                throw new Error(JSON.stringify(errorData) || 'Ошибка сервера при создании заказа');
+            }
+
+            const responseData = await response.json();
+            console.log('Order created successfully:', responseData);
+
+            // Очищаем корзину на сервере
+            try {
+                await fetch(`${apiUrl}/cart/clear/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                window.dispatchEvent(new Event('cartUpdated'));
+            } catch (error) {
+                console.error('Ошибка очистки корзины:', error);
+            }
+
+            // Очищаем локальную корзину
             localStorage.removeItem('cart');
             localStorage.removeItem('checkoutCart');
 
             setOrderPlaced(true);
-            setLoading(false);
+            setSubmitting(false);
 
-            // Через 3 секунды перенаправляем в профиль
+            // Перенаправление
             setTimeout(() => {
                 navigate('/profile');
             }, 3000);
 
         } catch (error) {
             console.error('Ошибка оформления заказа:', error);
-            setLoading(false);
+            alert(`Ошибка при оформлении заказа: ${error.message}`);
+            setSubmitting(false);
         }
     };
+
+    // Показываем загрузку при начальной загрузке корзины
+    if (loading) {
+        return (
+            <Container className="text-center my-5">
+                <Spinner animation="border" variant="primary" />
+                <p className="mt-3">Загрузка корзины...</p>
+            </Container>
+        );
+    }
 
     if (orderPlaced) {
         return (
@@ -440,9 +555,9 @@ function Checkout() {
                                         variant="success"
                                         size="lg"
                                         className="w-100 mt-3 order-btn"
-                                        disabled={loading}
+                                        disabled={submitting || loading}
                                     >
-                                        {loading ? (
+                                        {submitting ? (
                                             <>
                                                 <Spinner
                                                     as="span"
