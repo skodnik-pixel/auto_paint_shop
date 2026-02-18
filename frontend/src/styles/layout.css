@@ -1,0 +1,280 @@
+/* ========================================
+ОСНОВНАЯ СТРУКТУРА СТРАНИЦЫ
+======================================== */
+#root {
+              display: flex;
+              flex-direction: column;
+              min-height: 100vh;
+            }
+            
+            #root > div {
+              display: flex;
+              flex-direction: column;
+              flex: 1;
+            }
+            
+            /* Обёртка для основного контента */
+            .main-content {
+              min-height: calc(100vh - 200px);
+              flex: 1;
+            }
+            
+            /* ========================================
+            ВЕРХНЯЯ ИНФОРМАЦИОННАЯ ПАНЕЛЬ
+            ======================================== */
+            .top-info-bar {
+              background-color: #000;
+              color: var(--white);
+              padding: 10px 0;
+              font-size: 13px;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .top-info-bar .phone-number {
+              font-weight: 600;
+              color: var(--primary-red);
+              margin-right: 20px;
+              font-size: 15px;
+            }
+            
+            .top-info-bar .working-hours {
+              color: var(--white);
+              font-size: 13px;
+            }
+            
+            .top-nav-links {
+              display: flex;
+              gap: 25px;
+              margin: 0;
+              padding: 0;
+              list-style: none;
+            }
+            
+            .top-nav-links .nav-link {
+              color: var(--white) !important;
+              padding: 0;
+              font-size: 13px;
+              text-decoration: none;
+              transition: color 0.2s;
+              font-weight: 400;
+            }
+            
+            .top-nav-links .nav-link:hover {
+              color: var(--primary-red) !important;
+            }
+            
+            /* ========================================
+            ОСНОВНАЯ НАВИГАЦИОННАЯ ПАНЕЛЬ
+            ======================================== */
+            .main-navbar {
+              background-color: transparent !important;
+              backdrop-filter: none;
+              -webkit-backdrop-filter: none;
+              border-bottom: none;
+              padding: 20px 0;
+              box-shadow: none;
+            }
+            
+            .main-navbar.scrolled {
+              background-color: rgba(255, 255, 255, 0.95) !important;
+              box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+            }
+            
+            /* ========================================
+            ФУТЕР
+            ======================================== */
+            .footer {
+              background-color: var(--dark-gray);
+              color: var(--white);
+              margin-top: 80px;
+            }
+            
+            .footer-main {
+              padding: 60px 0 40px;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .footer-column {
+              margin-bottom: 30px;
+            }
+            
+            .footer-title {
+              font-size: 18px;
+              font-weight: 700;
+              color: var(--white);
+              margin-bottom: 24px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            
+            .footer-description {
+              font-size: 14px;
+              line-height: 1.6;
+              color: rgba(255, 255, 255, 0.7);
+              margin-bottom: 20px;
+            }
+            
+            .footer-social {
+              display: flex;
+              gap: 12px;
+            }
+            
+            .social-link {
+              width: 40px;
+              height: 40px;
+              border-radius: 50%;
+              background-color: rgba(255, 255, 255, 0.1);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: var(--white);
+              font-size: 18px;
+              transition: all 0.3s;
+              text-decoration: none;
+            }
+            
+            .social-link:hover {
+              background-color: var(--primary-red);
+              color: var(--white);
+              transform: translateY(-3px);
+            }
+            
+            .footer-links {
+              list-style: none;
+              padding: 0;
+              margin: 0;
+            }
+            
+            .footer-links li {
+              margin-bottom: 12px;
+            }
+            
+            .footer-links a {
+              color: rgba(255, 255, 255, 0.7);
+              text-decoration: none;
+              font-size: 14px;
+              transition: all 0.3s;
+              display: inline-block;
+            }
+            
+            .footer-links a:hover {
+              color: var(--primary-red);
+              padding-left: 5px;
+            }
+            
+            .footer-contacts {
+              list-style: none;
+              padding: 0;
+              margin: 0;
+            }
+            
+            .footer-contacts li {
+              display: flex;
+              gap: 12px;
+              margin-bottom: 20px;
+              align-items: flex-start;
+            }
+            
+            .contact-icon {
+              color: var(--primary-red);
+              font-size: 18px;
+              margin-top: 2px;
+              flex-shrink: 0;
+            }
+            
+            .contact-info {
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+            }
+            
+            .contact-info a {
+              color: var(--white);
+              text-decoration: none;
+              font-size: 15px;
+              font-weight: 500;
+              transition: color 0.3s;
+            }
+            
+            .contact-info a:hover {
+              color: var(--primary-red);
+            }
+            
+            .contact-info span {
+              color: rgba(255, 255, 255, 0.9);
+              font-size: 14px;
+              line-height: 1.5;
+            }
+            
+            .contact-label {
+              color: rgba(255, 255, 255, 0.5) !important;
+              font-size: 12px !important;
+            }
+            
+            .footer-bottom {
+              padding: 24px 0;
+              background-color: rgba(0, 0, 0, 0.2);
+            }
+            
+            .footer-copyright {
+              text-align: left;
+            }
+            
+            .footer-copyright p {
+              margin: 0;
+              font-size: 14px;
+              color: rgba(255, 255, 255, 0.6);
+            }
+            
+            .footer-payment {
+              text-align: right;
+            }
+            
+            .payment-methods {
+              display: flex;
+              align-items: center;
+              justify-content: flex-end;
+              gap: 16px;
+            }
+            
+            .payment-label {
+              font-size: 14px;
+              color: rgba(255, 255, 255, 0.6);
+            }
+            
+            .payment-icons {
+              display: flex;
+              gap: 12px;
+            }
+            
+            .payment-icon {
+              font-size: 13px;
+              color: rgba(255, 255, 255, 0.8);
+              padding: 6px 12px;
+              background-color: rgba(255, 255, 255, 0.1);
+              border-radius: 4px;
+              white-space: nowrap;
+            }
+            
+            /* Адаптивность футера */
+            @media (max-width: 768px) {
+              .footer-main {
+                padding: 40px 0 20px;
+              }
+            
+              .footer-bottom {
+                padding: 20px 0;
+              }
+            
+              .footer-copyright,
+              .footer-payment {
+                text-align: center;
+                margin-bottom: 12px;
+              }
+            
+              .payment-methods {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+              }
+            }

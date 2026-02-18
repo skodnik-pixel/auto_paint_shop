@@ -1,0 +1,253 @@
+/* Стили футера (низ страницы). Все правки футера — здесь. */
+.footer {
+              background-color: var(--dark-gray);
+              color: var(--white);
+              margin-top: 80px;
+            }
+            
+            .footer-main {
+              padding: 60px 0 40px;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .footer-column {
+              margin-bottom: 30px;
+            }
+            
+            .footer-title {
+              font-size: 18px;
+              font-weight: 700;
+              color: var(--white);
+              margin-bottom: 24px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            
+            .footer-description {
+              font-size: 14px;
+              line-height: 1.6;
+              color: rgba(255, 255, 255, 0.7);
+              margin-bottom: 20px;
+            }
+            
+            .footer-social {
+              display: flex;
+              gap: 12px;
+            }
+            
+            .social-link {
+              width: 40px;
+              height: 40px;
+              border-radius: 50%;
+              background-color: rgba(255, 255, 255, 0.1);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: var(--white);
+              font-size: 18px;
+              transition: all 0.3s;
+              text-decoration: none;
+            }
+            
+            .social-link:hover {
+              background-color: var(--primary-red);
+              color: var(--white);
+              transform: translateY(-3px);
+            }
+            
+            .footer-links {
+              list-style: none;
+              padding: 0;
+              margin: 0;
+            }
+            
+            .footer-links li {
+              margin-bottom: 12px;
+            }
+            
+            .footer-links a {
+              color: rgba(255, 255, 255, 0.7);
+              text-decoration: none;
+              font-size: 14px;
+              transition: all 0.3s;
+              display: inline-block;
+            }
+            
+            .footer-links a:hover {
+              color: var(--primary-red);
+              padding-left: 5px;
+            }
+            
+            .footer-contacts {
+              list-style: none;
+              padding: 0;
+              margin: 0;
+            }
+            
+            .footer-contacts li {
+              display: flex;
+              gap: 12px;
+              margin-bottom: 20px;
+              align-items: flex-start;
+            }
+            
+            .contact-icon {
+              color: var(--primary-red);
+              font-size: 18px;
+              margin-top: 2px;
+              flex-shrink: 0;
+            }
+            
+            .contact-info {
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+            }
+            
+            .contact-info a {
+              color: var(--white);
+              text-decoration: none;
+              font-size: 15px;
+              font-weight: 500;
+              transition: color 0.3s;
+            }
+            
+            .contact-info a:hover {
+              color: var(--primary-red);
+            }
+            
+            .contact-info span {
+              color: rgba(255, 255, 255, 0.9);
+              font-size: 14px;
+              line-height: 1.5;
+            }
+            
+            .contact-label {
+              color: rgba(255, 255, 255, 0.5) !important;
+              font-size: 12px !important;
+            }
+            
+            .footer-bottom {
+              padding: 24px 0;
+              background-color: rgba(0, 0, 0, 0.2);
+            }
+            
+            .footer-copyright {
+              text-align: left;
+            }
+            
+            .footer-copyright p {
+              margin: 0;
+              font-size: 14px;
+              color: rgba(255, 255, 255, 0.6);
+            }
+            
+            .footer-payment {
+              text-align: right;
+            }
+            
+            .payment-methods {
+              display: flex;
+              align-items: center;
+              justify-content: flex-end;
+              gap: 16px;
+            }
+            
+            .payment-label {
+              font-size: 14px;
+              color: rgba(255, 255, 255, 0.6);
+            }
+            
+            .payment-icons {
+              display: flex;
+              gap: 12px;
+            }
+            
+            .payment-icon {
+              font-size: 13px;
+              color: rgba(255, 255, 255, 0.8);
+              padding: 6px 12px;
+              background-color: rgba(255, 255, 255, 0.1);
+              border-radius: 4px;
+              white-space: nowrap;
+            }
+            
+            /* Адаптивность */
+            @media (max-width: 992px) {
+              .footer-main {
+                padding: 50px 0 30px;
+              }
+            
+              .footer-column {
+                margin-bottom: 40px;
+              }
+            }
+            
+            @media (max-width: 768px) {
+              .footer-main {
+                padding: 40px 0 20px;
+              }
+            
+              .footer-title {
+                font-size: 16px;
+                margin-bottom: 16px;
+              }
+            
+              .footer-description {
+                font-size: 13px;
+              }
+            
+              .footer-social {
+                gap: 10px;
+              }
+            
+              .social-link {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+              }
+            
+              .footer-links a {
+                font-size: 13px;
+              }
+            
+              .footer-contacts li {
+                margin-bottom: 16px;
+              }
+            
+              .contact-icon {
+                font-size: 16px;
+              }
+            
+              .contact-info a,
+              .contact-info span {
+                font-size: 13px;
+              }
+            
+              .footer-bottom {
+                padding: 20px 0;
+              }
+            
+              .footer-copyright,
+              .footer-payment {
+                text-align: center;
+                margin-bottom: 12px;
+              }
+            
+              .payment-methods {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+              }
+            
+              .payment-icons {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+              }
+            
+              .payment-icon {
+                font-size: 12px;
+                padding: 5px 10px;
+              }
+            }

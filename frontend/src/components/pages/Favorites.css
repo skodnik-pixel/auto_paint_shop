@@ -1,0 +1,62 @@
+/* Страница "Избранное" */
+.favorites-page {
+              background-color: var(--light-gray);
+              min-height: 100vh;
+              padding: 60px 0;
+            }
+            
+            .favorites-section {
+              background: var(--white);
+              border: 2px solid var(--black);
+              border-radius: 12px;
+              padding: 40px;
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+            
+            .favorites-section h2 {
+              font-size: 32px;
+              font-weight: 700;
+              color: var(--primary-red);
+              margin-bottom: 30px;
+              text-align: center;
+            }
+            
+            .favorites-empty {
+              text-align: center;
+              padding: 60px 20px;
+              color: var(--text-light);
+            }
+            
+            .favorites-empty svg {
+              opacity: 0.5;
+              font-size: 48px;
+              margin-bottom: 16px;
+            }
+            
+            .favorites-empty p {
+              font-size: 16px;
+              color: var(--text-dark);
+            }
+            
+            /* Адаптивность */
+            @media (max-width: 768px) {
+              .favorites-section {
+                padding: 20px;
+              }
+            
+              .favorites-section h2 {
+                font-size: 24px;
+              }
+            
+              .favorites-empty {
+                padding: 40px 20px;
+              }
+            
+              .favorites-empty svg {
+                font-size: 36px;
+              }
+            
+              .favorites-empty p {
+                font-size: 14px;
+              }
+            }

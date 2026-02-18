@@ -1,0 +1,35 @@
+/* Стили для страницы регистрации будут здесь */
+.register-container {
+              min-height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+              padding: 20px;
+            }
+            
+            .register-card {
+              width: 100%;
+              max-width: 480px;
+              background: white;
+              border-radius: 16px;
+              box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+              padding: 40px;
+            }
+            
+            .register-title {
+              font-size: 28px;
+              font-weight: 700;
+              color: #1f2937;
+              margin-bottom: 8px;
+              text-align: center;
+            }
+            
+            .register-subtitle {
+              font-size: 14px;
+              color: #6b7280;
+              margin-bottom: 32px;
+              text-align: center;
+            }
+            
+            /* Добавьте остальные стили из предыдущего примера */

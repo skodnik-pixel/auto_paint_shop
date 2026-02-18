@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, Table, Badge } from 'react-bootstrap';
 import { FaPalette, FaSearch, FaCar, FaCheckCircle, FaInfoCircle } from 'react-icons/fa';
+import './PaintSelection.css';
 
 function PaintSelection() {
     const [searchCode, setSearchCode] = useState('');

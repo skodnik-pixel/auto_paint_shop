@@ -1,0 +1,50 @@
+/* Страница "О нас" */
+.about-page {
+              background-color: var(--light-gray);
+              min-height: 100vh;
+              padding: 60px 0;
+            }
+            
+            .about-section {
+              background: var(--white);
+              border: 2px solid var(--black);
+              border-radius: 12px;
+              padding: 40px;
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+            
+            .about-section h2 {
+              font-size: 32px;
+              font-weight: 700;
+              color: var(--primary-red);
+              margin-bottom: 20px;
+              text-align: center;
+            }
+            
+            .about-section p {
+              font-size: 16px;
+              line-height: 1.7;
+              color: var(--text-dark);
+              margin-bottom: 16px;
+            }
+            
+            .about-section img {
+              max-width: 100%;
+              border-radius: 8px;
+              margin: 20px 0;
+            }
+            
+            /* Адаптивность */
+            @media (max-width: 768px) {
+              .about-section {
+                padding: 20px;
+              }
+            
+              .about-section h2 {
+                font-size: 24px;
+              }
+            
+              .about-section p {
+                font-size: 14px;
+              }
+            }

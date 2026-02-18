@@ -1,0 +1,126 @@
+/* Страница "Самовывоз" */
+.pickup-page {
+              background-color: var(--light-gray);
+              min-height: 100vh;
+              padding: 60px 0;
+            }
+            
+            .pickup-section {
+              background: var(--white);
+              border: 2px solid var(--black);
+              border-radius: 12px;
+              padding: 40px;
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+            
+            .pickup-section h2 {
+              font-size: 32px;
+              font-weight: 700;
+              color: var(--primary-red);
+              margin-bottom: 30px;
+              text-align: center;
+            }
+            
+            .pickup-location {
+              display: flex;
+              gap: 24px;
+              padding: 20px;
+              border: 1px solid var(--border-color);
+              border-radius: 8px;
+              margin-bottom: 20px;
+            }
+            
+            .pickup-map {
+              flex: 1;
+              height: 300px;
+              border: 1px solid var(--border-color);
+              border-radius: 8px;
+              overflow: hidden;
+            }
+            
+            .pickup-info {
+              flex: 1;
+            }
+            
+            .pickup-info h4 {
+              font-size: 20px;
+              font-weight: 600;
+              color: var(--text-dark);
+              margin-bottom: 12px;
+            }
+            
+            .pickup-info p {
+              font-size: 15px;
+              color: var(--text-dark);
+              line-height: 1.6;
+              margin-bottom: 8px;
+            }
+            
+            .pickup-info a {
+              color: var(--primary-red);
+              text-decoration: none;
+              font-weight: 500;
+            }
+            
+            .pickup-info a:hover {
+              text-decoration: underline;
+            }
+            
+            /* Контакты на странице самовывоза */
+            .contact-info-pickup p {
+              margin-bottom: 8px;
+            }
+            
+            .contact-info-pickup a {
+              color: #E31E24;
+              text-decoration: none;
+            }
+            
+            .contact-info-pickup a:hover {
+              text-decoration: underline;
+            }
+            
+            /* Пин на карте (как в Contacts) */
+            .location-pin {
+              animation: pulse-location 2s infinite;
+              cursor: pointer;
+            }
+            
+            @keyframes pulse-location {
+              0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(227, 30, 36, 0.5)); }
+              50% { transform: scale(1.2); filter: drop-shadow(0 0 15px rgba(227, 30, 36, 0.8)); }
+              100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(227, 30, 36, 0.5)); }
+            }
+            
+            .location-pin:hover {
+              transform: scale(1.3) !important;
+              filter: drop-shadow(0 0 20px rgba(227, 30, 36, 1)) !important;
+            }
+            
+            /* Адаптивность */
+            @media (max-width: 768px) {
+              .pickup-section {
+                padding: 20px;
+              }
+            
+              .pickup-section h2 {
+                font-size: 24px;
+              }
+            
+              .pickup-location {
+                flex-direction: column;
+                padding: 16px;
+              }
+            
+              .pickup-map {
+                height: 200px;
+              }
+            
+              .pickup-info h4 {
+                font-size: 18px;
+              }
+            
+              .pickup-info p {
+                font-size: 14px;
+              }
+            }

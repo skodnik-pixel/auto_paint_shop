@@ -1,0 +1,575 @@
+/* Главная страница */
+.home-page {
+              position: relative;
+            }
+            
+            .home-page::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: rgba(255, 255, 255, 0.1);
+              z-index: 1;
+            }
+            
+            .home-page > * {
+              position: relative;
+              z-index: 2;
+            }
+            
+            /* Слайдер на главной */
+            .hero-slider {
+              position: relative;
+              width: 100%;
+              overflow: hidden;
+              margin-bottom: 30px;
+              background: var(--white);
+            }
+            
+            .slider-container {
+              position: relative;
+              width: 100%;
+              height: 200px;
+              overflow: hidden;
+            }
+            
+            .slides-wrapper {
+              display: flex;
+              height: 100%;
+              transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            .slide {
+              min-width: 100%;
+              height: 100%;
+              display: flex;
+              align-items: center;
+              position: relative;
+              background-size: cover;
+              background-position: center;
+              background-repeat: no-repeat;
+            }
+            
+            .slide::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: rgba(0, 0, 0, 0.4);
+              z-index: 1;
+            }
+            
+            .slide-content {
+              z-index: 2;
+              padding: 20px 0;
+              position: relative;
+            }
+            
+            .slide-text {
+              color: var(--white);
+            }
+            
+            .slide-subtitle {
+              font-size: 12px;
+              font-weight: 500;
+              margin-bottom: 8px;
+              opacity: 0.95;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              animation: slideInLeft 0.8s ease-out;
+            }
+            
+            .slide-title {
+              font-size: 24px;
+              font-weight: 700;
+              margin-bottom: 10px;
+              line-height: 1.2;
+              animation: slideInLeft 0.8s ease-out 0.2s both;
+            }
+            
+            .slide-description {
+              font-size: 14px;
+              margin-bottom: 15px;
+              opacity: 0.9;
+              line-height: 1.4;
+              animation: slideInLeft 0.8s ease-out 0.4s both;
+            }
+            
+            .slide-button {
+              padding: 8px 20px;
+              font-size: 14px;
+              font-weight: 600;
+              border-radius: 6px;
+              border: none;
+              background: var(--white);
+              color: var(--primary-red);
+              transition: all 0.3s;
+              animation: slideInLeft 0.8s ease-out 0.6s both;
+            }
+            
+            .slide-button:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+              background: var(--white);
+              color: var(--primary-red);
+            }
+            
+            .slider-arrow {
+              position: absolute;
+              top: 50%;
+              transform: translateY(-50%);
+              z-index: 10;
+              background: rgba(255, 255, 255, 0.9);
+              border: none;
+              width: 35px;
+              height: 35px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              transition: all 0.3s;
+              color: var(--primary-red);
+              font-size: 16px;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+            
+            .slider-arrow:hover {
+              background: var(--white);
+              transform: translateY(-50%) scale(1.1);
+              box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            }
+            
+            .slider-arrow-left {
+              left: 15px;
+            }
+            
+            .slider-arrow-right {
+              right: 15px;
+            }
+            
+            .slider-indicators {
+              position: absolute;
+              bottom: 15px;
+              left: 50%;
+              transform: translateX(-50%);
+              display: flex;
+              gap: 8px;
+              z-index: 10;
+            }
+            
+            .slider-indicator {
+              width: 8px;
+              height: 8px;
+              border-radius: 50%;
+              border: 2px solid var(--white);
+              background: transparent;
+              cursor: pointer;
+              transition: all 0.3s;
+              padding: 0;
+            }
+            
+            .slider-indicator:hover {
+              background: rgba(255, 255, 255, 0.5);
+              transform: scale(1.2);
+            }
+            
+            .slider-indicator.active {
+              background: var(--white);
+              width: 20px;
+              border-radius: 4px;
+            }
+            
+            @keyframes slideInLeft {
+              from {
+                opacity: 0;
+                transform: translateX(-50px);
+              }
+              to {
+                opacity: 1;
+                transform: translateX(0);
+              }
+            }
+            
+            /* Адаптивность */
+            @media (max-width: 768px) {
+              .slider-container {
+                height: 150px;
+              }
+            
+              .slide-content {
+                padding: 15px 0;
+              }
+            
+              .slide-subtitle {
+                font-size: 10px;
+              }
+            
+              .slide-title {
+                font-size: 18px;
+                margin-bottom: 8px;
+              }
+            
+              .slide-description {
+                font-size: 12px;
+                margin-bottom: 12px;
+              }
+            
+              .slide-button {
+                padding: 6px 16px;
+                font-size: 12px;
+              }
+            
+              .slider-arrow {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+              }
+            
+              .slider-arrow-left {
+                left: 8px;
+              }
+            
+              .slider-arrow-right {
+                right: 8px;
+              }
+            
+              .slider-indicators {
+                bottom: 10px;
+              }
+            
+              .slider-indicator {
+                width: 6px;
+                height: 6px;
+              }
+            
+.slider-indicator.active {
+              width: 16px;
+              }
+            }
+
+            /* Сетка товаров на главной — 5 карточек в ряд */
+            .home-page .products-grid-container {
+              display: grid;
+              grid-template-columns: repeat(5, 1fr);
+              gap: 24px;
+              margin-bottom: 30px;
+            }
+
+            .home-page .product-grid-item {
+              width: 100%;
+              min-width: 0;
+            }
+
+            @media (max-width: 1200px) {
+              .home-page .products-grid-container {
+                grid-template-columns: repeat(3, 1fr);
+              }
+            }
+
+            @media (max-width: 768px) {
+              .home-page .products-grid-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+              }
+            }
+
+            @media (max-width: 480px) {
+              .home-page .products-grid-container {
+                grid-template-columns: 1fr;
+              }
+            }
+
+/* ========== ПРОМО-БАННЕР ========== */
+.promo-banner {
+  background: linear-gradient(135deg, var(--primary-yellow) 0%, var(--dark-yellow) 100%);
+  padding: 40px 0;
+  margin-bottom: 40px;
+  position: relative;
+  border-bottom: 3px solid var(--black);
+}
+
+.promo-content {
+  color: var(--black);
+}
+
+.promo-subtitle {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 10px;
+  color: var(--text-dark);
+}
+
+.promo-title {
+  font-size: 2rem;
+  font-weight: 900;
+  margin-bottom: 10px;
+  color: var(--black);
+  line-height: 1.2;
+}
+
+.promo-description {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.promo-image-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.promo-delivery-box {
+  background-color: var(--primary-yellow);
+  border: 3px solid var(--black);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 5px 5px 0 var(--black);
+  position: relative;
+}
+
+.delivery-text {
+  font-weight: 900;
+  font-size: 1.2rem;
+  color: var(--black);
+  text-align: center;
+}
+
+.promo-arrows {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.promo-arrow {
+  background-color: var(--black);
+  color: var(--primary-yellow);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.promo-arrow:hover {
+  background-color: var(--white);
+  transform: scale(1.1);
+}
+
+/* Сетка товаров на главной (базовая) */
+.home-page .products-grid-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: auto;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.home-page .product-grid-item {
+  width: 100%;
+  height: 100%;
+}
+
+.promo-product-col {
+  flex: 0 0 auto;
+  width: 180px;
+  min-width: 180px;
+  padding: 0 8px;
+}
+
+.promo-product-card {
+  border: 2px solid var(--black);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  position: relative;
+  background: var(--white);
+  transition: all 0.3s;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.promo-product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(227, 30, 36, 0.3);
+  border-color: var(--primary-red);
+}
+
+/* 3D эффект для промо-карточек (из App.css) */
+.promo-product-card {
+  border: 2px solid var(--black) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.promo-product-card:hover {
+  box-shadow: 0 6px 12px rgba(227, 30, 36, 0.3) !important;
+}
+
+.product-favorite {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  background-color: var(--white);
+  border: 2px solid var(--black);
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.product-favorite:hover {
+  background-color: var(--primary-yellow);
+}
+
+.product-favorite .favorite-active {
+  color: #ffc107;
+  fill: #ffc107;
+}
+
+.product-favorite svg {
+  color: #ccc;
+  transition: color 0.3s;
+}
+
+.product-favorite:hover svg {
+  color: #ffc107;
+}
+
+.product-image-wrapper {
+  padding: 12px;
+  background: var(--light-gray);
+  text-align: center;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-image {
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+}
+
+.product-card-body {
+  padding: 12px;
+}
+
+.promo-product-card .product-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.promo-product-card .product-detail-link {
+  margin-top: auto;
+}
+
+.product-price-section {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.product-current-price {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--black);
+}
+
+.product-original-price {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  text-decoration: line-through;
+}
+
+.product-discount-badge {
+  background-color: var(--primary-red) !important;
+  color: var(--white) !important;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.product-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+  line-height: 1.3;
+  min-height: 32px;
+}
+
+.promo-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.pagination-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.pagination-dot.active {
+  background-color: var(--primary-yellow);
+  width: 30px;
+  border-radius: 5px;
+}
+
+.slide-image-col {
+  display: none;
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 992px) {
+  .home-page .products-grid-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .home-page .products-grid-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .promo-product-card {
+    min-height: 240px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-page .products-grid-container {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,227 @@
+/* ========================================
+СТРАНИЦА КОРЗИНЫ
+======================================== */
+.cart-page {
+              background-color: var(--light-gray);
+              min-height: 100vh;
+            }
+            
+            .cart-card {
+              border: 2px solid var(--black);
+              border-radius: 8px;
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+              background: var(--white);
+            }
+            
+            .cart-card .card-header {
+              background-color: var(--light-gray);
+              border-bottom: 2px solid var(--black);
+              font-weight: 600;
+            }
+            
+            /* ========================================
+            ТАБЛИЦА КОРЗИНЫ
+            ======================================== */
+            .cart-table-wrapper {
+              overflow-x: auto;
+              margin-bottom: 20px;
+            }
+            
+            .cart-table {
+              margin-bottom: 0;
+            }
+            
+            .cart-table th {
+              background-color: var(--light-gray);
+              border: 1px solid var(--black);
+              font-weight: 600;
+              color: var(--text-dark);
+              padding: 12px;
+              font-size: 14px;
+            }
+            
+            .cart-table td {
+              border: 1px solid var(--border-color);
+              padding: 12px;
+              vertical-align: middle;
+            }
+            
+            .cart-product-info {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+            }
+            
+            .cart-product-image {
+              width: 50px;
+              height: 50px;
+              object-fit: contain;
+              border-radius: 4px;
+              border: 1px solid var(--border-color);
+            }
+            
+            .cart-product-name {
+              margin: 0;
+              font-size: 14px;
+              font-weight: 500;
+              color: var(--text-dark);
+            }
+            
+            /* ========================================
+            ЦЕНЫ В КОРЗИНЕ
+            ======================================== */
+            .cart-price,
+            .cart-total-price {
+              font-weight: 600;
+              color: var(--primary-red);
+              font-size: 16px;
+            }
+            
+            /* ========================================
+            КНОПКИ КОЛИЧЕСТВА В КОРЗИНЕ
+            ======================================== */
+            .cart-quantity-controls {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              justify-content: center;
+            }
+            
+            .cart-quantity-controls .quantity-btn {
+              border: 2px solid var(--black) !important;
+              border-radius: 4px !important;
+              width: 32px;
+              height: 32px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 0 !important;
+              font-size: 12px;
+              transition: all 0.3s ease;
+            }
+            
+            .cart-quantity-controls .quantity-btn:hover {
+              transform: translateY(-1px);
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+              border-color: var(--primary-red) !important;
+              color: var(--primary-red) !important;
+            }
+            
+            .cart-quantity-controls .quantity-display {
+              font-weight: 600;
+              font-size: 16px;
+              color: var(--text-dark);
+              min-width: 40px;
+              text-align: center;
+              padding: 6px 10px;
+              border: 2px solid var(--black);
+              border-radius: 4px;
+              background: var(--white);
+            }
+            
+            /* ========================================
+            КНОПКА УДАЛЕНИЯ
+            ======================================== */
+            .remove-btn {
+              border: 2px solid var(--black) !important;
+              border-radius: 4px !important;
+              width: 40px;
+              height: 40px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 0 !important;
+              transition: all 0.3s ease;
+            }
+            
+            .remove-btn:hover {
+              transform: translateY(-1px);
+              box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+            }
+            
+            /* ========================================
+            ИТОГОВАЯ СУММА
+            ======================================== */
+            .cart-summary {
+              border-top: 2px solid var(--black);
+              padding-top: 20px;
+              margin-top: 20px;
+            }
+            
+            .cart-total {
+              display: flex;
+              align-items: center;
+            }
+            
+            .total-amount {
+              color: var(--primary-red);
+              font-weight: 700;
+            }
+            
+            /* ========================================
+            КНОПКА ОФОРМЛЕНИЯ ЗАКАЗА
+            ======================================== */
+            .checkout-btn {
+              border: 2px solid var(--black) !important;
+              border-radius: 6px !important;
+              font-weight: 600;
+              font-size: 16px;
+              padding: 12px 30px !important;
+              transition: all 0.3s ease;
+              background-color: var(--success) !important;
+              border-color: var(--black) !important;
+            }
+            
+            .checkout-btn:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3);
+              background-color: #218838 !important;
+            }
+            
+            @media (max-width: 768px) {
+              .cart-table {
+                font-size: 12px;
+              }
+            
+              .cart-product-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 8px;
+              }
+            
+              .cart-product-image {
+                width: 40px;
+                height: 40px;
+              }
+            
+              .cart-product-name {
+                font-size: 12px;
+              }
+            
+              .cart-quantity-controls .quantity-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 11px;
+              }
+            
+              .cart-quantity-controls .quantity-display {
+                font-size: 14px;
+                min-width: 35px;
+                padding: 4px 8px;
+              }
+            
+              .cart-summary {
+                text-align: center;
+              }
+            
+              .cart-total {
+                justify-content: center;
+                margin-bottom: 15px;
+              }
+            
+              .checkout-btn {
+                width: 100%;
+                font-size: 14px;
+                padding: 10px 20px !important;
+              }
+            }
