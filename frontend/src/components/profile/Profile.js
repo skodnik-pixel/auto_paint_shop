@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Nav, Badge, Button, Alert, Spinner, Modal, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Nav, Badge, Button, Alert, Spinner, Modal, Form, Table } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaShoppingBag, FaCog, FaSignOutAlt, FaBox, FaClock, FaCheckCircle, FaTimes, FaTruck, FaBell, FaBuilding, FaPlus, FaTrash, FaEye } from 'react-icons/fa';
+import { FaUser, FaShoppingBag, FaHistory, FaCog, FaSignOutAlt, FaBox, FaClock, FaCheckCircle, FaTimes, FaEye, FaTrash, FaTruck, FaBell, FaBuilding, FaPlus, FaShoppingCart } from 'react-icons/fa';
+import './Profile.css';
+import './Orders.css';
 
 function Profile() {
     const navigate = useNavigate();
@@ -287,23 +289,23 @@ function Profile() {
                             </Card>
                         )}
 
-                        {/* Вкладка "Мои заказы" (Новый дизайн) */}
+                        {/* Вкладка "Мои заказы" — в формате как корзина: карточка, таблица товаров */}
                         {activeTab === 'orders' && (
-                            <Card className="profile-content-card border-0 shadow-sm">
-                                <Card.Header className="bg-white border-bottom-0 pt-4 px-4">
-                                    <h4 className="mb-0">История заказов</h4>
+                            <Card className="profile-content-card orders-history-card">
+                                <Card.Header>
+                                    <h2 className="mb-0 orders-history-title">
+                                        <FaShoppingCart className="me-2" />
+                                        История заказов
+                                    </h2>
                                 </Card.Header>
-                                <Card.Body className="px-4 pb-4">
+                                <Card.Body>
                                     {error && <Alert variant="danger">{error}</Alert>}
-
                                     {orders.length === 0 ? (
-                                        <div className="text-center py-5">
-                                            <div className="mb-4">
-                                                <FaShoppingBag size={60} className="text-muted opacity-50" />
-                                            </div>
-                                            <h5 className="mb-3">У вас пока нет заказов</h5>
-                                            <p className="text-muted mb-4">Перейдите в каталог и выберите товары для вашего автомобиля</p>
-                                            <Button variant="primary" size="lg" onClick={() => navigate('/catalog')} className="px-4 rounded-pill">
+                                        <div className="orders-empty text-center py-5">
+                                            <FaShoppingCart size={60} className="text-muted mb-3" />
+                                            <h4>У вас пока нет заказов</h4>
+                                            <p className="text-muted">Перейдите в каталог и сделайте первый заказ</p>
+                                            <Button variant="primary" onClick={() => navigate('/catalog')} className="mt-3">
                                                 Перейти в каталог
                                             </Button>
                                         </div>
@@ -311,62 +313,65 @@ function Profile() {
                                         <div className="orders-list">
                                             {orders.map(order => {
                                                 const status = getOrderStatus(order.status);
-                                                // Раскрываем все товары заказа в виде карточек
+                                                const orderDate = order.createdAt || order.created_at || order.items?.[0]?.purchaseDate;
+                                                const orderTotal = order.totalPrice ?? order.total_price;
                                                 return (
-                                                    <div key={order.id} className="mb-4 p-3 border rounded bg-white">
-                                                        <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                                                            <div className="d-flex align-items-center gap-2">
-                                                                <span className="fw-bold text-dark">Заказ №{order.id}</span>
-                                                                <span className="text-muted small">от {formatDate(order.created_at || order.items?.[0]?.purchaseDate)}</span>
+                                                    <div key={order.id} className="order-block">
+                                                        <div className="order-block-header">
+                                                            <div className="order-block-meta">
+                                                                <span className="order-block-number">Заказ № {order.id}</span>
+                                                                <span className="order-block-date">{formatDate(orderDate)}</span>
+                                                                <Badge bg={status.variant} className="status-badge">{status.icon} {status.text}</Badge>
                                                             </div>
-                                                            <div className="d-flex align-items-center gap-3">
-                                                                <Badge bg={status.variant} text={status.variant === 'warning' || status.variant === 'info' ? 'dark' : 'white'} className="fw-normal px-2 py-1 d-flex align-items-center gap-1">
-                                                                    {status.icon} {status.text}
-                                                                </Badge>
+                                                            <div className="order-block-total">Сумма заказа: <strong className="order-total-amount">{orderTotal} BYN</strong></div>
+                                                        </div>
+                                                        {order.items && order.items.length > 0 && (
+                                                            <div className="order-table-wrapper">
+                                                                <Table className="orders-table" responsive>
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Товар</th>
+                                                                            <th>Цена</th>
+                                                                            <th>Количество</th>
+                                                                            <th>Итого</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {order.items.map((item, index) => {
+                                                                            const name = item.product?.name ?? item.name ?? 'Товар без названия';
+                                                                            const image = item.product?.image ?? item.image;
+                                                                            const price = item.price;
+                                                                            const qty = item.quantity ?? 1;
+                                                                            const itemTotal = (parseFloat(price) * qty).toFixed(2);
+                                                                            return (
+                                                                                <tr key={index}>
+                                                                                    <td>
+                                                                                        <div className="orders-product-info">
+                                                                                            {image ? (
+                                                                                                <img
+                                                                                                    src={image}
+                                                                                                    alt={name}
+                                                                                                    className="orders-product-image"
+                                                                                                    onError={(e) => { e.target.src = 'https://via.placeholder.com/200x200?text=Нет+фото'; }}
+                                                                                                />
+                                                                                            ) : (
+                                                                                                <div className="orders-product-image orders-product-image-placeholder">
+                                                                                                    <FaBox className="text-secondary opacity-25" size={24} />
+                                                                                                </div>
+                                                                                            )}
+                                                                                            <span className="orders-product-name">{name}</span>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td className="orders-price">{price} BYN</td>
+                                                                                    <td className="orders-quantity">{qty}</td>
+                                                                                    <td className="orders-total-price">{itemTotal} BYN</td>
+                                                                                </tr>
+                                                                            );
+                                                                        })}
+                                                                    </tbody>
+                                                                </Table>
                                                             </div>
-                                                        </div>
-
-                                                        {/* Список товаров в этом заказе */}
-                                                        {order.items && order.items.map((item, idx) => (
-                                                            <Row key={idx} className="align-items-center mb-3">
-                                                                <Col xs={3} sm={2} style={{ maxWidth: '80px' }}>
-                                                                    <div style={{ width: '60px', height: '60px', overflow: 'hidden', borderRadius: '8px', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9f9f9' }}>
-                                                                        {item.product?.image || item.image ? (
-                                                                            <img
-                                                                                src={item.product?.image || item.image}
-                                                                                alt={item.product?.name || item.name}
-                                                                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                                                                            />
-                                                                        ) : (
-                                                                            <FaBox className="text-secondary opacity-25" size={24} />
-                                                                        )}
-                                                                    </div>
-                                                                </Col>
-                                                                <Col xs={9} sm={6}>
-                                                                    <h6 className="mb-1 text-truncate" style={{ maxWidth: '100%' }}>{item.product?.name || item.name || 'Товар без названия'}</h6>
-                                                                    <div className="small text-muted mb-1">
-                                                                        {item.quantity} шт. × {item.price} BYN
-                                                                    </div>
-                                                                    <Button
-                                                                        variant="link"
-                                                                        className="p-0 text-decoration-none small"
-                                                                        onClick={() => viewProductDetails(item.product?.slug || item.slug)}
-                                                                    >
-                                                                        <FaEye className="me-1" /> Подробнее
-                                                                    </Button>
-                                                                </Col>
-                                                                <Col xs={12} sm={4} className="text-sm-end mt-2 mt-sm-0">
-                                                                    <div className="fw-bold fs-5">
-                                                                        {(parseFloat(item.price) * item.quantity).toFixed(2)} BYN
-                                                                    </div>
-                                                                </Col>
-                                                            </Row>
-                                                        ))}
-
-                                                        <div className="border-top pt-2 mt-2 d-flex justify-content-end align-items-center">
-                                                            <span className="me-2 text-muted">Итого заказа:</span>
-                                                            <span className="fw-bold fs-4 text-primary">{order.totalPrice || order.total_price} BYN</span>
-                                                        </div>
+                                                        )}
                                                     </div>
                                                 );
                                             })}
