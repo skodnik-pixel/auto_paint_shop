@@ -228,7 +228,10 @@ function Home() {
         [product.id]: 1
       }));
       
-      alert(`Товар "${product.name}" успешно добавлен в корзину!`);
+      // Уведомляем шапку сайта обновить счётчик корзины
+      window.dispatchEvent(new Event('cartUpdated'));
+      
+      console.log(`Товар "${product.name}" добавлен в корзину и историю!`);
       
     } catch (error) {
       console.error('Ошибка при добавлении товара:', error);

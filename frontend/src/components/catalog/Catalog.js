@@ -193,6 +193,16 @@ const Catalog = () => {
       }
 
       if (response.ok) {
+        // Синхронизируем с localStorage, чтобы счётчик в шапке обновился
+        const product = products.find(p => p.id === productId);
+        if (product) {
+          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          const existing = cart.find(item => item.id === product.id);
+          if (existing) existing.quantity += 1;
+          else cart.push({ id: product.id, name: product.name, price: product.price, image: product.image, slug: product.slug, quantity: 1 });
+          localStorage.setItem('cart', JSON.stringify(cart));
+        }
+        window.dispatchEvent(new Event('cartUpdated'));
         console.log('✓ Товар добавлен в корзину');
       } else {
         console.error('✗ Ошибка добавления в корзину');
@@ -261,9 +271,10 @@ const Catalog = () => {
         ...prev,
         [product.id]: 1
       }));
-
-      alert(`Товар "${product.name}" успешно добавлен в корзину!`);
-
+      // Уведомляем шапку сайта обновить счётчик корзины
+      window.dispatchEvent(new Event('cartUpdated'));
+      
+      console.log(`Товар "${product.name}" добавлен в корзину и историю!`);
     } catch (error) {
       console.error('Ошибка при добавлении товара:', error);
       alert(error.message || 'Ошибка при добавлении товара в корзину');

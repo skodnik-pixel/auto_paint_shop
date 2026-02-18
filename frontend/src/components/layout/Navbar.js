@@ -60,12 +60,33 @@ function CustomNavbar() {
         }
     }, []);
 
-    // Слушаем событие обновления авторизации (например, после логина)
+    // Обновление счётчика корзины из localStorage (корзина обновляется при "Купить" и "В корзину")
+    const refreshCartCount = () => {
+        try {
+            const cartData = JSON.parse(localStorage.getItem('cart') || '[]');
+            const count = Array.isArray(cartData) ? cartData.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
+            setCartCount(count);
+        } catch (e) {
+            setCartCount(0);
+        }
+    };
+
+    useEffect(() => {
+        refreshCartCount();
+    }, []);
+
+    // Слушаем событие обновления корзины (после "Купить" на главной/в каталоге или "В корзину"/"Добавить в корзину")
+    useEffect(() => {
+        const handleCartUpdated = () => refreshCartCount();
+        window.addEventListener('cartUpdated', handleCartUpdated);
+        return () => window.removeEventListener('cartUpdated', handleCartUpdated);
+    }, []);
+
+    // Слушаем событие обновления авторизации (после логина/логаута)
     useEffect(() => {
         const handleAuthUpdate = () => {
             const accessToken = localStorage.getItem('access');
             const userData = localStorage.getItem('user');
-            
             if (accessToken && userData) {
                 try {
                     setUser(JSON.parse(userData));
@@ -76,57 +97,12 @@ function CustomNavbar() {
             } else {
                 setIsAuthenticated(false);
                 setUser(null);
-                setCartCount(0); // Сбрасываем счётчик корзины при выходе
+                setCartCount(0);
             }
         };
-
         window.addEventListener('authUpdated', handleAuthUpdate);
         return () => window.removeEventListener('authUpdated', handleAuthUpdate);
     }, []);
-
-    const loadCartCount = () => {
-        if (isAuthenticated) {
-            const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-            const accessToken = localStorage.getItem('access');
-            fetch(`${apiUrl}/cart/cart/`, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            })
-                .then(async response => {
-                    if (!response.headers.get('content-type')?.includes('application/json')) {
-                        const text = await response.text();
-                        console.error('Ожидался JSON, получен HTML:', text.substring(0, 100));
-                        return null;
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data) {
-                        const cart = data[0];
-                        const count = cart ? cart.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
-                        setCartCount(count);
-                    }
-                })
-                .catch(error => console.error('Error fetching cart:', error));
-        } else {
-            // Если пользователь не авторизован, сбрасываем счётчик корзины
-            setCartCount(0);
-        }
-    };
-
-    useEffect(() => {
-        loadCartCount();
-    }, [isAuthenticated]);
-
-    // Слушаем событие обновления корзины
-    useEffect(() => {
-        const handleCartUpdate = () => {
-            loadCartCount();
-        };
-        window.addEventListener('cartUpdated', handleCartUpdate);
-        return () => window.removeEventListener('cartUpdated', handleCartUpdate);
-    }, [isAuthenticated]);
 
     // Загружаем количество товаров в избранном из localStorage
     useEffect(() => {
