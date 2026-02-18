@@ -32,4 +32,58 @@
               text-align: center;
             }
             
-            /* Добавьте остальные стили из предыдущего примера */
+            /* Модальное окно «Успешная регистрация» в стиле GTA */
+.register-success-modal .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+.register-success-modal .modal-header {
+    border-bottom: 1px solid #eee;
+    padding: 1rem 1.25rem;
+}
+.register-success-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    text-align: center;
+    background: #fff;
+    border-bottom-color: #eee;
+}
+.register-success-modal-header .btn-close {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+/* Заголовок MISSION PASSED — шрифт Pricedown, зелёный (успех) */
+.register-success-modal-title {
+    font-family: 'Pricedown Bl', sans-serif;
+    font-weight: 900;
+    font-size: 1.75rem;
+    color: #12a35f;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0;
+    width: 100%;
+    text-align: center;
+}
+.register-success-modal .modal-body {
+    padding: 1.25rem 1.25rem;
+    color: #4b5563;
+}
+.register-success-modal .modal-footer {
+    border-top: 1px solid #eee;
+    padding: 1rem 1.25rem;
+    justify-content: center;
+}
+.register-success-btn-login {
+    min-width: 140px;
+    background-color: #c41e3a;
+    border-color: #c41e3a;
+}
+.register-success-btn-login:hover {
+    background-color: #a01830;
+    border-color: #a01830;
+}

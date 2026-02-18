@@ -1,7 +1,7 @@
 // frontend/src/components/Login.js
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Container, Form, Button, Alert, Row, Col, Spinner } from 'react-bootstrap';
+import { Container, Form, Button, Alert, Row, Col, Spinner, Modal } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
 import './Login.css';
 
@@ -12,6 +12,8 @@ function Login() {
     });
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    // Модальное окно «Аккаунт не найден» — показываем при ошибке входа, предлагаем регистрацию
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -41,10 +43,21 @@ function Login() {
                 window.location.reload();
                 return;
             }
-            setError(result.error || 'Неверное имя пользователя или пароль');
-        } catch (error) {
-            setError(error.message || 'Ошибка входа');
-            console.error('Error logging in:', error);
+            const errMsg = result.error || 'Неверное имя пользователя или пароль';
+            setError(errMsg);
+            // Показываем модалку с предложением регистрации, если аккаунт не найден
+            const isAccountNotFound =
+                typeof errMsg === 'string' &&
+                (errMsg.toLowerCase().includes('no active account') ||
+                    errMsg.toLowerCase().includes('credentials') ||
+                    errMsg.includes('не найден') ||
+                    errMsg.includes('Неверное имя'));
+            if (isAccountNotFound) setShowRegisterModal(true);
+        } catch (err) {
+            const errMsg = err.message || 'Ошибка входа';
+            setError(errMsg);
+            setShowRegisterModal(true);
+            console.error('Error logging in:', err);
         } finally {
             setLoading(false);
         }
@@ -120,6 +133,37 @@ function Login() {
                             </p>
                         </div>
                     </Form>
+
+                    {/* Модальное окно: аккаунт не найден — предложение зарегистрироваться */}
+                    <Modal
+                        show={showRegisterModal}
+                        onHide={() => setShowRegisterModal(false)}
+                        centered
+                        className="login-register-modal"
+                    >
+                        <Modal.Header closeButton className="login-register-modal-header">
+                            <Modal.Title className="login-register-modal-title">MISSION FAILED</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <p className="mb-0">
+                                По указанным данным не найден активный аккаунт. Возможно, вы ещё не регистрировались — создайте аккаунт, чтобы войти.
+                            </p>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={() => setShowRegisterModal(false)}>
+                                Закрыть
+                            </Button>
+                            <Button
+                                variant="primary"
+                                onClick={() => {
+                                    setShowRegisterModal(false);
+                                    navigate('/register');
+                                }}
+                            >
+                                Зарегистрироваться
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
                 </Col>
             </Row>
         </Container>
