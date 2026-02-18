@@ -1,7 +1,7 @@
 // frontend/src/components/Register.js
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Container, Form, Button, Alert, Row, Col } from 'react-bootstrap';
+import { Container, Form, Button, Alert, Row, Col, Modal } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
 import './Register.css';
 
@@ -15,6 +15,8 @@ function Register() {
     });
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    // Модальное окно об успешной регистрации (стиль GTA)
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const navigate = useNavigate();
     const { register } = useAuth();
 
@@ -83,7 +85,8 @@ function Register() {
                 return;
             }
 
-            navigate('/login');
+            setShowSuccessModal(true);
+            return;
         } catch (error) {
             console.error('Error during registration:', error);
             setError(error.message || 'Ошибка соединения с сервером');
@@ -193,6 +196,39 @@ function Register() {
                             </p>
                         </div>
                     </Form>
+
+                    {/* Модальное окно об успешной регистрации в стиле GTA */}
+                    <Modal
+                        show={showSuccessModal}
+                        onHide={() => setShowSuccessModal(false)}
+                        centered
+                        className="register-success-modal"
+                    >
+                        <Modal.Header closeButton className="register-success-modal-header">
+                            <Modal.Title className="register-success-modal-title">MISSION PASSED</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <p className="mb-0">
+                                Регистрация прошла успешно. Теперь войдите в аккаунт, чтобы продолжить.
+                            </p>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button
+                                variant="primary"
+                                className="register-success-btn-login"
+                                onClick={() => {
+                                    setShowSuccessModal(false);
+                                    // Пользователь уже авторизован по JWT после регистрации.
+                                    // Перекидываем сразу на главную и перезагружаем страницу,
+                                    // чтобы Navbar и остальное приложение подхватили состояние.
+                                    navigate('/');
+                                    window.location.reload();
+                                }}
+                            >
+                                Войти
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
                 </Col>
             </Row>
         </Container>
