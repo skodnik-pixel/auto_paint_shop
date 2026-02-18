@@ -133,6 +133,15 @@ function ProductDetail() {
                 console.log('✓ Успешно добавлено:', data);
                 console.log(`✓ ${quantity} шт. добавлено в корзину`);
                 setQuantity(1);
+                // Синхронизируем с localStorage, чтобы счётчик в шапке обновился
+                if (product) {
+                    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                    const existing = cart.find(item => item.id === product.id);
+                    if (existing) existing.quantity += quantity;
+                    else cart.push({ id: product.id, name: product.name, price: product.price, image: product.image, slug: product.slug, quantity });
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                }
+                window.dispatchEvent(new Event('cartUpdated'));
             } else {
                 const errorText = await response.text();
                 console.error('✗ Ошибка:', response.status, errorText);

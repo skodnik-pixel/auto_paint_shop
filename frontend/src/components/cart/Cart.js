@@ -37,6 +37,7 @@ function Cart() {
         
         setCart(updatedCart);
         localStorage.setItem('cart', JSON.stringify(updatedCart));
+        window.dispatchEvent(new Event('cartUpdated'));
     };
 
     // Увеличить количество
@@ -62,6 +63,7 @@ function Cart() {
         localStorage.setItem('cart', JSON.stringify(updatedCart));
         setShowModal(false);
         setItemToRemove(null);
+        window.dispatchEvent(new Event('cartUpdated'));
     };
 
     // Подтверждение удаления
