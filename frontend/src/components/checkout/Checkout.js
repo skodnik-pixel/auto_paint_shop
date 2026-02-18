@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button, Table, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { FaShoppingCart, FaUser, FaTruck, FaCreditCard } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaTruck, FaCreditCard, FaSignOutAlt } from 'react-icons/fa';
+import { useAuth } from '../../context/AuthContext';
 import './Checkout.css';
 
 function Checkout() {
@@ -11,6 +12,7 @@ function Checkout() {
     const [submitting, setSubmitting] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
     const navigate = useNavigate();
+    const { logout } = useAuth();
 
     // Данные формы заказа
     const [orderData, setOrderData] = useState({
@@ -243,10 +245,13 @@ function Checkout() {
             setOrderPlaced(true);
             setSubmitting(false);
 
-            // Перенаправление
-            setTimeout(() => {
+            // Автоперенаправление в личный кабинет через 5 секунд (можно успеть нажать кнопку)
+            const redirectTimer = setTimeout(() => {
                 navigate('/profile');
-            }, 3000);
+            }, 5000);
+            if (typeof window !== 'undefined') {
+                window.__checkoutRedirectTimer = redirectTimer;
+            }
 
         } catch (error) {
             console.error('Ошибка оформления заказа:', error);
@@ -265,6 +270,37 @@ function Checkout() {
         );
     }
 
+    // Переход по кнопке (отменяем автоперенаправление)
+    const goToProfile = () => {
+        if (typeof window !== 'undefined' && window.__checkoutRedirectTimer) {
+            clearTimeout(window.__checkoutRedirectTimer);
+            window.__checkoutRedirectTimer = null;
+        }
+        navigate('/profile');
+    };
+    const goToCatalog = () => {
+        if (typeof window !== 'undefined' && window.__checkoutRedirectTimer) {
+            clearTimeout(window.__checkoutRedirectTimer);
+            window.__checkoutRedirectTimer = null;
+        }
+        navigate('/catalog');
+    };
+    const goToHome = () => {
+        if (typeof window !== 'undefined' && window.__checkoutRedirectTimer) {
+            clearTimeout(window.__checkoutRedirectTimer);
+            window.__checkoutRedirectTimer = null;
+        }
+        navigate('/');
+    };
+    const handleLogout = async () => {
+        if (typeof window !== 'undefined' && window.__checkoutRedirectTimer) {
+            clearTimeout(window.__checkoutRedirectTimer);
+            window.__checkoutRedirectTimer = null;
+        }
+        await logout();
+        navigate('/');
+    };
+
     if (orderPlaced) {
         return (
             <Container className="my-5">
@@ -273,8 +309,22 @@ function Checkout() {
                         <FaShoppingCart size={80} className="text-success mb-4" />
                         <h2 className="text-success">Заказ успешно оформлен!</h2>
                         <p className="lead">Спасибо за покупку! Мы свяжемся с вами в ближайшее время.</p>
-                        <p>Перенаправление в личный кабинет...</p>
-                        <Spinner animation="border" variant="success" />
+                        <p className="text-muted mb-4">Через несколько секунд вы будете перенаправлены в личный кабинет.</p>
+                        <Spinner animation="border" variant="success" className="mb-4" />
+                        <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
+                            <Button variant="success" onClick={goToProfile}>
+                                В личный кабинет
+                            </Button>
+                            <Button variant="outline-primary" onClick={goToCatalog}>
+                                В каталог
+                            </Button>
+                            <Button variant="outline-secondary" onClick={goToHome}>
+                                На главную
+                            </Button>
+                        </div>
+                        <Button variant="link" className="text-muted" onClick={handleLogout}>
+                            <FaSignOutAlt className="me-1" /> Выйти
+                        </Button>
                     </div>
                 </div>
             </Container>
