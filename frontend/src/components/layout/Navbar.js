@@ -15,6 +15,7 @@ import {
     FaSearch, 
     FaBars, 
     FaUser,
+    FaClipboardList,
     FaFacebookF,
     FaInstagram,
     FaTelegramPlane,
@@ -400,6 +401,12 @@ function CustomNavbar() {
                         </Form>
 
                         <Nav className="nav-icons">
+                            {/* Кнопка "Мои заказы" — между поиском и Избранное, только для авторизованных */}
+                            {isAuthenticated && (
+                                <Link to="/profile" className="nav-link nav-icon-link">
+                                    <FaClipboardList /> Мои заказы
+                                </Link>
+                            )}
                             {/* Кнопка избранного с звездочкой и счетчиком */}
                             <Link to="/favorites" className="nav-link nav-icon-link favorites-link">
                                 {/* FaStar - иконка звездочки для избранного */}
