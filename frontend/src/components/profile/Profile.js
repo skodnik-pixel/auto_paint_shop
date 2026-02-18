@@ -36,11 +36,13 @@ function Profile() {
 
     // Загрузка данных пользователя и заказов
     useEffect(() => {
+        // Поддержка и DRF Token, и JWT (access_token)
         const token = localStorage.getItem('token');
+        const accessToken = localStorage.getItem('access_token');
         const userData = localStorage.getItem('user');
+        const isAuth = (token || accessToken) && userData;
 
-        // Проверяем авторизацию
-        if (!token || !userData) {
+        if (!isAuth) {
             navigate('/login');
             return;
         }

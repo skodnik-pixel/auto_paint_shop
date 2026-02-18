@@ -1,9 +1,9 @@
-
-// frontend/src/components/Cart.js
+// frontend/src/components/cart/Cart.js
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Table, Button, Spinner, Modal, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Table, Button, Spinner, Modal } from 'react-bootstrap';
 import { FaTrash, FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import './Cart.css';
 
 function Cart() {
     const [cart, setCart] = useState([]);
@@ -125,7 +125,7 @@ function Cart() {
                                     <>
                                         {/* Таблица товаров */}
                                         <div className="cart-table-wrapper">
-                                            <Table responsive className="cart-table">
+                                            <Table className="cart-table">
                                                 <thead>
                                                     <tr>
                                                         <th>Товар</th>
