@@ -1,8 +1,10 @@
 // frontend/src/components/Profile.js
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Nav, Badge, Button, Alert, Spinner, Modal, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Nav, Badge, Button, Alert, Spinner, Modal, Form, Table } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { FaUser, FaShoppingBag, FaHistory, FaCog, FaSignOutAlt, FaBox, FaClock, FaCheckCircle, FaTimes, FaEye, FaTrash, FaTruck, FaBell, FaBuilding, FaPlus } from 'react-icons/fa';
+import { FaUser, FaShoppingBag, FaHistory, FaCog, FaSignOutAlt, FaBox, FaClock, FaCheckCircle, FaTimes, FaEye, FaTrash, FaTruck, FaBell, FaBuilding, FaPlus, FaShoppingCart } from 'react-icons/fa';
+import './Profile.css';
+import './Orders.css';
 
 function Profile() {
     const navigate = useNavigate();
@@ -321,7 +323,7 @@ function Profile() {
                             <Card className="profile-content-card">
                                 <Card.Header>
                                     <h4 className="mb-0">Личный кабинет</h4>
-DIR                                </Card.Header>
+                                </Card.Header>
                                 <Card.Body>
                                     <Row>
                                         <Col md={6} className="mb-3">
@@ -349,21 +351,23 @@ DIR                                </Card.Header>
                             </Card>
                         )}
 
-                        {/* Вкладка "Мои заказы" */}
+                        {/* Вкладка "Мои заказы" — в формате как корзина: карточка, таблица товаров */}
                         {activeTab === 'orders' && (
-                            <Card className="profile-content-card">
+                            <Card className="profile-content-card orders-history-card">
                                 <Card.Header>
-                                    <h4 className="mb-0">История заказов</h4>
+                                    <h2 className="mb-0 orders-history-title">
+                                        <FaShoppingCart className="me-2" />
+                                        История заказов
+                                    </h2>
                                 </Card.Header>
                                 <Card.Body>
                                     {error && <Alert variant="danger">{error}</Alert>}
-                                    
                                     {orders.length === 0 ? (
-                                        <div className="text-center py-5">
-                                            <FaShoppingBag size={60} className="text-muted mb-3" />
-                                            <h5>У вас пока нет заказов</h5>
+                                        <div className="orders-empty text-center py-5">
+                                            <FaShoppingCart size={60} className="text-muted mb-3" />
+                                            <h4>У вас пока нет заказов</h4>
                                             <p className="text-muted">Перейдите в каталог и сделайте первый заказ</p>
-                                            <Button variant="primary" onClick={() => navigate('/catalog')}>
+                                            <Button variant="primary" onClick={() => navigate('/catalog')} className="mt-3">
                                                 Перейти в каталог
                                             </Button>
                                         </div>
@@ -372,51 +376,53 @@ DIR                                </Card.Header>
                                             {orders.map(order => {
                                                 const status = getOrderStatus(order.status);
                                                 return (
-                                                    <Card key={order.id} className="order-card mb-3">
-                                                        <Card.Body>
-                                                            <Row className="align-items-center">
-                                                                <Col md={2}>
-                                                                    <div className="order-number">
-                                                                        <small className="text-muted">Заказ №</small>
-                                                                        <h6 className="mb-0">{order.id}</h6>
-                                                                    </div>
-                                                                </Col>
-                                                                <Col md={3}>
-                                                                    <small className="text-muted">Дата заказа</small>
-                                                                    <p className="mb-0">{formatDate(order.createdAt)}</p>
-                                                                </Col>
-                                                                <Col md={3}>
-                                                                    <small className="text-muted">Статус</small>
-                                                                    <div>
-                                                                        <Badge bg={status.variant} className="status-badge">
-                                                                            {status.icon} {status.text}
-                                                                        </Badge>
-                                                                    </div>
-                                                                </Col>
-                                                                <Col md={4} className="text-end">
-                                                                    <small className="text-muted">Сумма заказа</small>
-                                                                    <h4 className="mb-0 text-primary">{order.totalPrice} BYN</h4>
-                                                                </Col>
-                                                            </Row>
-                                                            
-                                                            {/* Товары в заказе */}
-                                                            {order.items && order.items.length > 0 && (
-                                                                <div className="order-items mt-3 pt-3 border-top">
-                                                                    <small className="text-muted">Товары:</small>
-                                                                    <div className="mt-2">
-                                                                        {order.items.map((item, index) => (
-                                                                            <div key={index} className="order-item-row">
-                                                                                <span>{item.name}</span>
-                                                                                <span className="text-muted">
-                                                                                    {item.quantity} шт. × {item.price} BYN
-                                                                                </span>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </Card.Body>
-                                                    </Card>
+                                                    <div key={order.id} className="order-block">
+                                                        <div className="order-block-header">
+                                                            <div className="order-block-meta">
+                                                                <span className="order-block-number">Заказ № {order.id}</span>
+                                                                <span className="order-block-date">{formatDate(order.createdAt)}</span>
+                                                                <Badge bg={status.variant} className="status-badge">{status.icon} {status.text}</Badge>
+                                                            </div>
+                                                            <div className="order-block-total">Сумма заказа: <strong className="order-total-amount">{order.totalPrice} BYN</strong></div>
+                                                        </div>
+                                                        {order.items && order.items.length > 0 && (
+                                                            <div className="order-table-wrapper">
+                                                                <Table className="orders-table" responsive>
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Товар</th>
+                                                                            <th>Цена</th>
+                                                                            <th>Количество</th>
+                                                                            <th>Итого</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {order.items.map((item, index) => {
+                                                                            const itemTotal = (parseFloat(item.price) * (item.quantity || 1)).toFixed(2);
+                                                                            return (
+                                                                                <tr key={index}>
+                                                                                    <td>
+                                                                                        <div className="orders-product-info">
+                                                                                            <img
+                                                                                                src={item.image || 'https://via.placeholder.com/200x200?text=Нет+фото'}
+                                                                                                alt={item.name}
+                                                                                                className="orders-product-image"
+                                                                                                onError={(e) => { e.target.src = 'https://via.placeholder.com/200x200?text=Нет+фото'; }}
+                                                                                            />
+                                                                                            <span className="orders-product-name">{item.name}</span>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td className="orders-price">{item.price} BYN</td>
+                                                                                    <td className="orders-quantity">{item.quantity || 1}</td>
+                                                                                    <td className="orders-total-price">{itemTotal} BYN</td>
+                                                                                </tr>
+                                                                            );
+                                                                        })}
+                                                                    </tbody>
+                                                                </Table>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 );
                                             })}
                                         </div>
