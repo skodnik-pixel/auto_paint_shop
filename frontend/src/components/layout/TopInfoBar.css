@@ -1,0 +1,57 @@
+.top-info-bar {
+              background-color: #000;
+              color: var(--white);
+              padding: 10px 0;
+              font-size: 13px;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .top-info-bar .phone-number {
+              font-weight: 600;
+              color: var(--primary-red);
+              margin-right: 20px;
+              font-size: 15px;
+            }
+            
+            .top-info-bar .working-hours {
+              color: var(--white);
+              font-size: 13px;
+            }
+            
+            .top-nav-links {
+              display: flex;
+              gap: 25px;
+              margin: 0;
+              padding: 0;
+              list-style: none;
+            }
+            
+            .top-nav-links .nav-link {
+              color: var(--white) !important;
+              padding: 0;
+              font-size: 13px;
+              text-decoration: none;
+              transition: color 0.2s;
+              font-weight: 400;
+            }
+            
+            .top-nav-links .nav-link:hover {
+              color: var(--primary-red) !important;
+            }
+            
+            /* Адаптивность */
+            @media (max-width: 768px) {
+              .top-nav-links {
+                flex-direction: column;
+                align-items: center !important;
+              }
+            
+              .top-nav-links .nav-link {
+                font-size: 0.75rem;
+              }
+            
+              .top-info-bar .phone-number,
+              .top-info-bar .working-hours {
+                font-size: 0.75rem;
+              }
+            }

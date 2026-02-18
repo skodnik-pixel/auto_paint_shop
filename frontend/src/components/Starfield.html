@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Starfield</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: linear-gradient(to bottom, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+        }
+
+        canvas {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 300;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(100, 200, 255, 0.5);
+            animation: fadeIn 3s ease-out;
+        }
+
+        p {
+            font-size: 1.2rem;
+            font-weight: 200;
+            letter-spacing: 0.2em;
+            opacity: 0.7;
+            animation: fadeIn 3s ease-out 0.5s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    <div class="content">
+        <h1>Starfield</h1>
+        <p>Move your mouse to guide the stars</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        // Mouse position
+        let mouseX = width / 2;
+        let mouseY = height / 2;
+        let targetMouseX = mouseX;
+        let targetMouseY = mouseY;
+
+        // Star class
+        class Star {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.z = Math.random() * 2 + 0.5; // Depth factor
+                this.baseSize = Math.random() * 1.5 + 0.5;
+                this.size = this.baseSize;
+                this.speed = Math.random() * 0.5 + 0.2;
+                this.twinkleSpeed = Math.random() * 0.02 + 0.01;
+                this.twinkleOffset = Math.random() * Math.PI * 2;
+                this.opacity = Math.random() * 0.5 + 0.3;
+                this.hue = Math.random() * 60 + 200; // Blue to purple range
+            }
+
+            update(velocityX, velocityY) {
+                // Apply velocity based on mouse movement
+                this.x += velocityX * this.z;
+                this.y += velocityY * this.z;
+
+                // Wrap around edges
+                if (this.x < 0) this.x = width;
+                if (this.x > width) this.x = 0;
+                if (this.y < 0) this.y = height;
+                if (this.y > height) this.y = 0;
+
+                // Twinkle effect
+                this.opacity = 0.3 + Math.sin(Date.now() * this.twinkleSpeed + this.twinkleOffset) * 0.3;
+            }
+
+            draw() {
+                // Calculate size based on depth
+                this.size = this.baseSize * this.z;
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${this.hue}, 70%, 80%, ${this.opacity})`;
+                ctx.fill();
+
+                // Add glow for closer stars
+                if (this.z > 1.2) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                    const gradient = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size * 3
+                    );
+                    gradient.addColorStop(0, `hsla(${this.hue}, 80%, 90%, ${this.opacity * 0.3})`);
+                    gradient.addColorStop(1, 'transparent');
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                }
+            }
+        }
+
+        // Create stars
+        const stars = [];
+        const numStars = Math.min(300, Math.floor((width * height) / 4000));
+
+        for (let i = 0; i < numStars; i++) {
+            stars.push(new Star());
+        }
+
+        // Velocity smoothing
+        let velocityX = 0;
+        let velocityY = 0;
+
+        // Mouse move handler
+        document.addEventListener('mousemove', (e) => {
+            targetMouseX = e.clientX;
+            targetMouseY = e.clientY;
+        });
+
+        // Touch support
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            targetMouseX = e.touches[0].clientX;
+            targetMouseY = e.touches[0].clientY;
+        }, { passive: false });
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+
+            // Recreate stars on resize
+            stars.length = 0;
+            const newNumStars = Math.min(300, Math.floor((width * height) / 4000));
+            for (let i = 0; i < newNumStars; i++) {
+                stars.push(new Star());
+            }
+        });
+
+        // Animation loop
+        function animate() {
+            // Clear canvas with fade effect
+            ctx.fillStyle = 'rgba(10, 10, 26, 0.2)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Smooth mouse movement
+            mouseX += (targetMouseX - mouseX) * 0.05;
+            mouseY += (targetMouseY - mouseY) * 0.05;
+
+            // Calculate velocity from mouse position (relative to center)
+            velocityX = (mouseX - width / 2) * 0.02;
+            velocityY = (mouseY - height / 2) * 0.02;
+
+            // Add subtle drift when mouse is centered
+            if (Math.abs(velocityX) < 0.1 && Math.abs(velocityY) < 0.1) {
+                velocityX += (Math.random() - 0.5) * 0.1;
+                velocityY += (Math.random() - 0.5) * 0.1;
+            }
+
+            // Update and draw stars
+            stars.forEach(star => {
+                star.update(velocityX, velocityY);
+                star.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // Start animation
+        animate();
+    </script>
+</body>
+</html>

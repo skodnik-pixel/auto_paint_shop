@@ -1,0 +1,80 @@
+/* Страница "Гарантия" */
+.warranty-page {
+              background-color: var(--light-gray);
+              min-height: 100vh;
+              padding: 60px 0;
+            }
+            
+            .warranty-section {
+              background: var(--white);
+              border: 2px solid var(--black);
+              border-radius: 12px;
+              padding: 40px;
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+            
+            .warranty-section h2 {
+              font-size: 32px;
+              font-weight: 700;
+              color: var(--primary-red);
+              margin-bottom: 30px;
+              text-align: center;
+            }
+            
+            .warranty-card {
+              background: var(--light-gray);
+              border: 1px solid var(--border-color);
+              border-radius: 8px;
+              padding: 24px;
+              margin-bottom: 20px;
+            }
+            
+            .warranty-card h4 {
+              font-size: 20px;
+              font-weight: 600;
+              color: var(--text-dark);
+              margin-bottom: 12px;
+            }
+            
+            .warranty-card p {
+              font-size: 15px;
+              color: var(--text-dark);
+              line-height: 1.6;
+              margin-bottom: 8px;
+            }
+            
+            .warranty-card ul {
+              margin-left: 20px;
+              margin-bottom: 0;
+            }
+            
+            .warranty-card li {
+              font-size: 15px;
+              color: var(--text-dark);
+              line-height: 1.6;
+              margin-bottom: 4px;
+            }
+            
+            /* Адаптивность */
+            @media (max-width: 768px) {
+              .warranty-section {
+                padding: 20px;
+              }
+            
+              .warranty-section h2 {
+                font-size: 24px;
+              }
+            
+              .warranty-card {
+                padding: 16px;
+              }
+            
+              .warranty-card h4 {
+                font-size: 18px;
+              }
+            
+              .warranty-card p,
+              .warranty-card li {
+                font-size: 14px;
+              }
+            }

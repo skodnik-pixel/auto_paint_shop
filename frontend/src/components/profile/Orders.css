@@ -1,0 +1,90 @@
+/* ========================================
+СТРАНИЦА ЗАКАЗОВ В ПРОФИЛЕ
+======================================== */
+/* Список заказов */
+.orders-list {
+              max-height: 600px;
+              overflow-y: auto;
+            }
+            
+            /* Карточка заказа */
+            .order-card {
+              border: 2px solid var(--black);           /* Чёрная рамка */
+              border-radius: 8px;
+              background: var(--white);
+              transition: all 0.3s ease;
+            }
+            
+            .order-card:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+              border-color: var(--primary-red);
+            }
+            
+            /* Номер заказа */
+            .order-number h6 {
+              color: var(--primary-red);
+              font-weight: 700;
+            }
+            
+            /* Бейдж статуса заказа */
+            .status-badge {
+              display: inline-flex;
+              align-items: center;
+              gap: 5px;
+              padding: 6px 12px;
+              font-weight: 500;
+            }
+            
+            .status-badge svg {
+              font-size: 14px;
+            }
+            
+            /* Товары в заказе */
+            .order-items {
+              background-color: var(--light-gray);
+              border-radius: 6px;
+              padding: 12px;
+            }
+            
+            .order-item-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 4px 0;
+              font-size: 14px;
+            }
+            
+            .order-item-row:not(:last-child) {
+              border-bottom: 1px solid var(--border-color);
+              margin-bottom: 4px;
+              padding-bottom: 8px;
+            }
+            
+            /* Адаптивность для планшетов */
+            @media (max-width: 992px) {
+              .order-card .row {
+                text-align: center;
+              }
+            
+              .order-card .col-md-2,
+              .order-card .col-md-3 {
+                margin-bottom: 15px;
+              }
+            }
+            
+            /* Адаптивность для мобильных */
+            @media (max-width: 768px) {
+              .order-card {
+                font-size: 14px;
+              }
+            
+              .order-number h6 {
+                font-size: 16px;
+              }
+            
+              .status-badge {
+                font-size: 12px;
+                padding: 6px 10px;
+              }
+            }
