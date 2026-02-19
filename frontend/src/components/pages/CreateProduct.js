@@ -102,7 +102,7 @@ function CreateProduct() {
     }, []);
 
     const handleSubmit = () => {
-        const token = localStorage.getItem('access');
+        const token = localStorage.getItem('access_token') || localStorage.getItem('access');
         if (!token) {
             setError('Пожалуйста, войдите в аккаунт');
             return;

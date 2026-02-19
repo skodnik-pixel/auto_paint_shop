@@ -39,7 +39,7 @@ function Checkout() {
     // Загружаем корзину с сервера и данные пользователя для оформления
     useEffect(() => {
         const loadCart = async () => {
-            const accessToken = localStorage.getItem('access');
+            const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
             if (!accessToken) {
                 // Если не авторизован, перенаправляем на логин
                 navigate('/login');
@@ -155,7 +155,7 @@ function Checkout() {
         setSubmitting(true);
 
         try {
-            const accessToken = localStorage.getItem('access');
+            const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
             if (!accessToken) {
                 alert('Необходимо войти в систему');
                 navigate('/login');

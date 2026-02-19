@@ -227,15 +227,15 @@ function Profile() {
 
     // Выход из системы
     const handleLogout = async () => {
-        const token = localStorage.getItem('access');
+        const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
 
-        if (token) {
+        if (accessToken) {
             try {
                 const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
                 await fetch(`${apiUrl}/accounts/logout/`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Token ${token}`
+                        'Authorization': `Bearer ${accessToken}`
                     }
                 });
             } catch (error) {
@@ -245,6 +245,8 @@ function Profile() {
 
         localStorage.removeItem('token');
         localStorage.removeItem('access');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');
         navigate('/');
         window.location.reload();

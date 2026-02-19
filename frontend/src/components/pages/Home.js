@@ -188,8 +188,8 @@ function Home() {
 
   // Функция покупки товара (добавление в корзину)
   const buyProduct = async (product) => {
-    // Проверяем авторизацию
-    const accessToken = localStorage.getItem('access');
+    // Проверяем авторизацию (JWT: access_token или legacy access)
+    const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
     if (!accessToken) {
       alert('Для добавления товаров в корзину необходимо войти в систему');
       navigate('/login');
