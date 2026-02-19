@@ -23,10 +23,10 @@ function Login() {
         });
     };
 
-    // Получение профиля пользователя с access-токеном
+    // Получение профиля пользователя с access-токеном (эндпоинт профиля в accounts)
     async function fetchUserProfile(token) {
         const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-        const res = await fetch(`${apiUrl}/accounts/users/me/`, {
+        const res = await fetch(`${apiUrl}/accounts/profile/`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -48,7 +48,7 @@ function Login() {
 
         try {
             const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-            const response = await fetch(`${apiUrl}/accounts/jwt/create/`, {
+            const response = await fetch(`${apiUrl}/auth/jwt/create/`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json' 
@@ -59,6 +59,11 @@ function Login() {
                 }),
             });
 
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                throw new Error('Сервер вернул не JSON. Проверьте, что backend запущен на ' + (apiUrl.replace('/api', '')) + ' и эндпоинт /api/auth/jwt/create/ доступен.');
+            }
             const data = await response.json();
 
             if (!response.ok) {
@@ -76,9 +81,9 @@ function Login() {
             }
 
             if (data.access && data.refresh) {
-                // Сохраняем токены
-                localStorage.setItem('access', data.access);
-                localStorage.setItem('refresh', data.refresh);
+                // Сохраняем токены (ключи access_token/refresh_token для совместимости с api.js и authService)
+                localStorage.setItem('access_token', data.access);
+                localStorage.setItem('refresh_token', data.refresh);
 
                 // Получаем и сохраняем профиль пользователя
                 try {

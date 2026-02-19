@@ -90,16 +90,10 @@ function ProductDetail() {
 
     // Функция для добавления товара в корзину
     const addToCart = async () => {
-        const token = localStorage.getItem('access');
+        const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
 
-        console.log('=== ДОБАВЛЕНИЕ В КОРЗИНУ ===');
-        console.log('Token:', token ? 'Есть' : 'Нет');
-        console.log('Product:', product?.name);
-        console.log('Slug:', product?.slug);
-        console.log('Quantity:', quantity);
-
-        if (!token) {
-            console.log('Нет токена - перенаправление на логин');
+        if (!accessToken) {
+            alert('Для добавления товаров в корзину необходимо войти в систему');
             navigate('/login');
             return;
         }
@@ -114,14 +108,11 @@ function ProductDetail() {
                 quantity: quantity
             };
 
-            console.log('URL:', url);
-            console.log('Body:', body);
-
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Token ${token}`
+                    'Authorization': `Bearer ${accessToken}`
                 },
                 body: JSON.stringify(body)
             });

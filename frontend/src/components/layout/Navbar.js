@@ -24,7 +24,8 @@ import {
 
 function CustomNavbar() {
     const [cartCount, setCartCount] = useState(0);
-    const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('access'));
+    // JWT хранится в access_token; для совместимости проверяем и старый ключ 'access'
+    const [isAuthenticated, setIsAuthenticated] = useState(!!(localStorage.getItem('access_token') || localStorage.getItem('access')));
     const [user, setUser] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     // Состояние для количества товаров в избранном
@@ -48,8 +49,8 @@ function CustomNavbar() {
 
 
     useEffect(() => {
-        // Загружаем данные пользователя из localStorage (JWT access)
-        const accessToken = localStorage.getItem('access');
+        // Загружаем данные пользователя из localStorage (JWT: access_token или legacy access)
+        const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
         const userData = localStorage.getItem('user');
         if (accessToken && userData) {
             try {
@@ -61,8 +62,27 @@ function CustomNavbar() {
         }
     }, []);
 
-    // Обновление счётчика корзины из localStorage (корзина обновляется при "Купить" и "В корзину")
-    const refreshCartCount = () => {
+    // Загрузка счётчика корзины с API (для авторизованных) или из localStorage
+    const refreshCartCount = async () => {
+        const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
+        if (accessToken) {
+            try {
+                const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+                const response = await fetch(`${apiUrl}/cart/`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const list = Array.isArray(data) ? data : (data.results || []);
+                    const cart = list.length > 0 ? list[0] : null;
+                    const count = cart?.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) ?? 0;
+                    setCartCount(count);
+                    return;
+                }
+            } catch (e) {
+                console.error('Ошибка загрузки корзины для счётчика:', e);
+            }
+        }
         try {
             const cartData = JSON.parse(localStorage.getItem('cart') || '[]');
             const count = Array.isArray(cartData) ? cartData.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
@@ -76,7 +96,7 @@ function CustomNavbar() {
         refreshCartCount();
     }, []);
 
-    // Слушаем событие обновления корзины (после "Купить" на главной/в каталоге или "В корзину"/"Добавить в корзину")
+    // Слушаем событие обновления корзины (после "Купить", "В корзину", добавления/удаления в корзине)
     useEffect(() => {
         const handleCartUpdated = () => refreshCartCount();
         window.addEventListener('cartUpdated', handleCartUpdated);
@@ -86,12 +106,13 @@ function CustomNavbar() {
     // Слушаем событие обновления авторизации (после логина/логаута)
     useEffect(() => {
         const handleAuthUpdate = () => {
-            const accessToken = localStorage.getItem('access');
+            const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
             const userData = localStorage.getItem('user');
             if (accessToken && userData) {
                 try {
                     setUser(JSON.parse(userData));
                     setIsAuthenticated(true);
+                    refreshCartCount(); // подтянуть счётчик корзины с сервера после входа
                 } catch (e) {
                     console.error('Error parsing user data:', e);
                 }
@@ -252,7 +273,7 @@ function CustomNavbar() {
         // (JWT токены stateless, сервер их не хранит)
         
         // Очищаем корзину на сервере перед выходом
-        const accessToken = localStorage.getItem('access');
+        const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
         if (accessToken) {
             try {
                 const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';

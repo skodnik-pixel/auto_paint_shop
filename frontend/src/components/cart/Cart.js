@@ -1,6 +1,6 @@
 // frontend/src/components/cart/Cart.js
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Table, Button, Spinner, Modal, Form } from 'react-bootstrap';
+import { Container, Row, Col, Card, Table, Button, Spinner, Modal, Form, Alert } from 'react-bootstrap';
 import { FaTrash, FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import './Cart.css';
@@ -17,7 +17,7 @@ function Cart() {
     // Загружаем корзину с сервера для авторизованных пользователей
     useEffect(() => {
         const loadCart = async () => {
-            const accessToken = localStorage.getItem('access');
+            const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
             if (!accessToken) {
                 setLoading(false);
                 return;
@@ -79,7 +79,7 @@ function Cart() {
     const updateQuantity = async (itemId, newQuantity) => {
         if (newQuantity < 1 || !cart) return;
         
-        const accessToken = localStorage.getItem('access');
+        const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
         if (!accessToken) return;
 
         setUpdating(prev => ({ ...prev, [itemId]: true }));
@@ -135,7 +135,7 @@ function Cart() {
 
     // Удаление товара из корзины
     const removeItem = async () => {
-        const accessToken = localStorage.getItem('access');
+        const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
         if (!accessToken || !itemToRemove || !cart) return;
 
         try {
@@ -194,7 +194,7 @@ function Cart() {
     };
 
     // Проверка авторизации
-    const accessToken = localStorage.getItem('access');
+    const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
     if (!accessToken) {
         return (
             <Container className="my-5">

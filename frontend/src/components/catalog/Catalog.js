@@ -161,9 +161,10 @@ const Catalog = () => {
 
   // Функция для добавления товара в корзину
   const addToCart = async (productId, productSlug) => {
-    const token = localStorage.getItem('access');
+    const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
 
-    if (!token) {
+    if (!accessToken) {
+      alert('Для добавления товаров в корзину необходимо войти в систему');
       navigate('/login');
       return;
     }
@@ -177,7 +178,7 @@ const Catalog = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({
           product_slug: productSlug,
@@ -187,6 +188,8 @@ const Catalog = () => {
 
       if (response.status === 401) {
         localStorage.removeItem('token');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');
         navigate('/login');
         return;
@@ -231,8 +234,8 @@ const Catalog = () => {
 
   // Функция покупки товара (добавление в корзину)
   const buyProduct = async (product) => {
-    // Проверяем авторизацию
-    const accessToken = localStorage.getItem('access');
+    // Проверяем авторизацию (JWT: access_token или legacy access)
+    const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
     if (!accessToken) {
       alert('Для добавления товаров в корзину необходимо войти в систему');
       navigate('/login');
