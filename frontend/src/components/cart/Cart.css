@@ -1,4 +1,29 @@
 /* ========================================
+БЛОК «MISSION FAILED» (стиль GTA) — корзина без авторизации
+======================================== */
+.cart-auth-mission-failed {
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+.cart-auth-mission-failed-title {
+    font-family: 'Pricedown Bl', sans-serif;
+    font-weight: 900;
+    font-size: 1.75rem;
+    color: #c41e3a !important;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 0.5rem 0;
+}
+.cart-auth-mission-failed-sub {
+    color: #4b5563;
+    margin-bottom: 0;
+}
+
+/* ========================================
 СТРАНИЦА КОРЗИНЫ
 ======================================== */
 .cart-page {

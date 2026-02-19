@@ -72,7 +72,7 @@ def user_profile(request):
             'id': user.id,
             'username': user.username,
             'email': user.email,
-            'phone': user.phone,
+            'phone': user.phone or '',
             'is_admin': user.is_admin,
             'created_at': getattr(user, 'created_at', None),
         })
@@ -92,7 +92,7 @@ def user_profile(request):
         'id': user.id,
         'username': user.username,
         'email': user.email,
-        'phone': user.phone,
+        'phone': user.phone or '',
         'is_admin': user.is_admin,
         'created_at': getattr(user, 'created_at', None),
     })

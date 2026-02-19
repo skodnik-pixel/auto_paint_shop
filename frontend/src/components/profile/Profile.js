@@ -65,7 +65,8 @@ function Profile() {
         try {
             const u = JSON.parse(userData);
             setUser(u);
-            setEditPhone(u.phone ? getEditablePartFromFull(u.phone) : '');
+            const savedPhone = u.phone != null && String(u.phone).trim() !== '' ? String(u.phone).trim() : '';
+            setEditPhone(savedPhone ? getEditablePartFromFull(savedPhone) : '');
         } catch (e) {
             console.error('Error parsing user data:', e);
             navigate('/login');
@@ -75,15 +76,16 @@ function Profile() {
         // Подтягиваем профиль с сервера (телефон с регистрации и актуальные данные)
         api.get('accounts/profile/')
             .then(({ data }) => {
+                const phone = data.phone != null && String(data.phone).trim() !== '' ? String(data.phone).trim() : null;
                 const profileUser = {
                     id: data.id,
                     username: data.username,
                     email: data.email,
-                    phone: data.phone,
+                    phone: phone || null,
                     is_admin: data.is_admin,
                 };
                 setUser(profileUser);
-                setEditPhone(profileUser.phone ? getEditablePartFromFull(profileUser.phone) : '');
+                setEditPhone((prev) => (profileUser.phone ? getEditablePartFromFull(profileUser.phone) : prev));
                 localStorage.setItem('user', JSON.stringify(profileUser));
             })
             .catch(() => {});
@@ -378,6 +380,7 @@ function Profile() {
                                                     ref={phoneInputRef}
                                                     type="tel"
                                                     placeholder={EDITABLE_PLACEHOLDER}
+                                                    autoComplete="off"
                                                     value={editPhone}
                                                     onChange={(e) => {
                                                         const input = e.target;

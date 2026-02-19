@@ -1,9 +1,9 @@
 // frontend/src/components/Register.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Container, Form, Button, Alert, Row, Col, Modal } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
-import { formatEditablePart, getFullPhoneFromEditablePart, validatePhone, EDITABLE_PLACEHOLDER } from '../../utils/phoneBelarus';
+import { formatEditablePart, getFullPhoneFromEditablePart, validatePhone, EDITABLE_PLACEHOLDER, countDigitsBeforePosition, digitIndexToFormattedPos } from '../../utils/phoneBelarus';
 import './Register.css';
 
 function Register() {
@@ -18,17 +18,35 @@ function Register() {
     const [loading, setLoading] = useState(false);
     // Модальное окно об успешной регистрации (стиль GTA)
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const phoneInputRef = React.useRef(null);
+    const phoneNextCursorRef = React.useRef(null);
     const navigate = useNavigate();
     const { register } = useAuth();
+
+    // Восстановление позиции курсора в поле телефона после форматирования (как в личном кабинете)
+    useEffect(() => {
+        if (phoneNextCursorRef.current !== null && phoneInputRef.current) {
+            const pos = phoneNextCursorRef.current;
+            phoneInputRef.current.setSelectionRange(pos, pos);
+            phoneNextCursorRef.current = null;
+        }
+    }, [formData.phone]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name === 'phone') {
-            const digits = value.replace(/\D/g, '').slice(0, 9);
-            setFormData({ ...formData, phone: formatEditablePart(digits) });
+            const input = e.target;
+            const newValue = input.value;
+            const selectionStart = input.selectionStart ?? newValue.length;
+            const digits = newValue.replace(/\D/g, '').slice(0, 9);
+            const formatted = formatEditablePart(digits);
+            const digitIndex = countDigitsBeforePosition(newValue, selectionStart);
+            const newPos = digitIndexToFormattedPos(Math.min(digitIndex, digits.length));
+            phoneNextCursorRef.current = newPos;
+            setFormData((prev) => ({ ...prev, phone: formatted }));
             return;
         }
-        setFormData({ ...formData, [name]: value });
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
@@ -159,16 +177,18 @@ function Register() {
 
                         <Form.Group className="mb-3">
                             <Form.Label>Телефон</Form.Label>
-                            <div className="d-flex align-items-center register-phone-wrapper">
+                            <div className="register-phone-wrapper">
                                 <span className="register-phone-prefix">+375 </span>
                                 <Form.Control
+                                    ref={phoneInputRef}
                                     type="tel"
                                     name="phone"
                                     value={formData.phone}
                                     onChange={handleChange}
                                     placeholder={EDITABLE_PLACEHOLDER}
+                                    autoComplete="off"
                                     className="register-phone-input"
-                                    style={{ maxWidth: 160 }}
+                                    aria-label="Код оператора и номер телефона"
                                 />
                             </div>
                             <Form.Text className="text-muted">
