@@ -73,3 +73,10 @@ class CartViewSet(viewsets.ModelViewSet):
             CartItem.objects.filter(id=item_id, cart=cart).delete()
         serializer = self.get_serializer(cart)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def clear(self, request):
+        """Очистить всю корзину пользователя"""
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        CartItem.objects.filter(cart=cart).delete()
+        return Response({'message': 'Корзина очищена'}, status=200)

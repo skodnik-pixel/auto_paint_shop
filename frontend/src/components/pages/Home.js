@@ -1,0 +1,515 @@
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Badge, Button } from 'react-bootstrap';
+import { Link, useNavigate } from 'react-router-dom';
+// FaStar - иконка звездочки для избранного
+// FaChevronLeft, FaChevronRight - стрелки для слайдера
+// FaPlus, FaMinus - иконки для кнопок количества
+// FaShoppingCart - иконка корзины для кнопки "Купить"
+import { FaStar, FaChevronLeft, FaChevronRight, FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa';
+import './Home.css';
+
+
+function Home() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  
+  // Состояние для избранного товаров
+  const [favorites, setFavorites] = useState(() => {
+    // Загружаем избранное из localStorage при инициализации
+    const saved = localStorage.getItem('favorites');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  // Состояние для количества товаров (для кнопок +/-)
+  const [quantities, setQuantities] = useState({});
+  
+  // Состояние для слайдера
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // Пагинация для товаров на главной
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // 10 товаров на странице (2 ряда по 5)
+  
+  // Данные для слайдов
+  const slides = [
+    {
+      id: 1,
+      title: 'Профессиональные материалы для кузовного ремонта',
+      subtitle: 'Краски, лаки, грунты от ведущих производителей',
+      description: 'NOVOL, BODY, SPECTRAL, JETA PRO - всё для качественного ремонта',
+      buttonText: 'Перейти в каталог',
+      buttonLink: '/catalog',
+      bgColor: '#E31E24',
+      // Замени на свою картинку! Варианты:
+      // 1. URL из интернета: 'https://example.com/banner1.jpg'
+      // 2. Файл в public/images/: '/images/banner1.jpg'
+      // 3. Placeholder пока нет картинки:
+      image: '/images/ban1.jpg'
+    },
+    {
+      id: 2,
+      title: 'Профессиональный инструмент и оборудование',
+      subtitle: 'Инструмент и оборудование от ведущих производителей',
+      description: 'Пневмо и электроинструменты, абразивы, малярные материалы',
+      buttonText: 'Перейти в каталог',
+      buttonLink: '/catalog',
+      bgColor: '#C41E3A',
+      // Замени на свою картинку для акций
+      image: '/images/ban2.jpg'
+    },
+    {
+      id: 3,
+      title: 'Всё для полировки',
+      subtitle: 'Полировальные системы от ведущих производителей',
+      description: '3М, KOCH-CHEMIE, РУССКИЙ МАСТЕР',
+      buttonText: 'Перейти в каталог',
+      buttonLink: '/catalog',
+      bgColor: '#FF4444',
+      // Замени на свою картинку для доставки
+      image: '/images/ban3.jpg'
+    }
+  ];
+
+  // Загрузка товаров
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+        const response = await fetch(`${apiUrl}/catalog/products/`);
+        if (!response.headers.get('content-type')?.includes('application/json')) {
+          const text = await response.text();
+          throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/catalog/products/`);
+        }
+        const data = await response.json();
+        const allProducts = data.results || data;
+        
+        // Перемешиваем товары рандомно и берём первые 10
+        const shuffledProducts = [...allProducts].sort(() => Math.random() - 0.5);
+        setProducts(shuffledProducts.slice(0, 10));
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching featured products:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedProducts();
+  }, []);
+
+  // Автоматическая прокрутка слайдера
+  useEffect(() => {
+    // Таймер для автоматической смены слайдов каждые 5 секунд
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 12000);
+
+    // Очищаем таймер при размонтировании компонента
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
+  // Функции для управления слайдером
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+
+  // Функция добавления/удаления товара из избранного
+  const toggleFavorite = (product) => {
+    const isFav = favorites.some(fav => fav.id === product.id);
+    let newFavorites;
+    
+    if (isFav) {
+      // Удаляем из избранного
+      newFavorites = favorites.filter(fav => fav.id !== product.id);
+    } else {
+      // Добавляем в избранное
+      newFavorites = [...favorites, product];
+    }
+    
+    setFavorites(newFavorites);
+    localStorage.setItem('favorites', JSON.stringify(newFavorites));
+    
+    // Отправляем событие для обновления счетчика в навигации
+    window.dispatchEvent(new CustomEvent('favoritesUpdated', {
+      detail: { count: newFavorites.length }
+    }));
+  };
+
+  // Функция проверки - находится ли товар в избранном
+  const isFavorite = (productId) => {
+    return favorites.some(fav => fav.id === productId);
+  };
+
+  const calculateDiscount = (currentPrice, originalPrice) => {
+    if (!originalPrice || originalPrice <= currentPrice) return 0;
+    return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+  };
+
+  const getOriginalPrice = (price) => {
+    // Для демонстрации добавляем 20-30% к цене как "старая цена"
+    return (parseFloat(price) * 1.25).toFixed(2);
+  };
+
+  // Пагинация - вычисляем какие товары показывать
+  const allProducts = products;
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentProducts = allProducts.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(allProducts.length / itemsPerPage);
+
+  // Функция смены страницы
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 400, behavior: 'smooth' }); // Прокрутка к товарам
+  };
+
+  // Функции для работы с количеством товаров
+  const increaseQuantity = (productId) => {
+    setQuantities(prev => ({
+      ...prev,
+      [productId]: (prev[productId] || 1) + 1
+    }));
+  };
+
+  const decreaseQuantity = (productId) => {
+    setQuantities(prev => ({
+      ...prev,
+      [productId]: Math.max(1, (prev[productId] || 1) - 1)
+    }));
+  };
+
+  // Функция покупки товара (добавление в корзину)
+  const buyProduct = async (product) => {
+    // Проверяем авторизацию
+    const accessToken = localStorage.getItem('access');
+    if (!accessToken) {
+      alert('Для добавления товаров в корзину необходимо войти в систему');
+      navigate('/login');
+      return;
+    }
+
+    const quantity = quantities[product.id] || 1;
+    
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+      
+      // Добавляем товар в корзину на сервере
+      const response = await fetch(`${apiUrl}/cart/add_item/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          product_id: product.id,
+          quantity: quantity
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка при добавлении товара в корзину');
+      }
+
+      // Уведомляем Navbar об обновлении корзины
+      window.dispatchEvent(new Event('cartUpdated'));
+      
+      // Сбрасываем количество после покупки
+      setQuantities(prev => ({
+        ...prev,
+        [product.id]: 1
+      }));
+      
+      // Уведомляем шапку сайта обновить счётчик корзины
+      window.dispatchEvent(new Event('cartUpdated'));
+      
+      console.log(`Товар "${product.name}" добавлен в корзину и историю!`);
+      
+    } catch (error) {
+      console.error('Ошибка при добавлении товара:', error);
+      alert(error.message || 'Ошибка при добавлении товара в корзину');
+    }
+  };
+
+
+  return (
+    <div className="home-page">
+      {/* Слайдер */}
+      <div className="hero-slider">
+        <div className="slider-container">
+          {/* Слайды */}
+          <div 
+            className="slides-wrapper" 
+            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+          >
+            {slides.map((slide, index) => (
+              <div 
+                key={slide.id} 
+                className="slide"
+                style={{
+                   backgroundImage:`url(${slide.image})`,
+                   backgroundColor: slide.bgColor }}
+              >
+                <Container>
+                  <Row className="align-items-center">
+                    <Col md={12} className="slide-content">
+                      <div className="slide-text">
+                        <h3 className="slide-subtitle">{slide.subtitle}</h3>
+                        <h1 className="slide-title">{slide.title}</h1>
+                        <p className="slide-description">{slide.description}</p>
+                        <Link to={slide.buttonLink}>
+                          <Button variant="light" size="lg" className="slide-button">
+                            {slide.buttonText}
+                          </Button>
+                        </Link>
+                      </div>
+                    </Col>
+                  </Row>
+                </Container>
+              </div>
+            ))}
+          </div>
+
+          {/* Кнопки навигации */}
+          <button 
+            className="slider-arrow slider-arrow-left" 
+            onClick={prevSlide}
+            aria-label="Предыдущий слайд"
+          >
+            <FaChevronLeft />
+          </button>
+          <button 
+            className="slider-arrow slider-arrow-right" 
+            onClick={nextSlide}
+            aria-label="Следующий слайд"
+          >
+            <FaChevronRight />
+          </button>
+
+          {/* Индикаторы слайдов */}
+          <div className="slider-indicators">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                className={`slider-indicator ${index === currentSlide ? 'active' : ''}`}
+                onClick={() => goToSlide(index)}
+                aria-label={`Перейти к слайду ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Товары в 2 ряда по 5 штук */}
+      <Container className="mb-5">
+        {loading ? (
+          <div className="text-center">
+            <div className="spinner-border text-warning" role="status">
+              <span className="visually-hidden">Загрузка...</span>
+            </div>
+          </div>
+        ) : (
+          <>
+          <div className="products-grid-container">
+            {/* Товары текущей страницы в сетке 2x5 */}
+            {currentProducts.map(product => {
+              const originalPrice = getOriginalPrice(product.price);
+              const discount = calculateDiscount(parseFloat(product.price), parseFloat(originalPrice));
+              
+              return (
+                <div key={product.id} className="product-grid-item">
+                  <Card className="promo-product-card">
+                    <div className="product-image-wrapper">
+                      <img
+                        src={product.image || 'https://via.placeholder.com/200x200?text=Нет+фото'}
+                        alt={product.name}
+                        className="product-image"
+                      />
+                      
+                      {/* ⭐ ЗВЁЗДОЧКА ИЗБРАННОГО */}
+                      <Button
+                        variant="link"
+                        className={`favorite-btn ${isFavorite(product.id) ? 'favorite-active' : ''}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleFavorite(product);
+                        }}
+                        title={isFavorite(product.id) ? 'Удалить из избранного' : 'Добавить в избранное'}
+                      >
+                        <FaStar />
+                      </Button>
+                    </div>
+                    <Card.Body className="product-card-body">
+                      {/* Секция с ценами товара */}
+                      <div className="product-price-section">
+                        {/* Текущая цена товара (отображается крупным шрифтом) */}
+                        <div className="product-current-price">{product.price} BYN</div>
+                        {/* Старая цена товара (зачеркнутая, показывает от какой цены скидка) */}
+                        <div className="product-original-price">{originalPrice} BYN</div>
+                        {/* Badge - цветная метка Bootstrap для показа скидки (красный прямоугольник с белым текстом "-20%") */}
+                        <Badge className="product-discount-badge">-{discount}%</Badge>
+                      </div>
+                      {/* Card.Title - заголовок карточки Bootstrap, отображает название товара */}
+                      <Card.Title className="product-name">{product.name}</Card.Title>
+                      
+                      {/* Блок с кнопками управления товаром */}
+                      <div className="product-actions">
+                        {/* Кнопки количества товара */}
+                        <div className="quantity-controls">
+                          <Button 
+                            variant="outline-secondary" 
+                            size="sm" 
+                            onClick={() => decreaseQuantity(product.id)}
+                            className="quantity-btn"
+                          >
+                            <FaMinus />
+                          </Button>
+                          <span className="quantity-display">{quantities[product.id] || 1}</span>
+                          <Button 
+                            variant="outline-secondary" 
+                            size="sm" 
+                            onClick={() => increaseQuantity(product.id)}
+                            className="quantity-btn"
+                          >
+                            <FaPlus />
+                          </Button>
+                        </div>
+                        
+                        {/* Кнопки действий */}
+                        <div className="action-buttons">
+                          {/* Кнопка "Купить" - добавляет в корзину и историю */}
+                          <Button 
+                            variant="success" 
+                            size="sm" 
+                            onClick={() => buyProduct(product)}
+                            className="buy-btn"
+                          >
+                            <FaShoppingCart className="me-1" />
+                            Купить
+                          </Button>
+                          
+                          {/* Кнопка "Подробнее" для перехода на страницу товара */}
+                          <Link to={`/product/${product.slug || product.id}`} className="product-detail-link">
+                            <Button variant="primary" size="sm" className="product-detail-btn">
+                              Подробнее
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Пагинация */}
+          {totalPages > 1 && (
+            <div className="pagination-container mt-5">
+              <nav aria-label="Навигация по страницам">
+                <ul className="pagination justify-content-center">
+                  {/* Кнопка "Предыдущая" */}
+                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      ← Предыдущая
+                    </button>
+                  </li>
+
+                  {/* Первая страница */}
+                  {currentPage > 3 && (
+                    <>
+                      <li className="page-item">
+                        <button className="page-link" onClick={() => paginate(1)}>
+                          1
+                        </button>
+                      </li>
+                      {currentPage > 4 && (
+                        <li className="page-item disabled">
+                          <span className="page-link">...</span>
+                        </li>
+                      )}
+                    </>
+                  )}
+
+                  {/* Номера страниц */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => {
+                      return page === currentPage || 
+                             page === currentPage - 1 || 
+                             page === currentPage - 2 ||
+                             page === currentPage + 1 || 
+                             page === currentPage + 2;
+                    })
+                    .map(page => (
+                      <li
+                        key={page}
+                        className={`page-item ${currentPage === page ? 'active' : ''}`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => paginate(page)}
+                        >
+                          {page}
+                        </button>
+                      </li>
+                    ))}
+
+                  {/* Последняя страница */}
+                  {currentPage < totalPages - 2 && (
+                    <>
+                      {currentPage < totalPages - 3 && (
+                        <li className="page-item disabled">
+                          <span className="page-link">...</span>
+                        </li>
+                      )}
+                      <li className="page-item">
+                        <button className="page-link" onClick={() => paginate(totalPages)}>
+                          {totalPages}
+                        </button>
+                      </li>
+                    </>
+                  )}
+
+                  {/* Кнопка "Следующая" */}
+                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Следующая →
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+
+              {/* Информация о текущей странице */}
+              <div className="text-center mt-3 text-muted">
+                Страница {currentPage} из {totalPages} 
+                <span className="mx-2">•</span>
+                Показано {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, allProducts.length)} из {allProducts.length} товаров
+              </div>
+            </div>
+          )}
+          </>
+        )}
+      </Container>
+
+    </div>
+  );
+}
+
+export default Home;

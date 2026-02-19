@@ -1,0 +1,89 @@
+/* Стили для страницы входа будут здесь */
+.login-container {
+              min-height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              padding: 20px;
+            }
+            
+            .login-card {
+              width: 100%;
+              max-width: 420px;
+              background: white;
+              border-radius: 16px;
+              box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+              padding: 40px;
+            }
+            
+            .login-title {
+              font-size: 28px;
+              font-weight: 700;
+              color: #1f2937;
+              margin-bottom: 8px;
+              text-align: center;
+            }
+            
+            .login-subtitle {
+              font-size: 14px;
+              color: #6b7280;
+              margin-bottom: 32px;
+              text-align: center;
+            }
+            
+            /* Модальное окно «Аккаунт не найден» / регистрация */
+.login-register-modal .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+.login-register-modal .modal-header {
+    border-bottom: 1px solid #eee;
+    padding: 1rem 1.25rem;
+}
+/* Заголовок в стиле GTA: по центру, крупный, жирный, капс */
+.login-register-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    text-align: center;
+}
+.login-register-modal-header .btn-close {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+/* Заголовок «MISSION FAILED» — шрифт Pricedown как в GTA, красный текст */
+.login-register-modal-title {
+    font-family: 'Pricedown Bl', sans-serif;
+    font-weight: 900;
+    font-size: 1.75rem;
+    color: #c41e3a;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0;
+    width: 100%;
+    text-align: center;
+}
+.login-register-modal-header {
+    background: #fff;
+    border-bottom-color: #eee;
+}
+.login-register-modal .modal-body {
+    padding: 1.25rem 1.25rem;
+    color: #4b5563;
+}
+.login-register-modal .modal-footer {
+    border-top: 1px solid #eee;
+    padding: 1rem 1.25rem;
+    gap: 0.5rem;
+}
+.login-register-modal .btn-primary {
+    min-width: 140px;
+}
+.login-register-modal .modal-header .btn-close {
+    padding: 0.5rem;
+}

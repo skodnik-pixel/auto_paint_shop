@@ -1,97 +1,77 @@
-#!/usr/bin/env python
-"""
-Скрипт для тестирования функциональности корзины
-"""
 import os
 import django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'shop.settings')
 django.setup()
 
+from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
-from catalog.models import Product
+
+from catalog.models import Product, Category, Brand
 from cart.models import Cart, CartItem
 
 User = get_user_model()
 
-print("=" * 60)
-print("ТЕСТИРОВАНИЕ КОРЗИНЫ")
-print("=" * 60)
-
-# Проверяем пользователей
-users = User.objects.all()
-print(f"\nПользователей в системе: {users.count()}")
-if users.exists():
-    for user in users[:3]:
-        print(f"  - {user.email} (ID: {user.id})")
-
-# Проверяем товары
-products = Product.objects.all()
-print(f"\nТоваров в системе: {products.count()}")
-if products.exists():
-    for product in products[:5]:
-        print(f"  - {product.name} (Slug: {product.slug}, Stock: {product.stock})")
-
-# Проверяем корзины
-carts = Cart.objects.all()
-print(f"\nКорзин в системе: {carts.count()}")
-if carts.exists():
-    for cart in carts:
-        print(f"\n  Корзина пользователя: {cart.user.email}")
-        items = cart.items.all()
-        if items.exists():
-            print(f"  Товаров в корзине: {items.count()}")
-            for item in items:
-                print(f"    - {item.product.name} x {item.quantity} = {item.get_total_price()} BYN")
-            print(f"  Общая сумма: {cart.get_total_price()} BYN")
-        else:
-            print("  Корзина пуста")
-
-# Тестируем добавление товара в корзину
-print("\n" + "=" * 60)
-print("ТЕСТ: Добавление товара в корзину")
-print("=" * 60)
-
-if users.exists() and products.exists():
-    test_user = users.first()
-    test_product = products.first()
+def test_cart_workflow():
+    print("--- Starting Cart Workflow Test ---")
     
-    print(f"\nПользователь: {test_user.email}")
-    print(f"Товар: {test_product.name} (Slug: {test_product.slug})")
+    # 1. Setup Data
+    try:
+        user = User.objects.create_user(username='testcartuser', password='password123')
+        print("User created")
+    except Exception:
+        user = User.objects.get(username='testcartuser')
+        print("User retrieved")
+
+    try:
+        category, _ = Category.objects.get_or_create(name='Cart Test Cat', slug='cart-test-cat')
+        brand, _ = Brand.objects.get_or_create(name='Cart Test Brand', slug='cart-test-brand')
+        product, _ = Product.objects.get_or_create(
+            slug='cart-test-product',
+            defaults={
+                'name': 'Cart Test Product',
+                'category': category,
+                'brand': brand,
+                'price': 100.00,
+                'stock': 50
+            }
+        )
+        print(f"Product created: {product.slug}")
+    except Exception as e:
+        print(f"Error creating product: {e}")
+        return
+
+    # 2. Setup Client
+    client = APIClient()
+    client.force_authenticate(user=user)
+
+    # 3. Test Add Item
+    url = '/api/cart/add_item/'
+    data = {
+        'product_slug': product.slug,
+        'quantity': 2
+    }
     
-    # Получаем или создаем корзину
-    cart, created = Cart.objects.get_or_create(user=test_user)
-    if created:
-        print("✅ Создана новая корзина")
+    print(f"Sending POST to {url} with data: {data}")
+    response = client.post(url, data, format='json')
+    
+    print(f"Response Status: {response.status_code}")
+    print(f"Response Data: {response.data}")
+
+    if response.status_code == 200:
+        print("SUCCESS: Item added to cart")
+        # Verify DB
+        cart = Cart.objects.get(user=user)
+        item = CartItem.objects.get(cart=cart, product=product)
+        print(f"Cart Item Quantity in DB: {item.quantity}")
+        if item.quantity >= 2:
+             print("DB Verification Passed")
     else:
-        print("✅ Используется существующая корзина")
-    
-    # Добавляем товар
-    cart_item, created = CartItem.objects.get_or_create(
-        cart=cart,
-        product=test_product
-    )
-    
-    if created:
-        cart_item.quantity = 1
-        cart_item.save()
-        print(f"✅ Товар добавлен в корзину (количество: 1)")
-    else:
-        cart_item.quantity += 1
-        cart_item.save()
-        print(f"✅ Количество товара увеличено (новое количество: {cart_item.quantity})")
-    
-    print(f"\nИтого в корзине:")
-    for item in cart.items.all():
-        print(f"  - {item.product.name} x {item.quantity} = {item.get_total_price()} BYN")
-    print(f"Общая сумма: {cart.get_total_price()} BYN")
-else:
-    print("❌ Недостаточно данных для теста")
-    if not users.exists():
-        print("  - Нет пользователей")
-    if not products.exists():
-        print("  - Нет товаров")
+        print("FAILURE: Could not add item")
 
-print("\n" + "=" * 60)
-print("ТЕСТ ЗАВЕРШЕН")
-print("=" * 60)
+    # Clean up
+    # user.delete() 
+    # product.delete()
+
+if __name__ == '__main__':
+    test_cart_workflow()

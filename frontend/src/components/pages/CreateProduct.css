@@ -1,0 +1,108 @@
+/* Страница "Создать товар" (для админа) */
+.create-product-page {
+              background-color: var(--light-gray);
+              min-height: 100vh;
+              padding: 60px 0;
+            }
+            
+            .create-product-section {
+              background: var(--white);
+              border: 2px solid var(--black);
+              border-radius: 12px;
+              padding: 40px;
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+            
+            .create-product-section h2 {
+              font-size: 32px;
+              font-weight: 700;
+              color: var(--primary-red);
+              margin-bottom: 30px;
+              text-align: center;
+            }
+            
+            .create-product-form .form-group {
+              margin-bottom: 16px;
+            }
+            
+            .create-product-form .form-label {
+              font-weight: 500;
+              color: var(--text-dark);
+              margin-bottom: 8px;
+            }
+            
+            .create-product-form .form-control,
+            .create-product-form .form-select {
+              border: 2px solid var(--black);
+              border-radius: 6px;
+              padding: 10px 14px;
+              font-size: 14px;
+              transition: all 0.2s;
+            }
+            
+            .create-product-form .form-control:focus,
+            .create-product-form .form-select:focus {
+              border-color: var(--primary-red);
+              box-shadow: 0 0 0 3px rgba(227, 30, 36, 0.1);
+            }
+            
+            .create-product-form textarea.form-control {
+              min-height: 150px;
+              resize: vertical;
+            }
+            
+            .create-product-form .btn {
+              width: 100%;
+              padding: 12px 24px;
+              font-size: 16px;
+              font-weight: 600;
+              border-radius: 6px;
+            }
+            
+            .image-upload {
+              border: 2px dashed var(--border-color);
+              border-radius: 8px;
+              padding: 40px;
+              text-align: center;
+              cursor: pointer;
+              transition: all 0.3s ease;
+            }
+            
+            .image-upload:hover {
+              border-color: var(--primary-red);
+              background-color: rgba(227, 30, 36, 0.05);
+            }
+            
+            .image-upload-icon {
+              color: var(--primary-red);
+              font-size: 48px;
+              margin-bottom: 12px;
+            }
+            
+            .image-upload p {
+              font-size: 14px;
+              color: var(--text-dark);
+            }
+            
+            /* Адаптивность */
+            @media (max-width: 768px) {
+              .create-product-section {
+                padding: 20px;
+              }
+            
+              .create-product-section h2 {
+                font-size: 24px;
+              }
+            
+              .image-upload {
+                padding: 24px;
+              }
+            
+              .image-upload-icon {
+                font-size: 36px;
+              }
+            
+              .image-upload p {
+                font-size: 13px;
+              }
+            }

@@ -2,15 +2,32 @@ from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerializer
 from djoser.serializers import UserSerializer as DjoserUserSerializer
 from .models import User
+from .validators import normalize_phone_belarus
 
 class UserCreateSerializer(DjoserUserCreateSerializer):
-    """Сериализатор для регистрации пользователя"""
+    """Сериализатор для регистрации пользователя. Сохраняет phone при создании."""
     phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
-    
+
     class Meta(DjoserUserCreateSerializer.Meta):
         model = User
         fields = ['id', 'username', 'email', 'password', 're_password', 'phone']
-        
+
+    def create(self, validated_data):
+        phone = validated_data.pop('phone', None) or ''
+        user = super().create(validated_data)
+        user.phone = phone or None
+        user.save(update_fields=['phone'])
+        return user
+
+    def validate_phone(self, value):
+        """Валидация телефона: только белорусский формат +375 (25|29|33|44) XXXXXXX."""
+        if not value or not value.strip():
+            return ''
+        formatted, err = normalize_phone_belarus(value)
+        if err:
+            raise serializers.ValidationError(err)
+        return formatted or ''
+
     def validate_username(self, value):
         """Проверка имени пользователя"""
         if len(value) < 3:

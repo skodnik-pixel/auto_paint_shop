@@ -15,6 +15,10 @@ class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     address = models.TextField()
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    delivery_method = models.CharField(max_length=20, default='courier')
+    payment_method = models.CharField(max_length=20, default='cash')
+    comment = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='pending')
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
