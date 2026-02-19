@@ -198,9 +198,9 @@ function Cart() {
     if (!accessToken) {
         return (
             <Container className="my-5">
-                <Alert variant="warning" className="text-center">
-                    <h4>Необходима авторизация</h4>
-                    <p>Для просмотра корзины необходимо войти в систему</p>
+                <Alert variant="warning" className="text-center cart-auth-mission-failed">
+                    <h4 className="cart-auth-mission-failed-title">MISSION FAILED</h4>
+                    <p className="cart-auth-mission-failed-sub">Для просмотра корзины необходимо войти в систему</p>
                     <div className="mt-3">
                         <Button variant="primary" onClick={() => navigate('/login')} className="me-2">
                             Войти

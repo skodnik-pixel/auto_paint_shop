@@ -4,12 +4,12 @@
  */
 
 const OPERATOR_CODES = ['25', '29', '33', '44'];
-/** Префикс только код страны, без скобки. Скобка в редактируемой части "(XX) XXXXXXX". */
+/** Префикс только код страны. Редактируемая часть: "XX XXXXXXX" (маска как zap.by). */
 const PREFIX = '+375 ';
 const PLACEHOLDER = '+375 (__) _______';
 
-/** Плейсхолдер только для редактируемой части: скобка и код оператора, номер. */
-export const EDITABLE_PLACEHOLDER = '(__) _______';
+/** Плейсхолдер только для редактируемой части (маска как на zap.by: +375 99 9999999). */
+export const EDITABLE_PLACEHOLDER = 'XX XXXXXXX';
 
 /**
  * Из строки оставляет только цифры.
@@ -43,7 +43,7 @@ export function formatPhoneInput(value) {
     const after375 = rest.length <= 3 ? rest : rest.slice(3);
     const operator = after375.slice(0, 2).padEnd(2, '_');
     const number = after375.slice(2, 9).padEnd(7, '_');
-    return `${PREFIX}(${operator}) ${number}`;
+    return `${PREFIX}${operator} ${number}`;
 }
 
 /**
@@ -94,7 +94,7 @@ export function getPhonePlaceholder() {
 }
 
 /**
- * Форматирует только редактируемую часть: 9 цифр в вид "(XX) XXXXXXX".
+ * Форматирует только редактируемую часть: 9 цифр в вид "XX XXXXXXX" (маска как zap.by: +375 99 9999999).
  * Префикс "+375 " показывается отдельно и не редактируется.
  * @param {string} digits — до 9 цифр (код оператора 2 + номер 7)
  * @returns {string}
@@ -104,11 +104,11 @@ export function formatEditablePart(digits) {
     if (d.length === 0) return '';
     const operator = d.slice(0, 2).padEnd(2, '_');
     const number = d.slice(2, 9).padEnd(7, '_');
-    return `(${operator}) ${number}`;
+    return `${operator} ${number}`;
 }
 
 /**
- * Из полного номера "+375 (29) 1234567" возвращает только редактируемую часть "(29) 1234567".
+ * Из полного номера "+375 (29) 1234567" или "+375 29 1234567" возвращает только редактируемую часть "29 1234567".
  * @param {string} fullPhone
  * @returns {string}
  */
@@ -126,14 +126,17 @@ export function getEditablePartFromFull(fullPhone) {
 }
 
 /**
- * Собирает полный номер из редактируемой части для валидации и отправки.
- * @param {string} editablePart — например "(29) 1234567"
+ * Собирает полный номер из редактируемой части для отправки на сервер (формат с скобками).
+ * @param {string} editablePart — например "29 1234567"
  * @returns {string} "+375 (29) 1234567"
  */
 export function getFullPhoneFromEditablePart(editablePart) {
     const d = digitsOnly(editablePart).slice(0, 9);
     if (d.length === 0) return '';
-    return PREFIX + formatEditablePart(d);
+    if (d.length < 9) return PREFIX + formatEditablePart(d);
+    const operator = d.slice(0, 2);
+    const number = d.slice(2, 9);
+    return `${PREFIX}(${operator}) ${number}`;
 }
 
 /**
@@ -152,11 +155,11 @@ export function countDigitsBeforePosition(value, pos) {
 }
 
 /**
- * Позиция в отформатированной строке "(XX) XXXXXXX" по индексу цифры (0–9).
+ * Позиция в отформатированной строке "XX XXXXXXX" по индексу цифры (0–9).
  * @param {number} digitIndex
  * @returns {number}
  */
 export function digitIndexToFormattedPos(digitIndex) {
-    if (digitIndex <= 1) return digitIndex + 1; // после "("
-    return digitIndex + 3; // после "(XX) "
+    if (digitIndex <= 1) return digitIndex;   // позиции 0, 1
+    return digitIndex + 1;                    // после пробела на позиции 2
 }
