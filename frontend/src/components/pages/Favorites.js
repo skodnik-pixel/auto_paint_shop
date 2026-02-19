@@ -1,15 +1,16 @@
 // Компонент страницы избранного
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Badge, Button, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Badge, Button, Alert, Modal } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaStar } from 'react-icons/fa';
+import { FaStar, FaShoppingCart } from 'react-icons/fa';
 import './Favorites.css';
 
 function Favorites() {
-  // Состояние для списка избранных товаров
   const [favoriteProducts, setFavoriteProducts] = useState([]);
-  // Состояние загрузки
   const [loading, setLoading] = useState(true);
+  // Модальное окно "Подробнее" — описание товара в одном месте, без дублирования
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   // Загружаем избранные товары при загрузке компонента
   useEffect(() => {
@@ -69,9 +70,39 @@ function Favorites() {
     return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
   };
 
-  // Функция получения старой цены (как в Home.js)
   const getOriginalPrice = (price) => {
     return (parseFloat(price) * 1.25).toFixed(2);
+  };
+
+  // Добавление товара в корзину (localStorage), как в Cart.js
+  const addToCart = (product) => {
+    try {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const existing = cart.find(item => item.id === product.id);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+          image: product.image,
+          slug: product.slug
+        });
+      }
+      localStorage.setItem('cart', JSON.stringify(cart));
+      window.dispatchEvent(new Event('cartUpdated'));
+      setShowDetailModal(false);
+      setSelectedProduct(null);
+    } catch (e) {
+      console.error('Ошибка добавления в корзину:', e);
+    }
+  };
+
+  const openDetailModal = (product) => {
+    setSelectedProduct(product);
+    setShowDetailModal(true);
   };
 
   return (
@@ -119,11 +150,14 @@ function Favorites() {
                     </div>
                     <Card.Title className="product-name">{product.name}</Card.Title>
                     
-                    <Link to={`/product/${product.slug || product.id}`} className="product-detail-link">
-                      <Button variant="primary" size="sm" className="product-detail-btn">
+                    <div className="d-flex gap-2 flex-wrap">
+                      <Button variant="outline-primary" size="sm" onClick={() => openDetailModal(product)}>
                         Подробнее
                       </Button>
-                    </Link>
+                      <Button variant="success" size="sm" onClick={() => addToCart(product)} className="d-flex align-items-center gap-1">
+                        <FaShoppingCart /> Купить
+                      </Button>
+                    </div>
                   </Card.Body>
                 </Card>
               </Col>
@@ -131,6 +165,39 @@ function Favorites() {
           })}
         </Row>
       )}
+
+      {/* Модальное окно: описание товара в одном месте, без дублирования на карточке */}
+      <Modal show={showDetailModal} onHide={() => { setShowDetailModal(false); setSelectedProduct(null); }} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{selectedProduct?.name}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedProduct && (
+            <>
+              <div className="text-center mb-3">
+                <img
+                  src={selectedProduct.image || 'https://via.placeholder.com/200x200?text=Нет+фото'}
+                  alt={selectedProduct.name}
+                  style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain' }}
+                />
+              </div>
+              <p className="text-muted mb-2"><strong>Цена:</strong> {selectedProduct.price} BYN</p>
+              <p className="mb-0"><strong>Описание:</strong></p>
+              <p className="text-muted small">{selectedProduct.description || 'Нет описания'}</p>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => { setShowDetailModal(false); setSelectedProduct(null); }}>
+            Закрыть
+          </Button>
+          {selectedProduct && (
+            <Button variant="success" onClick={() => addToCart(selectedProduct)}>
+              <FaShoppingCart className="me-1" /> Купить
+            </Button>
+          )}
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 }

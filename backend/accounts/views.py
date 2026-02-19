@@ -6,6 +6,8 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .validators import normalize_phone_belarus
+
 @api_view(['POST'])
 def login_view(request):
     """
@@ -57,18 +59,84 @@ def logout_view(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def user_profile(request):
     """
-    Получение профиля текущего пользователя
+    GET: получение профиля текущего пользователя.
+    PATCH: обновление полей профиля (phone и др.) для существующих пользователей.
     """
     user = request.user
+    if request.method == 'GET':
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'phone': user.phone,
+            'is_admin': user.is_admin,
+            'created_at': getattr(user, 'created_at', None),
+        })
+    # PATCH — редактирование профиля (телефон только в формате Беларусь)
+    phone = request.data.get('phone')
+    if phone is not None:
+        phone_str = phone.strip() if isinstance(phone, str) else ''
+        if phone_str:
+            formatted, err = normalize_phone_belarus(phone_str)
+            if err:
+                return Response({'phone': [err]}, status=status.HTTP_400_BAD_REQUEST)
+            user.phone = formatted
+        else:
+            user.phone = None
+        user.save(update_fields=['phone'])
     return Response({
         'id': user.id,
         'username': user.username,
         'email': user.email,
         'phone': user.phone,
         'is_admin': user.is_admin,
-        'created_at': user.created_at
+        'created_at': getattr(user, 'created_at', None),
     })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password_view(request):
+    """
+    Смена пароля. Требует текущий пароль и новый пароль.
+    Новый пароль действует при следующих входах.
+    """
+    current_password = request.data.get('current_password')
+    new_password = request.data.get('new_password')
+    re_new_password = request.data.get('re_new_password')
+
+    if not current_password:
+        return Response(
+            {'error': 'Введите текущий пароль'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    if not new_password:
+        return Response(
+            {'error': 'Введите новый пароль'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    if new_password != re_new_password:
+        return Response(
+            {'error': 'Новый пароль и подтверждение не совпадают'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    if len(new_password) < 8:
+        return Response(
+            {'error': 'Новый пароль должен быть не короче 8 символов'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    user = request.user
+    if not user.check_password(current_password):
+        return Response(
+            {'error': 'Неверный текущий пароль'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    user.set_password(new_password)
+    user.save()
+    return Response({'message': 'Пароль успешно изменён. Используйте новый пароль при следующем входе.'})

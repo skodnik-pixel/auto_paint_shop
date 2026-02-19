@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Container, Form, Button, Alert, Row, Col, Modal } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
+import { formatEditablePart, getFullPhoneFromEditablePart, validatePhone, EDITABLE_PLACEHOLDER } from '../../utils/phoneBelarus';
 import './Register.css';
 
 function Register() {
@@ -21,10 +22,13 @@ function Register() {
     const { register } = useAuth();
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+        if (name === 'phone') {
+            const digits = value.replace(/\D/g, '').slice(0, 9);
+            setFormData({ ...formData, phone: formatEditablePart(digits) });
+            return;
+        }
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleSubmit = async (e) => {
@@ -46,41 +50,30 @@ function Register() {
             return;
         }
 
+        // Валидация телефона (белорусский формат), если указан
+        let phoneToSend = '';
+        if (formData.phone && formData.phone.trim()) {
+            const full = getFullPhoneFromEditablePart(formData.phone);
+            const phoneResult = validatePhone(full);
+            if (!phoneResult.valid) {
+                setError(phoneResult.error || 'Неверный формат телефона');
+                setLoading(false);
+                return;
+            }
+            phoneToSend = phoneResult.formatted || '';
+        }
+
         try {
-            const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
-            const response = await fetch(`${apiUrl}/accounts/users/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    username: formData.username,
-                    email: formData.email,
-                    password: formData.password,
-                    re_password: formData.re_password,
-                    phone: formData.phone
-                }),
+            const result = await register({
+                username: formData.username,
+                email: formData.email,
+                password: formData.password,
+                re_password: formData.re_password,
+                phone: phoneToSend,
             });
 
-            if (!response.headers.get('content-type')?.includes('application/json')) {
-                const text = await response.text();
-                throw new Error(`Ожидался JSON, получен HTML. Проверьте URL: ${apiUrl}/accounts/users/`);
-            }
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                if (data.username) {
-                    setError(`Имя пользователя: ${data.username.join(', ')}`);
-                } else if (data.email) {
-                    setError(`Email: ${data.email.join(', ')}`);
-                } else if (data.password) {
-                    setError(`Пароль: ${data.password.join(', ')}`);
-                } else if (data.non_field_errors) {
-                    setError(data.non_field_errors.join(', '));
-                } else {
-                    setError('Ошибка при регистрации');
-                }
+            if (!result.success) {
+                setError(result.error || 'Ошибка при регистрации');
                 setLoading(false);
                 return;
             }
@@ -166,15 +159,20 @@ function Register() {
 
                         <Form.Group className="mb-3">
                             <Form.Label>Телефон</Form.Label>
-                            <Form.Control
-                                type="tel"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                placeholder="+375 (XX) XXX-XX-XX"
-                            />
+                            <div className="d-flex align-items-center register-phone-wrapper">
+                                <span className="register-phone-prefix">+375 </span>
+                                <Form.Control
+                                    type="tel"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    placeholder={EDITABLE_PLACEHOLDER}
+                                    className="register-phone-input"
+                                    style={{ maxWidth: 160 }}
+                                />
+                            </div>
                             <Form.Text className="text-muted">
-                                Необязательное поле
+                                Необязательно. Код оператора: 25, 29, 33 или 44 и 7 цифр номера
                             </Form.Text>
                         </Form.Group>
 
