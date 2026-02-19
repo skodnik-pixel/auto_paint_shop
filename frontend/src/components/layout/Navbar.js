@@ -403,7 +403,7 @@ function CustomNavbar() {
                         <Nav className="nav-icons">
                             {/* Кнопка "Мои заказы" — между поиском и Избранное, только для авторизованных */}
                             {isAuthenticated && (
-                                <Link to="/profile" className="nav-link nav-icon-link">
+                                <Link to="/profile" state={{ activeTab: 'orders' }} className="nav-link nav-icon-link">
                                     <FaClipboardList /> Мои заказы
                                 </Link>
                             )}

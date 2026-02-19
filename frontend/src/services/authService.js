@@ -15,6 +15,7 @@ class AuthService {
         re_password: userData.re_password || userData.password,
         first_name: userData.firstName || '',
         last_name: userData.lastName || '',
+        phone: userData.phone || '',
       });
 
       // Сразу логиним по JWT, чтобы пользователь был авторизован

@@ -1,19 +1,33 @@
 // frontend/src/components/Profile.js
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Nav, Badge, Button, Alert, Spinner, Modal, Form, Table } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import { FaUser, FaShoppingBag, FaHistory, FaCog, FaSignOutAlt, FaBox, FaClock, FaCheckCircle, FaTimes, FaEye, FaTrash, FaTruck, FaBell, FaBuilding, FaPlus, FaShoppingCart } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FaUser, FaShoppingBag, FaCog, FaSignOutAlt, FaBox, FaClock, FaCheckCircle, FaTimes, FaEye, FaTrash, FaTruck, FaBell, FaBuilding, FaPlus, FaShoppingCart } from 'react-icons/fa';
+import api from '../../utils/api';
+import { formatEditablePart, getEditablePartFromFull, getFullPhoneFromEditablePart, validatePhone, EDITABLE_PLACEHOLDER, countDigitsBeforePosition, digitIndexToFormattedPos } from '../../utils/phoneBelarus';
 import './Profile.css';
 import './Orders.css';
 
 function Profile() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [user, setUser] = useState(null);
     const [orders, setOrders] = useState([]);
     const [purchaseHistory, setPurchaseHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('profile');
     const [error, setError] = useState(null);
+    // Форма смены пароля в личном кабинете
+    const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '', re_new_password: '' });
+    const [passwordError, setPasswordError] = useState(null);
+    const [passwordSuccess, setPasswordSuccess] = useState(null);
+    const [passwordLoading, setPasswordLoading] = useState(false);
+    // Редактирование телефона в личном кабинете
+    const [editPhone, setEditPhone] = useState('');
+    const [phoneSaving, setPhoneSaving] = useState(false);
+    const [phoneMessage, setPhoneMessage] = useState(null); // success или error текст
+    const phoneInputRef = React.useRef(null);
+    const phoneNextCursorRef = React.useRef(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
     const [showAddressModal, setShowAddressModal] = useState(false);
@@ -50,12 +64,30 @@ function Profile() {
         }
 
         try {
-            setUser(JSON.parse(userData));
+            const u = JSON.parse(userData);
+            setUser(u);
+            setEditPhone(u.phone ? getEditablePartFromFull(u.phone) : '');
         } catch (e) {
             console.error('Error parsing user data:', e);
             navigate('/login');
             return;
         }
+
+        // Подтягиваем профиль с сервера (телефон с регистрации и актуальные данные)
+        api.get('accounts/profile/')
+            .then(({ data }) => {
+                const profileUser = {
+                    id: data.id,
+                    username: data.username,
+                    email: data.email,
+                    phone: data.phone,
+                    is_admin: data.is_admin,
+                };
+                setUser(profileUser);
+                setEditPhone(profileUser.phone ? getEditablePartFromFull(profileUser.phone) : '');
+                localStorage.setItem('user', JSON.stringify(profileUser));
+            })
+            .catch(() => {});
 
         // Загружаем заказы из localStorage вместо сервера
         loadOrdersFromStorage();
@@ -63,6 +95,24 @@ function Profile() {
         // Загружаем историю покупок из localStorage
         loadPurchaseHistory();
     }, [navigate]);
+
+    // Открыть вкладку "Мои заказы" при переходе из Navbar по кнопке "Мои заказы"
+    useEffect(() => {
+        if (location.state?.activeTab === 'orders') {
+            setActiveTab('orders');
+            // Очищаем state, чтобы при повторном заходе не залипала вкладка
+            window.history.replaceState({}, document.title, location.pathname);
+        }
+    }, [location.state, location.pathname]);
+
+    // Восстановление позиции курсора в поле телефона после форматирования (стрелки, delete, мышь)
+    useEffect(() => {
+        if (phoneNextCursorRef.current !== null && phoneInputRef.current) {
+            const pos = phoneNextCursorRef.current;
+            phoneInputRef.current.setSelectionRange(pos, pos);
+            phoneNextCursorRef.current = null;
+        }
+    }, [editPhone]);
 
     // Функция загрузки истории покупок из localStorage
     const loadPurchaseHistory = () => {
@@ -272,6 +322,10 @@ function Profile() {
                                     </div>
                                     <h5 className="profile-username mt-3">{user.username}</h5>
                                     <p className="profile-email text-muted">{user.email}</p>
+                                    {user.phone && <p className="profile-phone text-muted small mb-1">{user.phone}</p>}
+                                    <Badge bg={user.is_admin ? 'danger' : 'success'} className="mt-1">
+                                        {user.is_admin ? 'Администратор' : 'Покупатель'}
+                                    </Badge>
                                 </div>
 
                                 {/* Навигация */}
@@ -292,13 +346,6 @@ function Profile() {
                                         {orders.length > 0 && (
                                             <Badge bg="primary" className="ms-2">{orders.length}</Badge>
                                         )}
-                                    </Nav.Link>
-                                    <Nav.Link 
-                                        className={activeTab === 'history' ? 'active' : ''}
-                                        onClick={() => setActiveTab('history')}
-                                    >
-                                        <FaHistory className="me-2" />
-                                        История
                                     </Nav.Link>
                                     <Nav.Link 
                                         className={activeTab === 'settings' ? 'active' : ''}
@@ -336,15 +383,130 @@ function Profile() {
                                         </Col>
                                         <Col md={6} className="mb-3">
                                             <label className="form-label text-muted">Телефон</label>
-                                            <p className="profile-info-value">{user.phone || 'Не указан'}</p>
+                                            <div className="d-flex flex-wrap align-items-center gap-2">
+                                                <div className="profile-phone-wrapper">
+                                                    <span className="profile-phone-prefix">+375 </span>
+                                                    <Form.Control
+                                                    ref={phoneInputRef}
+                                                    type="tel"
+                                                    placeholder={EDITABLE_PLACEHOLDER}
+                                                    value={editPhone}
+                                                    onChange={(e) => {
+                                                        const input = e.target;
+                                                        const newValue = input.value;
+                                                        const selectionStart = input.selectionStart ?? newValue.length;
+                                                        const digits = newValue.replace(/\D/g, '').slice(0, 9);
+                                                        const formatted = formatEditablePart(digits);
+                                                        const digitIndex = countDigitsBeforePosition(newValue, selectionStart);
+                                                        const newPos = digitIndexToFormattedPos(Math.min(digitIndex, digits.length));
+                                                        phoneNextCursorRef.current = newPos;
+                                                        setEditPhone(formatted);
+                                                        setPhoneMessage(null);
+                                                    }}
+                                                    className="profile-phone-input"
+                                                    style={{ maxWidth: 160 }}
+                                                    aria-label="Код оператора и номер телефона"
+                                                    />
+                                                </div>
+                                                <Button
+                                                    variant="outline-primary"
+                                                    size="sm"
+                                                    disabled={phoneSaving}
+                                                    onClick={async () => {
+                                                        setPhoneMessage(null);
+                                                        const full = getFullPhoneFromEditablePart(editPhone);
+                                                        const result = validatePhone(full);
+                                                        if (!result.valid) {
+                                                            setPhoneMessage(result.error || 'Неверный формат телефона');
+                                                            return;
+                                                        }
+                                                        setPhoneSaving(true);
+                                                        try {
+                                                            const { data } = await api.patch('accounts/profile/', { phone: result.formatted || '' });
+                                                            const updated = { ...user, phone: data.phone };
+                                                            setUser(updated);
+                                                            setEditPhone(data.phone ? getEditablePartFromFull(data.phone) : '');
+                                                            localStorage.setItem('user', JSON.stringify(updated));
+                                                            setPhoneMessage('Телефон сохранён');
+                                                            setTimeout(() => setPhoneMessage(null), 3000);
+                                                        } catch (err) {
+                                                            const msg = err.response?.data?.phone?.[0] || err.response?.data?.detail || 'Не удалось сохранить телефон';
+                                                            setPhoneMessage(typeof msg === 'string' ? msg : JSON.stringify(msg));
+                                                        } finally {
+                                                            setPhoneSaving(false);
+                                                        }
+                                                    }}
+                                                >
+                                                    {phoneSaving ? 'Сохранение...' : 'Сохранить'}
+                                                </Button>
+                                            </div>
+                                            {phoneMessage && (
+                                                <p className={`small mt-1 mb-0 ${phoneMessage === 'Телефон сохранён' ? 'text-success' : 'text-danger'}`}>
+                                                    {phoneMessage}
+                                                </p>
+                                            )}
                                         </Col>
-                                        <Col md={6} className="mb-3">
-                                            <label className="form-label text-muted">Статус</label>
-                                            <p className="profile-info-value">
-                                                <Badge bg={user.is_admin ? 'danger' : 'success'}>
-                                                    {user.is_admin ? 'Администратор' : 'Покупатель'}
-                                                </Badge>
-                                            </p>
+                                        <Col md={12} className="mb-3">
+                                            <label className="form-label text-muted">Смена пароля</label>
+                                            <Form
+                                                onSubmit={async (e) => {
+                                                    e.preventDefault();
+                                                    setPasswordError(null);
+                                                    setPasswordSuccess(null);
+                                                    if (!passwordForm.current_password || !passwordForm.new_password || !passwordForm.re_new_password) {
+                                                        setPasswordError('Заполните все поля');
+                                                        return;
+                                                    }
+                                                    if (passwordForm.new_password !== passwordForm.re_new_password) {
+                                                        setPasswordError('Новый пароль и подтверждение не совпадают');
+                                                        return;
+                                                    }
+                                                    setPasswordLoading(true);
+                                                    try {
+                                                        const res = await api.post('accounts/change-password/', passwordForm);
+                                                        setPasswordSuccess(res.data.message || 'Пароль успешно изменён.');
+                                                        setPasswordForm({ current_password: '', new_password: '', re_new_password: '' });
+                                                    } catch (err) {
+                                                        const msg = err.response?.data?.error || err.response?.data?.detail || 'Ошибка смены пароля';
+                                                        setPasswordError(typeof msg === 'string' ? msg : JSON.stringify(msg));
+                                                    } finally {
+                                                        setPasswordLoading(false);
+                                                    }
+                                                }}
+                                            >
+                                                <Form.Group className="mb-2">
+                                                    <Form.Control
+                                                        type="password"
+                                                        placeholder="Текущий пароль"
+                                                        value={passwordForm.current_password}
+                                                        onChange={(e) => setPasswordForm(f => ({ ...f, current_password: e.target.value }))}
+                                                        autoComplete="current-password"
+                                                    />
+                                                </Form.Group>
+                                                <Form.Group className="mb-2">
+                                                    <Form.Control
+                                                        type="password"
+                                                        placeholder="Новый пароль"
+                                                        value={passwordForm.new_password}
+                                                        onChange={(e) => setPasswordForm(f => ({ ...f, new_password: e.target.value }))}
+                                                        autoComplete="new-password"
+                                                    />
+                                                </Form.Group>
+                                                <Form.Group className="mb-2">
+                                                    <Form.Control
+                                                        type="password"
+                                                        placeholder="Повторите новый пароль"
+                                                        value={passwordForm.re_new_password}
+                                                        onChange={(e) => setPasswordForm(f => ({ ...f, re_new_password: e.target.value }))}
+                                                        autoComplete="new-password"
+                                                    />
+                                                </Form.Group>
+                                                {passwordError && <Alert variant="danger" className="py-2 mb-2">{passwordError}</Alert>}
+                                                {passwordSuccess && <Alert variant="success" className="py-2 mb-2">{passwordSuccess}</Alert>}
+                                                <Button type="submit" variant="primary" disabled={passwordLoading}>
+                                                    {passwordLoading ? 'Сохранение...' : 'Изменить пароль'}
+                                                </Button>
+                                            </Form>
                                         </Col>
                                     </Row>
                                 </Card.Body>
@@ -426,89 +588,6 @@ function Profile() {
                                                 );
                                             })}
                                         </div>
-                                    )}
-                                </Card.Body>
-                            </Card>
-                        )}
-
-                        {/* Вкладка "История" */}
-                        {activeTab === 'history' && (
-                            <Card className="profile-content-card">
-                                <Card.Header>
-                                    <h4 className="mb-0">История покупок</h4>
-                                </Card.Header>
-                                <Card.Body>
-                                    {purchaseHistory.length === 0 ? (
-                                        <div className="text-center py-5">
-                                            <FaHistory size={60} className="text-muted mb-3" />
-                                            <h5>У вас пока нет истории покупок</h5>
-                                            <p className="text-muted">История будет пополняться при совершении покупок</p>
-                                            <Button variant="primary" onClick={() => navigate('/catalog')}>
-                                                Перейти в каталог
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <Row>
-                                            {purchaseHistory.map(item => (
-                                                <Col key={item.id} md={6} lg={4} className="mb-4">
-                                                    <Card className="history-product-card">
-                                                        {/* Изображение товара */}
-                                                        {item.image && (
-                                                            <div className="history-product-image-wrapper">
-                                                                <Card.Img 
-                                                                    variant="top" 
-                                                                    src={item.image} 
-                                                                    alt={item.name}
-                                                                    className="history-product-image"
-                                                                />
-                                                            </div>
-                                                        )}
-                                                        
-                                                        <Card.Body>
-                                                            {/* Название товара */}
-                                                            <Card.Title className="history-product-name">
-                                                                {item.name}
-                                                            </Card.Title>
-                                                            
-                                                            {/* Информация о покупке */}
-                                                            <div className="history-product-info">
-                                                                <div className="history-info-row">
-                                                                    <span className="history-label">Цена:</span>
-                                                                    <span className="history-value">{item.price} BYN</span>
-                                                                </div>
-                                                                {item.quantity && (
-                                                                    <div className="history-info-row">
-                                                                        <span className="history-label">Количество:</span>
-                                                                        <span className="history-value">{item.quantity} шт.</span>
-                                                                    </div>
-                                                                )}
-                                                                {item.purchaseDate && (
-                                                                    <div className="history-info-row">
-                                                                        <span className="history-label">Дата:</span>
-                                                                        <span className="history-value text-muted">
-                                                                            {formatPurchaseDate(item.purchaseDate)}
-                                                                        </span>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                            
-                                                            {/* Кнопки действий */}
-                                                            <div className="history-actions">
-                                                                <Button
-                                                                    variant="outline-primary"
-                                                                    size="sm"
-                                                                    onClick={() => viewProductDetails(item.slug)}
-                                                                    className="history-btn"
-                                                                >
-                                                                    <FaEye className="me-1" />
-                                                                    Подробнее
-                                                                </Button>
-                                                            </div>
-                                                        </Card.Body>
-                                                    </Card>
-                                                </Col>
-                                            ))}
-                                        </Row>
                                     )}
                                 </Card.Body>
                             </Card>

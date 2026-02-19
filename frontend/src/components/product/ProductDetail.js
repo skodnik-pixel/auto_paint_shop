@@ -327,10 +327,7 @@ function ProductDetail() {
                                 </div>
                             </div>
 
-                            {/* Краткое описание */}
-                            <div className="product-short-description mb-4">
-                                <p>{product.description}</p>
-                            </div>
+                            {/* Описание только в левой колонке (вкладка «Описание»), здесь не дублируем */}
 
                             {/* Количество и кнопки */}
                             <div className="product-actions mb-4">

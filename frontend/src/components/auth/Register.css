@@ -87,3 +87,24 @@
     background-color: #a01830;
     border-color: #a01830;
 }
+
+/* Поле телефона: префикс +375 ( фиксирован */
+.register-phone-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+.register-phone-prefix {
+    padding: 0.375rem 0.25rem 0.375rem 0.75rem;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-right: none;
+    border-radius: 0.375rem 0 0 0.375rem;
+    font-weight: 500;
+    color: #495057;
+    line-height: 1.5;
+}
+.register-phone-wrapper .register-phone-input {
+    border-radius: 0 0.375rem 0.375rem 0;
+    min-width: 140px;
+}
