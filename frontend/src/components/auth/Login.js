@@ -1,15 +1,17 @@
 // frontend/src/components/Login.js
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Container, Form, Button, Alert, Row, Col, Spinner, Modal } from 'react-bootstrap';
+import { Container, Form, Button, Alert, Row, Col, Spinner, Modal, InputGroup } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import './Login.css';
 
 function Login() {
     const [formData, setFormData] = useState({
-        username: '',
-        password: ''
+        username: 'user',
+        password: 'password'
     });
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     // Модальное окно «Аккаунт не найден» — показываем при ошибке входа, предлагаем регистрацию
@@ -137,15 +139,26 @@ function Login() {
                         
                         <Form.Group className="mb-3">
                             <Form.Label>Пароль *</Form.Label>
-                            <Form.Control
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="Введите пароль"
-                                required
-                                autoComplete="current-password"
-                            />
+                            <InputGroup className="login-password-input-wrapper">
+                                <Form.Control
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="password"
+                                    required
+                                    autoComplete="current-password"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline-secondary"
+                                    onClick={() => setShowPassword((p) => !p)}
+                                    aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+                                    className="login-password-toggle"
+                                >
+                                    {showPassword ? <FaEye /> : <FaEyeSlash />}
+                                </Button>
+                            </InputGroup>
                         </Form.Group>
                         
                         <Button 
