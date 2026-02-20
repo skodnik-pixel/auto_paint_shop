@@ -62,7 +62,7 @@ function CustomNavbar() {
         }
     }, []);
 
-    // Загрузка счётчика корзины с API (для авторизованных) или из localStorage
+    // Загрузка счётчика корзины: для авторизованных — только с API; для остальных — localStorage
     const refreshCartCount = async () => {
         const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
         if (accessToken) {
@@ -77,10 +77,14 @@ function CustomNavbar() {
                     const cart = list.length > 0 ? list[0] : null;
                     const count = cart?.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) ?? 0;
                     setCartCount(count);
-                    return;
+                } else {
+                    setCartCount(0);
                 }
+                return;
             } catch (e) {
                 console.error('Ошибка загрузки корзины для счётчика:', e);
+                setCartCount(0);
+                return;
             }
         }
         try {
