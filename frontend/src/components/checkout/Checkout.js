@@ -173,9 +173,15 @@ function Checkout() {
                 comment: orderData.comment
             };
 
+            // Текущий пользователь — для привязки заказа к аккаунту
+            const userJson = localStorage.getItem('user');
+            const currentUser = userJson ? JSON.parse(userJson) : null;
+            const userId = currentUser?.id ?? null;
+
             // Для локального хранения (если нужно) оставляем полную структуру
             const localOrder = {
                 id: Date.now(),
+                userId,
                 items: cart,
                 customerInfo: {
                     firstName: orderData.firstName,

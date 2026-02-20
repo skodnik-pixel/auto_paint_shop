@@ -145,18 +145,25 @@ function Profile() {
         }
     };
 
-    // Функция загрузки заказов из localStorage
+    // Функция загрузки заказов из localStorage — только заказы текущего пользователя
     const loadOrdersFromStorage = () => {
         try {
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            
-            // Сортировка заказов по дате (новые сверху)
-            const sortedOrders = orders.sort((a, b) => {
+            const userData = localStorage.getItem('user');
+            const currentUser = userData ? JSON.parse(userData) : null;
+            const currentUserId = currentUser?.id ?? null;
+
+            const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+            // Показываем только заказы, принадлежащие текущему аккаунту (по userId)
+            const myOrders = currentUserId != null
+                ? allOrders.filter(o => o.userId === currentUserId)
+                : [];
+
+            const sortedOrders = myOrders.sort((a, b) => {
                 const dateA = new Date(a.createdAt || 0);
                 const dateB = new Date(b.createdAt || 0);
-                return dateB - dateA; // Новые заказы сверху
+                return dateB - dateA;
             });
-            
+
             setOrders(sortedOrders);
             setLoading(false);
         } catch (error) {
