@@ -73,7 +73,7 @@ function Profile() {
             return;
         }
 
-        // Подтягиваем профиль с сервера (телефон с регистрации и актуальные данные)
+        // Подтягиваем профиль с сервера (телефон с регистрации и актуальные данные), затем снимаем loading
         api.get('accounts/profile/')
             .then(({ data }) => {
                 const phone = data.phone != null && String(data.phone).trim() !== '' ? String(data.phone).trim() : null;
@@ -85,16 +85,17 @@ function Profile() {
                     is_admin: data.is_admin,
                 };
                 setUser(profileUser);
-                setEditPhone((prev) => (profileUser.phone ? getEditablePartFromFull(profileUser.phone) : prev));
+                // Всегда подставляем телефон из профиля, если он есть; иначе не затираем уже введённый
+                if (profileUser.phone) {
+                    setEditPhone(getEditablePartFromFull(profileUser.phone));
+                }
                 localStorage.setItem('user', JSON.stringify(profileUser));
             })
-            .catch(() => {});
-
-        // Загружаем заказы из localStorage вместо сервера
-        loadOrdersFromStorage();
-        
-        // Загружаем историю покупок из localStorage
-        loadPurchaseHistory();
+            .catch(() => {})
+            .finally(() => {
+                loadOrdersFromStorage();
+                loadPurchaseHistory();
+            });
     }, [navigate]);
 
     // Открыть вкладку "Мои заказы" при переходе из Navbar по кнопке "Мои заказы"
@@ -105,6 +106,16 @@ function Profile() {
             window.history.replaceState({}, document.title, location.pathname);
         }
     }, [location.state, location.pathname]);
+
+    // Подставляем телефон из user.phone, если в поле ещё нет цифр (не затираем ввод пользователя)
+    useEffect(() => {
+        if (!user?.phone) return;
+        const trimmed = String(user.phone).trim();
+        if (!trimmed) return;
+        const hasDigitsInField = editPhone != null && /\d/.test(editPhone);
+        if (hasDigitsInField) return;
+        setEditPhone(getEditablePartFromFull(trimmed));
+    }, [user?.id, user?.phone, editPhone]);
 
     // Восстановление позиции курсора в поле телефона после форматирования (стрелки, delete, мышь)
     useEffect(() => {

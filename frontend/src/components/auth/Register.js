@@ -1,23 +1,28 @@
 // frontend/src/components/Register.js
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Container, Form, Button, Alert, Row, Col, Modal } from 'react-bootstrap';
+import { Container, Form, Button, Alert, Row, Col, Modal, InputGroup } from 'react-bootstrap';
 import { useNavigate, Link } from 'react-router-dom';
 import { formatEditablePart, getFullPhoneFromEditablePart, validatePhone, EDITABLE_PLACEHOLDER, countDigitsBeforePosition, digitIndexToFormattedPos } from '../../utils/phoneBelarus';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import './Register.css';
 
 function Register() {
     const [formData, setFormData] = useState({
-        username: '',
+        username: 'user',
         email: '',
         password: '',
         re_password: '',
         phone: ''
     });
+    const [showPassword, setShowPassword] = useState(false);
+    const [showRePassword, setShowRePassword] = useState(false);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     // Модальное окно об успешной регистрации (стиль GTA)
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    // Модальное окно «Пароли не совпадают» в стиле GTA (MISSION FAILED)
+    const [showPasswordMismatchModal, setShowPasswordMismatchModal] = useState(false);
     const phoneInputRef = React.useRef(null);
     const phoneNextCursorRef = React.useRef(null);
     const navigate = useNavigate();
@@ -56,7 +61,7 @@ function Register() {
 
         // Проверка паролей
         if (formData.password !== formData.re_password) {
-            setError('Пароли не совпадают');
+            setShowPasswordMismatchModal(true);
             setLoading(false);
             return;
         }
@@ -148,15 +153,27 @@ function Register() {
 
                         <Form.Group className="mb-3">
                             <Form.Label>Пароль *</Form.Label>
-                            <Form.Control
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="Введите пароль"
-                                required
-                                minLength={8}
-                            />
+                            <InputGroup className="register-password-input-wrapper">
+                                <Form.Control
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="Введите пароль"
+                                    required
+                                    minLength={8}
+                                    autoComplete="new-password"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline-secondary"
+                                    onClick={() => setShowPassword((p) => !p)}
+                                    aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+                                    className="register-password-toggle"
+                                >
+                                    {showPassword ? <FaEye /> : <FaEyeSlash />}
+                                </Button>
+                            </InputGroup>
                             <Form.Text className="text-muted">
                                 Минимум 8 символов
                             </Form.Text>
@@ -164,15 +181,27 @@ function Register() {
 
                         <Form.Group className="mb-3">
                             <Form.Label>Подтвердите пароль *</Form.Label>
-                            <Form.Control
-                                type="password"
-                                name="re_password"
-                                value={formData.re_password}
-                                onChange={handleChange}
-                                placeholder="Повторите пароль"
-                                required
-                                minLength={8}
-                            />
+                            <InputGroup className="register-password-input-wrapper">
+                                <Form.Control
+                                    type={showRePassword ? 'text' : 'password'}
+                                    name="re_password"
+                                    value={formData.re_password}
+                                    onChange={handleChange}
+                                    placeholder="Повторите пароль"
+                                    required
+                                    minLength={8}
+                                    autoComplete="new-password"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline-secondary"
+                                    onClick={() => setShowRePassword((p) => !p)}
+                                    aria-label={showRePassword ? 'Скрыть пароль' : 'Показать пароль'}
+                                    className="register-password-toggle"
+                                >
+                                    {showRePassword ? <FaEye /> : <FaEyeSlash />}
+                                </Button>
+                            </InputGroup>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
@@ -244,6 +273,26 @@ function Register() {
                                 }}
                             >
                                 Войти
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
+
+                    {/* Модальное окно: пароли не совпадают (стиль GTA — MISSION FAILED) */}
+                    <Modal
+                        show={showPasswordMismatchModal}
+                        onHide={() => setShowPasswordMismatchModal(false)}
+                        centered
+                        className="register-failed-modal"
+                    >
+                        <Modal.Header closeButton className="register-failed-modal-header">
+                            <Modal.Title className="register-failed-modal-title">MISSION FAILED</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <p className="mb-0">Пароли не совпадают</p>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={() => setShowPasswordMismatchModal(false)}>
+                                Закрыть
                             </Button>
                         </Modal.Footer>
                     </Modal>

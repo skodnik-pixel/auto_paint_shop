@@ -6,14 +6,39 @@ from .validators import normalize_phone_belarus
 
 class UserCreateSerializer(DjoserUserCreateSerializer):
     """Сериализатор для регистрации пользователя. Сохраняет phone при создании."""
-    phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    re_password = serializers.CharField(write_only=True, required=True)
+    phone = serializers.CharField(
+        max_length=20,
+        required=False,
+        allow_blank=True,
+        write_only=True,
+        help_text='Телефон в формате +375 (25|29|33|44) XXXXXXX',
+    )
 
     class Meta(DjoserUserCreateSerializer.Meta):
         model = User
         fields = ['id', 'username', 'email', 'password', 're_password', 'phone']
 
+    def validate(self, attrs):
+        # Проверка совпадения паролей (как в Djoser)
+        if attrs.get('password') != attrs.get('re_password'):
+            raise serializers.ValidationError({'re_password': 'Пароли не совпадают.'})
+        # Djoser в validate() делает User(**attrs) — убираем поля, которых нет в модели
+        attrs.pop('re_password', None)
+        attrs.pop('phone', None)
+        return super().validate(attrs)
+
     def create(self, validated_data):
+        validated_data.pop('re_password', None)  # не передаём в модель
+        validated_data.pop('id', None)  # id при создании не передаём
         phone = validated_data.pop('phone', None) or ''
+        # На случай если поле не попало в validated_data — берём из запроса
+        if not phone and self.context.get('request'):
+            raw = self.context['request'].data.get('phone')
+            if raw and isinstance(raw, str) and raw.strip():
+                formatted, _ = normalize_phone_belarus(raw.strip())
+                if formatted:
+                    phone = formatted
         user = super().create(validated_data)
         user.phone = phone or None
         user.save(update_fields=['phone'])

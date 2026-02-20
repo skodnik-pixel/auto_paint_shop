@@ -1,12 +1,42 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .validators import normalize_phone_belarus
+from .serializers import UserCreateSerializer
+from .models import User
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_view(request):
+    """
+    Регистрация пользователя. Принимает username, email, password, re_password, phone.
+    Гарантированно сохраняет телефон (в отличие от Djoser, который может не прокидывать кастомные поля).
+    """
+    serializer = UserCreateSerializer(data=request.data, context={'request': request})
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        user = serializer.save()
+    except Exception as e:
+        return Response(
+            {'detail': str(e)},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    return Response(
+        {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'phone': user.phone or '',
+        },
+        status=status.HTTP_201_CREATED,
+    )
+
 
 @api_view(['POST'])
 def login_view(request):
@@ -68,11 +98,12 @@ def user_profile(request):
     """
     user = request.user
     if request.method == 'GET':
+        phone = getattr(user, 'phone', None)
         return Response({
             'id': user.id,
             'username': user.username,
             'email': user.email,
-            'phone': user.phone or '',
+            'phone': (phone.strip() if isinstance(phone, str) and phone else '') or '',
             'is_admin': user.is_admin,
             'created_at': getattr(user, 'created_at', None),
         })
