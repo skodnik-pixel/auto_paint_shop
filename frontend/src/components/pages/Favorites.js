@@ -1,6 +1,6 @@
 // Компонент страницы избранного
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Badge, Button, Alert, Modal } from 'react-bootstrap';
+import { Container, Row, Col, Card, Badge, Button, Modal } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { FaStar, FaShoppingCart } from 'react-icons/fa';
 import './Favorites.css';
@@ -74,8 +74,35 @@ function Favorites() {
     return (parseFloat(price) * 1.25).toFixed(2);
   };
 
-  // Добавление товара в корзину (localStorage), как в Cart.js
-  const addToCart = (product) => {
+  // Добавление товара в корзину: для авторизованных — API, иначе localStorage (как Home/Catalog)
+  const addToCart = async (product) => {
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+    const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
+
+    if (accessToken) {
+      try {
+        const response = await fetch(`${apiUrl}/cart/add_item/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({ product_id: product.id, quantity: 1 })
+        });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || err.detail || 'Ошибка добавления в корзину');
+        }
+        window.dispatchEvent(new Event('cartUpdated'));
+        setShowDetailModal(false);
+        setSelectedProduct(null);
+      } catch (e) {
+        console.error('Ошибка добавления в корзину:', e);
+        alert(e.message || 'Ошибка при добавлении товара в корзину');
+      }
+      return;
+    }
+
     try {
       const cart = JSON.parse(localStorage.getItem('cart') || '[]');
       const existing = cart.find(item => item.id === product.id);
@@ -106,65 +133,75 @@ function Favorites() {
   };
 
   return (
-    <Container className="favorites-page py-4">
-      <h2 className="mb-4">Избранные товары</h2>
-      
-      {loading ? (
-        <div className="text-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Загрузка...</span>
+    <div className="favorites-page">
+      <Container className="py-4">
+        {/* Рамка «окна» в стиле сайта */}
+        <div className="favorites-window">
+          <div className="favorites-window-title">
+            <span className="favorites-window-title-text">Избранные товары</span>
+          </div>
+          <div className="favorites-window-body">
+            {loading ? (
+              <div className="favorites-loading">
+                <div className="spinner-border text-danger" role="status">
+                  <span className="visually-hidden">Загрузка...</span>
+                </div>
+                <p className="mt-3 mb-0 text-muted">Загрузка избранного...</p>
+              </div>
+            ) : favoriteProducts.length === 0 ? (
+              <div className="favorites-empty-state">
+                <div className="favorites-empty-icon">
+                  <FaStar />
+                </div>
+                <h4 className="favorites-empty-title">Избранных товаров пока нет</h4>
+                <p className="favorites-empty-text">Добавьте товары в избранное, нажав на звёздочку на карточке товара в каталоге или на главной</p>
+                <Link to="/" className="btn btn-danger favorites-empty-btn">
+                  Перейти к товарам
+                </Link>
+              </div>
+            ) : (
+              <Row className="favorites-grid">
+                {favoriteProducts.map(product => {
+                  const originalPrice = getOriginalPrice(product.price);
+                  const discount = calculateDiscount(parseFloat(product.price), parseFloat(originalPrice));
+                  return (
+                    <Col key={product.id} md={3} sm={6} className="mb-4">
+                      <Card className="favorites-product-card h-100">
+                        <div className="favorites-card-favorite" onClick={() => removeFromFavorites(product.id)} title="Удалить из избранного">
+                          <FaStar className="favorite-active" />
+                        </div>
+                        <div className="favorites-card-image-wrapper">
+                          <img
+                            src={product.image || 'https://via.placeholder.com/200x200?text=Нет+фото'}
+                            alt={product.name}
+                            className="favorites-card-image"
+                          />
+                        </div>
+                        <Card.Body className="favorites-card-body">
+                          <div className="favorites-card-price-section">
+                            <span className="favorites-card-current-price">{product.price} BYN</span>
+                            <span className="favorites-card-original-price">{originalPrice} BYN</span>
+                            <Badge className="favorites-card-discount">-{discount}%</Badge>
+                          </div>
+                          <Card.Title className="favorites-card-name">{product.name}</Card.Title>
+                          <div className="favorites-card-actions">
+                            <Button variant="outline-danger" size="sm" onClick={() => openDetailModal(product)} className="favorites-btn-detail">
+                              Подробнее
+                            </Button>
+                            <Button variant="danger" size="sm" onClick={() => addToCart(product)} className="favorites-btn-buy">
+                              <FaShoppingCart className="me-1" /> Купить
+                            </Button>
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  );
+                })}
+              </Row>
+            )}
           </div>
         </div>
-      ) : favoriteProducts.length === 0 ? (
-        <Alert variant="info" className="text-center">
-          <h4>Избранных товаров пока нет</h4>
-          <p>Добавьте товары в избранное, нажав на звездочку на карточке товара</p>
-          <Link to="/" className="btn btn-primary">
-            Перейти к товарам
-          </Link>
-        </Alert>
-      ) : (
-        <Row>
-          {favoriteProducts.map(product => {
-            const originalPrice = getOriginalPrice(product.price);
-            const discount = calculateDiscount(parseFloat(product.price), parseFloat(originalPrice));
-            
-            return (
-              <Col key={product.id} md={3} sm={6} className="mb-4">
-                <Card className="product-card h-100">
-                  <div className="product-favorite" onClick={() => removeFromFavorites(product.id)}>
-                    <FaStar className="favorite-active" />
-                  </div>
-                  <div className="product-image-wrapper">
-                    <img
-                      src={product.image || 'https://via.placeholder.com/200x200?text=Нет+фото'}
-                      alt={product.name}
-                      className="product-image"
-                    />
-                  </div>
-                  <Card.Body className="product-card-body">
-                    <div className="product-price-section">
-                      <div className="product-current-price">{product.price} BYN</div>
-                      <div className="product-original-price">{originalPrice} BYN</div>
-                      <Badge className="product-discount-badge">-{discount}%</Badge>
-                    </div>
-                    <Card.Title className="product-name">{product.name}</Card.Title>
-                    
-                    <div className="d-flex gap-2 flex-wrap">
-                      <Button variant="outline-primary" size="sm" onClick={() => openDetailModal(product)}>
-                        Подробнее
-                      </Button>
-                      <Button variant="success" size="sm" onClick={() => addToCart(product)} className="d-flex align-items-center gap-1">
-                        <FaShoppingCart /> Купить
-                      </Button>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            );
-          })}
-        </Row>
-      )}
+      </Container>
 
       {/* Модальное окно: описание товара в одном месте, без дублирования на карточке */}
       <Modal show={showDetailModal} onHide={() => { setShowDetailModal(false); setSelectedProduct(null); }} centered>
@@ -198,7 +235,7 @@ function Favorites() {
           )}
         </Modal.Footer>
       </Modal>
-    </Container>
+    </div>
   );
 }
 
