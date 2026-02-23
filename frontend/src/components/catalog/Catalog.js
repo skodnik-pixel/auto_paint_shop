@@ -1,10 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge, Spinner, Alert, Form, Button } from 'react-bootstrap';
-// Добавляем useSearchParams для чтения URL параметров
-// Добавляем иконки для кнопок количества и покупки
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { FaStar, FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa';
+import AuthRequiredModal from '../common/AuthRequiredModal';
 
 const Catalog = () => {
   const [products, setProducts] = useState([]);
@@ -20,6 +19,7 @@ const Catalog = () => {
   // Состояние для количества товаров (для кнопок +/-)
   const [quantities, setQuantities] = useState({});
 
+  const [showAuthModal, setShowAuthModal] = useState(false);
   // Состояние для избранного товаров
   const [favorites, setFavorites] = useState(() => {
     // Загружаем избранное из localStorage при инициализации
@@ -171,8 +171,7 @@ const Catalog = () => {
     const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
 
     if (!accessToken) {
-      alert('Для добавления товаров в корзину необходимо войти в систему');
-      navigate('/login');
+      setShowAuthModal(true);
       return;
     }
 
@@ -244,8 +243,7 @@ const Catalog = () => {
     // Проверяем авторизацию (JWT: access_token или legacy access)
     const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
     if (!accessToken) {
-      alert('Для добавления товаров в корзину необходимо войти в систему');
-      navigate('/login');
+      setShowAuthModal(true);
       return;
     }
 
@@ -622,6 +620,11 @@ const Catalog = () => {
           )}
         </>
       )}
+      <AuthRequiredModal
+        show={showAuthModal}
+        onHide={() => setShowAuthModal(false)}
+        onRegister={() => { setShowAuthModal(false); navigate('/register'); }}
+      />
     </Container>
   );
 };

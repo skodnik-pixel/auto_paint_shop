@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge, Button } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-// FaStar - иконка звездочки для избранного
-// FaChevronLeft, FaChevronRight - стрелки для слайдера
-// FaPlus, FaMinus - иконки для кнопок количества
-// FaShoppingCart - иконка корзины для кнопки "Купить"
 import { FaStar, FaChevronLeft, FaChevronRight, FaPlus, FaMinus, FaShoppingCart } from 'react-icons/fa';
+import AuthRequiredModal from '../common/AuthRequiredModal';
 import './Home.css';
 
 
@@ -27,6 +24,7 @@ function Home() {
   // Состояние для слайдера
   const [currentSlide, setCurrentSlide] = useState(0);
   
+  const [showAuthModal, setShowAuthModal] = useState(false);
   // Пагинация для товаров на главной
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10); // 10 товаров на странице (2 ряда по 5)
@@ -191,8 +189,7 @@ function Home() {
     // Проверяем авторизацию (JWT: access_token или legacy access)
     const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
     if (!accessToken) {
-      alert('Для добавления товаров в корзину необходимо войти в систему');
-      navigate('/login');
+      setShowAuthModal(true);
       return;
     }
 
@@ -506,6 +503,11 @@ function Home() {
           )}
           </>
         )}
+        <AuthRequiredModal
+          show={showAuthModal}
+          onHide={() => setShowAuthModal(false)}
+          onRegister={() => { setShowAuthModal(false); navigate('/register'); }}
+        />
       </Container>
 
     </div>
