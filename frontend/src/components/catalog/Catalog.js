@@ -43,10 +43,17 @@ const Catalog = () => {
     const fetchData = async () => {
       try {
         const apiUrl = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+        const searchFromUrl = searchParams.get('search') || '';
+        const categoryFromUrl = searchParams.get('category') || '';
+        const brandFromUrl = searchParams.get('brand') || '';
+        const productsParams = new URLSearchParams({ page_size: '500' });
+        if (searchFromUrl.trim()) productsParams.set('search', searchFromUrl.trim());
+        if (categoryFromUrl) productsParams.set('category', categoryFromUrl);
+        if (brandFromUrl) productsParams.set('brand', brandFromUrl);
         const [categoriesRes, brandsRes, productsRes] = await Promise.all([
           fetch(`${apiUrl}/catalog/categories/?page_size=100`),
           fetch(`${apiUrl}/catalog/brands/?page_size=100`),
-          fetch(`${apiUrl}/catalog/products/?page_size=100`)
+          fetch(`${apiUrl}/catalog/products/?${productsParams.toString()}`)
         ]);
 
         // Проверяем, что ответы являются JSON
@@ -87,7 +94,7 @@ const Catalog = () => {
     };
 
     fetchData();
-  }, []);
+  }, [searchParams]);
 
   // useEffect для обработки URL параметров поиска, категорий и фильтров подменю
   useEffect(() => {
@@ -393,10 +400,10 @@ const Catalog = () => {
             </Badge>
           </div>
 
-          <Row>
+          <Row className="g-4 align-items-stretch">
             {currentProducts.map(product => (
-              <Col key={product.id} lg={4} md={6} className="mb-4">
-                <Card className="h-100 product-card">
+              <Col key={product.id} lg={4} md={6} className="mb-4 d-flex">
+                <Card className="h-100 product-card w-100">
                   <div className="text-center p-3 position-relative">
                     <img
                       src={product.image || 'https://via.placeholder.com/200x150?text=Нет+фото'}

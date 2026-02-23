@@ -65,12 +65,39 @@
               color: var(--primary-red);
             }
             
-            /* Способы оплаты на странице доставки */
-            .payment-method {
+            /* Колонка и карточка «Способы оплаты» — не даём контенту вылезать за рамку */
+            .delivery-page .delivery-payment-col {
+              min-width: 0;
+            }
+            .delivery-page .delivery-payment-card {
+              overflow: hidden;
+            }
+            .delivery-page .delivery-payment-body {
+              overflow: hidden;
+              min-width: 0;
+            }
+            .delivery-page .payment-methods {
+              min-width: 0;
+              overflow-wrap: break-word;
+              word-wrap: break-word;
+            }
+            .delivery-page .payment-methods .payment-method {
+              min-width: 0;
+              overflow-wrap: break-word;
               transition: all 0.3s ease;
             }
             
-            .payment-method:hover {
+            .delivery-page .payment-methods .payment-method h6 {
+              margin-bottom: 0.5rem;
+            }
+            
+            .delivery-page .payment-methods .payment-method ul {
+              padding-left: 1.35rem;
+              margin-bottom: 0;
+              list-style-position: outside;
+            }
+            
+            .delivery-page .payment-methods .payment-method:hover {
               background-color: #f8f9fa !important;
               transform: translateY(-2px);
               box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);

@@ -1,18 +1,19 @@
-/* Сетка товаров 3 колонки по 2 строки */
+/* Сетка товаров: все карточки в ряду одной высоты */
 .products-grid-container {
               display: grid;
               grid-template-columns: repeat(3, 1fr);
-              grid-template-rows: repeat(2, 1fr);
+              grid-auto-rows: 1fr;
               gap: 24px;
               margin-bottom: 30px;
             }
             
             .product-grid-item {
               width: 100%;
-              height: 100%;
+              min-height: 0;
+              display: flex;
             }
             
-            /* Карточка товара */
+            /* Карточка товара — растягивается на всю высоту ячейки */
             .product-card {
               position: relative;
               transition: all 0.3s ease;
@@ -21,7 +22,9 @@
               background: var(--white);
               overflow: hidden;
               box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+              width: 100%;
               height: 100%;
+              min-height: 0;
               display: flex;
               flex-direction: column;
             }
@@ -95,13 +98,19 @@
               overflow: hidden;
             }
             
-            /* Описание товара */
+            /* Описание товара — фиксируем высоту (2–3 строки), чтобы карточки были ровные */
             .product-description {
               font-size: 13px;
               color: var(--text-light);
               line-height: 1.4;
               margin-bottom: 12px;
-              min-height: 60px;
+              min-height: 2.8em;
+              max-height: 4.2em;
+              display: -webkit-box;
+              -webkit-line-clamp: 3;
+              line-clamp: 3;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
             }
             
             /* Блок цены */
@@ -344,7 +353,7 @@
               }
             }
 
-/* ========== КАРТОЧКИ ТОВАРОВ (общие из App) ========== */
+/* ========== КАРТОЧКИ ТОВАРОВ — фиксированная высота, все одинаковые ========== */
 .product-card {
   position: relative;
   transition: all 0.3s ease;
@@ -352,7 +361,9 @@
   border-radius: 8px;
   background: var(--white);
   overflow: hidden;
-  height: 280px;
+  height: 420px;
+  min-height: 420px;
+  max-height: 420px;
   display: flex;
   flex-direction: column;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -368,7 +379,9 @@
   padding: 12px;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .product-card .card-title {
@@ -377,7 +390,7 @@
   color: var(--text-dark);
   line-height: 1.3;
   margin-bottom: 8px;
-  min-height: 32px;
+  min-height: 2.6em;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -390,6 +403,14 @@
   color: var(--text-light);
   line-height: 1.4;
   margin-bottom: 8px;
+  flex: 0 0 auto;
+  min-height: 3.2em;
+  max-height: 4.4em;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .product-card img {
@@ -458,7 +479,9 @@
 
 @media (max-width: 768px) {
   .product-card {
-    height: 240px;
+    height: 380px;
+    min-height: 380px;
+    max-height: 380px;
   }
   .product-card img {
     height: 120px;

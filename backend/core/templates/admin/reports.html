@@ -1,0 +1,53 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a> &rsaquo; {% trans 'Reports' %}
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>{% trans 'Reports' %}</h1>
+
+<form method="get" style="margin-bottom: 24px; padding: 16px; background: #f8f8f8; border-radius: 6px;">
+  <label>{% trans 'From date' %}: <input type="date" name="date_from" value="{{ date_from }}" /></label>
+  <label style="margin-left: 12px;">{% trans 'To date' %}: <input type="date" name="date_to" value="{{ date_to }}" /></label>
+  <button type="submit" style="margin-left: 12px;">{% trans 'Show' %}</button>
+</form>
+
+{% if revenue is not None %}
+  <div style="margin-bottom: 24px;">
+    <p><strong>{% trans 'Orders in period' %}:</strong> {{ orders_count }}</p>
+    <p><strong>{% trans 'Revenue (total)' %}:</strong> {{ revenue }} BYN</p>
+  </div>
+
+  <h2>{% trans 'Top products (by quantity sold)' %}</h2>
+  {% if top_products %}
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background: #417690; color: white;">
+          <th style="padding: 8px; text-align: left;">{% trans 'Product' %}</th>
+          <th style="padding: 8px; text-align: right;">{% trans 'Quantity sold' %}</th>
+          <th style="padding: 8px; text-align: right;">{% trans 'Revenue' %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in top_products %}
+          <tr style="border-bottom: 1px solid #ddd;">
+            <td style="padding: 8px;">{{ row.product__name|default:"—" }}</td>
+            <td style="padding: 8px; text-align: right;">{{ row.total_qty }}</td>
+            <td style="padding: 8px; text-align: right;">{{ row.total_revenue|default:0 }} BYN</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>{% trans 'No data' %}.</p>
+  {% endif %}
+{% else %}
+  <p>{% trans 'Select date range and click Show' %}.</p>
+{% endif %}
+
+<p style="margin-top: 24px;"><a href="{% url 'admin:index' %}">← {% trans 'Back to dashboard' %}</a></p>
+{% endblock %}
