@@ -23,6 +23,9 @@ function Register() {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     // Модальное окно «Пароли не совпадают» в стиле GTA (MISSION FAILED)
     const [showPasswordMismatchModal, setShowPasswordMismatchModal] = useState(false);
+    // Согласие с условиями и политикой конфиденциальности
+    const [agreeToTerms, setAgreeToTerms] = useState(false);
+    const [termsError, setTermsError] = useState(false);
     const phoneInputRef = React.useRef(null);
     const phoneNextCursorRef = React.useRef(null);
     const navigate = useNavigate();
@@ -58,6 +61,13 @@ function Register() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setTermsError(false);
+
+        if (!agreeToTerms) {
+            setTermsError(true);
+            setLoading(false);
+            return;
+        }
 
         // Проверка паролей
         if (formData.password !== formData.re_password) {
@@ -223,6 +233,36 @@ function Register() {
                             <Form.Text className="text-muted">
                                 Необязательно. Код оператора: 25, 29, 33 или 44 и 7 цифр номера
                             </Form.Text>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Check
+                                type="checkbox"
+                                id="register-agree-terms"
+                                checked={agreeToTerms}
+                                onChange={(e) => {
+                                    setAgreeToTerms(e.target.checked);
+                                    if (termsError) setTermsError(false);
+                                }}
+                                className={termsError ? 'register-terms-checkbox is-invalid' : 'register-terms-checkbox'}
+                                label={
+                                    <span className="register-terms-label">
+                                        Я согласен с{' '}
+                                        <Link to="/terms" className="register-terms-link" onClick={(e) => e.stopPropagation()}>
+                                            условиями пользования
+                                        </Link>
+                                        {' '}и{' '}
+                                        <Link to="/privacy" className="register-terms-link" onClick={(e) => e.stopPropagation()}>
+                                            политикой конфиденциальности
+                                        </Link>
+                                    </span>
+                                }
+                            />
+                            {termsError && (
+                                <div className="invalid-feedback d-block">
+                                    Необходимо согласие с условиями и политикой конфиденциальности
+                                </div>
+                            )}
                         </Form.Group>
 
                         <Button 

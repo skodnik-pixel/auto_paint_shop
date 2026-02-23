@@ -188,6 +188,44 @@
     outline: none;
 }
 
+/* Чекбокс согласия с условиями и политикой конфиденциальности */
+.register-terms-checkbox {
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+.register-terms-checkbox .form-check-input {
+    margin-top: 0.25rem;
+    cursor: pointer;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 2px solid #212529;
+    border-radius: 0.25rem;
+}
+.register-terms-checkbox .form-check-input:checked {
+    background-color: #c41e3a;
+    border-color: #c41e3a;
+}
+.register-terms-checkbox .form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(196, 30, 58, 0.25);
+}
+.register-terms-checkbox.is-invalid .form-check-input {
+    border-color: #dc3545;
+}
+.register-terms-label {
+    font-size: 0.9375rem;
+    color: #212529;
+    cursor: pointer;
+    line-height: 1.4;
+}
+.register-terms-link {
+    color: #c41e3a;
+    text-decoration: underline;
+    font-weight: 500;
+}
+.register-terms-link:hover {
+    color: #a01830;
+}
+
 /* Поле пароля и «Подтвердите пароль»: как на форме входа — рамка, глаз, красная подсветка при фокусе */
 .register-password-input-wrapper {
     border: 2px solid #212529;
