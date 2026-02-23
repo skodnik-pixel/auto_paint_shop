@@ -2,12 +2,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from .views import api_root
-from rest_framework_simplejwt.views import ( TokenObtainPairView, TokenRefreshView, TokenVerifyView,) 
+from .admin_site import custom_admin_site
+
+# Подключаем кастомную главную админки (статистика); модели остаются на default site
+custom_admin_site._registry = admin.site._registry
 
 urlpatterns = [
     path('', api_root, name='api-root'),
-    path('admin/', admin.site.urls),
+    path('admin/', custom_admin_site.urls),
 
     # JWT аутентификация
     path('api/auth/jwt/create/', TokenObtainPairView.as_view(), name='jwt-create'),

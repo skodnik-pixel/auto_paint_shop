@@ -24,9 +24,11 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        if self.action == 'list':
+            queryset = queryset.filter(is_published=True)
         category = self.request.query_params.get('category')
         brand = self.request.query_params.get('brand')
-        search = self.request.query_params.get('search')
+        search = (self.request.query_params.get('search') or '').strip()
         if category:
             queryset = queryset.filter(category__slug=category)
         if brand:

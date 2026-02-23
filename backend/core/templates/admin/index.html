@@ -1,0 +1,35 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block content %}
+<p style="margin-bottom: 12px;">
+  <a href="{% url 'admin:reports' %}" style="padding: 8px 12px; background: #79aec8; color: white; text-decoration: none; border-radius: 4px;">{% trans 'Reports' %} (продажи, топ товаров)</a>
+</p>
+<div class="dashboard-stats" style="margin-bottom: 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+  <div style="padding: 16px; background: #417690; color: white; border-radius: 6px;">
+    <strong>Заказов сегодня</strong><br>
+    <span style="font-size: 1.5em;">{{ orders_today|default:0 }}</span>
+  </div>
+  <div style="padding: 16px; background: #205067; color: white; border-radius: 6px;">
+    <strong>Заказов за неделю</strong><br>
+    <span style="font-size: 1.5em;">{{ orders_week|default:0 }}</span>
+  </div>
+  <div style="padding: 16px; background: #79aec8; color: white; border-radius: 6px;">
+    <strong>Выручка сегодня</strong><br>
+    <span style="font-size: 1.5em;">{{ revenue_today|default:0 }} BYN</span>
+  </div>
+  <div style="padding: 16px; background: #5b80a2; color: white; border-radius: 6px;">
+    <strong>Выручка за неделю</strong><br>
+    <span style="font-size: 1.5em;">{{ revenue_week|default:0 }} BYN</span>
+  </div>
+  <div style="padding: 16px; background: #38a169; color: white; border-radius: 6px;">
+    <strong>Новых пользователей (неделя)</strong><br>
+    <span style="font-size: 1.5em;">{{ users_week|default:0 }}</span>
+  </div>
+  <div style="padding: 16px; background: {% if zero_stock %}#c53030{% else %}#2f855a{% endif %}; color: white; border-radius: 6px;">
+    <strong>Товаров с нулевым остатком</strong><br>
+    <span style="font-size: 1.5em;">{{ zero_stock|default:0 }}</span>
+  </div>
+</div>
+{{ block.super }}
+{% endblock %}

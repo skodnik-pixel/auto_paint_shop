@@ -6,7 +6,7 @@ import './Delivery.css';
 
 function Delivery() {
     return (
-        <Container className="my-5">
+        <Container className="my-5 delivery-page">
             <h2 className="mb-4">🚚 Доставка и оплата</h2>
             
             <Row>
@@ -86,12 +86,12 @@ function Delivery() {
                 </Col>
                 
                 {/* Способы оплаты */}
-                <Col lg={6} className="mb-4">
-                    <Card style={{ minHeight: '500px' }}>
+                <Col lg={6} className="mb-4 delivery-payment-col">
+                    <Card style={{ minHeight: '500px' }} className="delivery-payment-card">
                         <Card.Header className="bg-success text-white">
                             <h5 className="mb-0"><FaCreditCard className="me-2" />Способы оплаты</h5>
                         </Card.Header>
-                        <Card.Body>
+                        <Card.Body className="delivery-payment-body">
                             <div className="payment-methods">
                                 <div className="payment-method mb-3 p-2 border rounded">
                                     <h6><FaMoneyBillWave className="text-success me-2" />Наличными</h6>
