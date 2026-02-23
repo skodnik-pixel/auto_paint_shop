@@ -28,6 +28,8 @@ import TechnicalSupport from './components/pages/TechnicalSupport';
 import ColorMatching from './components/pages/ColorMatching';
 import FAQ from './components/pages/FAQ';
 import Contacts from './components/pages/Contacts';
+import Terms from './components/pages/Terms';
+import Privacy from './components/pages/Privacy';
 import backgroundImage from './assets/images/background.jpg';
 
 function App() {
@@ -69,6 +71,8 @@ function App() {
                         <Route path="/color-matching" element={<ColorMatching />} />
                         <Route path="/faq" element={<FAQ />} />
                         <Route path="/contacts" element={<Contacts />} />
+                        <Route path="/terms" element={<Terms />} />
+                        <Route path="/privacy" element={<Privacy />} />
                     </Routes>
                 </div>
                 

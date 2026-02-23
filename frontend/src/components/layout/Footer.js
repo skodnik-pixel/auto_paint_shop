@@ -51,6 +51,8 @@ function Footer() {
               <ul className="footer-links">
                 <li><Link to="/catalog">Каталог материалов</Link></li>
                 <li><Link to="/about">О компании</Link></li>
+                <li><Link to="/terms">Условия использования</Link></li>
+                <li><Link to="/privacy">Политика конфиденциальности</Link></li>
                 <li><Link to="/paint-selection">Подбор краски по коду</Link></li>
                 <li><Link to="/delivery">Доставка и оплата</Link></li>
                 <li><Link to="/warranty">Гарантия качества</Link></li>
