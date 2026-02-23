@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Button, Spinner, Badge } from 'react-bootstrap';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import AuthRequiredModal from '../common/AuthRequiredModal';
 import {
     FaShoppingCart,
     FaHeart,
@@ -24,6 +25,7 @@ function ProductDetail() {
     const [isFavorite, setIsFavorite] = useState(false); // Избранное
     const [relatedProducts, setRelatedProducts] = useState([]); // Похожие товары
     const [activeTab, setActiveTab] = useState('description'); // Активная вкладка в описании
+    const [showAuthModal, setShowAuthModal] = useState(false);
 
     // Загрузка данных товара
     useEffect(() => {
@@ -93,8 +95,7 @@ function ProductDetail() {
         const accessToken = localStorage.getItem('access_token') || localStorage.getItem('access');
 
         if (!accessToken) {
-            alert('Для добавления товаров в корзину необходимо войти в систему');
-            navigate('/login');
+            setShowAuthModal(true);
             return;
         }
 
@@ -451,6 +452,11 @@ function ProductDetail() {
                         </Col>
                     </Row>
                 )}
+            <AuthRequiredModal
+                show={showAuthModal}
+                onHide={() => setShowAuthModal(false)}
+                onRegister={() => { setShowAuthModal(false); navigate('/register'); }}
+            />
             </Container>
         </div>
     );
