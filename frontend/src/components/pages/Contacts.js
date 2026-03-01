@@ -186,7 +186,7 @@ function Contacts() {
                                 <a href="https://t.me" target="_blank" rel="noopener noreferrer" className="btn btn-info me-2 mb-2">
                                     <FaTelegramPlane /> Telegram
                                 </a>
-                                <a href="viber://chat" className="btn btn-success mb-2">
+                                <a href="https://viber.com" target="_blank" rel="noopener noreferrer" className="btn btn-success mb-2">
                                     <FaViber /> Viber
                                 </a>
                             </div>

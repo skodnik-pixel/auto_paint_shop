@@ -39,7 +39,7 @@ function Footer() {
                 <a href="https://t.me" target="_blank" rel="noopener noreferrer" className="social-link">
                   <FaTelegramPlane />
                 </a>
-                <a href="viber://chat" className="social-link">
+                <a href="https://viber.com" target="_blank" rel="noopener noreferrer" className="social-link">
                   <FaViber />
                 </a>
               </div>

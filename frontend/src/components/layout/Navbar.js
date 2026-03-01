@@ -347,7 +347,7 @@ function CustomNavbar() {
                                     <a href="https://t.me" target="_blank" rel="noopener noreferrer" className="social-link-header me-2">
                                         <FaTelegramPlane />
                                     </a>
-                                    <a href="viber://chat" className="social-link-header">
+                                    <a href="https://viber.com" target="_blank" rel="noopener noreferrer" className="social-link-header">
                                         <FaViber />
                                     </a>
                                 </div>
