@@ -7,7 +7,7 @@ import './Delivery.css';
 function Delivery() {
     return (
         <Container className="my-5 delivery-page">
-            <h2 className="mb-4">🚚 Доставка и оплата</h2>
+            <h2 className="mb-4 text-center">🚚 Доставка и оплата</h2>
             
             <Row>
                 {/* Способы доставки */}

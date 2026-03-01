@@ -1,8 +1,7 @@
-/* Страница "Доставка" */
+/* Страница "Доставка и оплата" — без общего белого/серого фона, как на Контактах */
 .delivery-page {
-              background-color: var(--light-gray);
-              min-height: 100vh;
-              padding: 60px 0;
+              background: transparent;
+              padding: 1rem 0 3rem;
             }
             
             .delivery-section {

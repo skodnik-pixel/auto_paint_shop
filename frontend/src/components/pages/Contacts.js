@@ -19,7 +19,7 @@ import './Contacts.css';
 function Contacts() {
     return (
         <Container className="my-5">
-            <h2 className="mb-4">📞 Контакты</h2>
+            <h2 className="mb-4 text-center">📞 Контакты</h2>
             
             <Row>
                 {/* Основная контактная информация */}

@@ -7,7 +7,7 @@ import './About.css';
 function About() {
     return (
         <Container className="my-5">
-            <h2 className="mb-4">🏢 О компании</h2>
+            <h2 className="mb-4 text-center">🏢 О компании</h2>
             
             <Row>
                 <Col lg={8} className="mb-4">
