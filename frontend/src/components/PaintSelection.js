@@ -25,7 +25,7 @@ function PaintSelection() {
 
     return (
         <Container className="my-5">
-            <h2 className="mb-4"><FaPalette className="me-2" />Подбор краски по коду</h2>
+            <h2 className="mb-4 text-center"><FaPalette className="me-2" />Подбор краски по коду</h2>
             
             <Row>
                 {/* Форма поиска */}
